@@ -69,16 +69,6 @@ void freeze_wake(void)
 }
 EXPORT_SYMBOL_GPL(freeze_wake);
 
-static bool valid_state(suspend_state_t state)
-{
-	/*
-	 * PM_SUSPEND_STANDBY and PM_SUSPEND_MEM states need low level
-	 * support and need to be valid to the low level
-	 * implementation, no valid callback implies that none are valid.
-	 */
-	return suspend_ops && suspend_ops->valid && suspend_ops->valid(state);
-}
-
 /**
  * suspend_set_ops - Set the global suspend method table.
  * @ops: Suspend operations to use.
@@ -96,6 +86,18 @@ void suspend_set_ops(const struct platform_suspend_ops *ops)
 	unlock_system_sleep();
 }
 EXPORT_SYMBOL_GPL(suspend_set_ops);
+
+bool valid_state(suspend_state_t state)
+{
+	if (state == PM_SUSPEND_FREEZE)
+		return true;
+	/*
+	 * PM_SUSPEND_STANDBY and PM_SUSPEND_MEMORY states need lowlevel
+	 * support and need to be valid to the lowlevel
+	 * implementation, no valid callback implies that none are valid.
+	 */
+	return suspend_ops && suspend_ops->valid && suspend_ops->valid(state);
+}
 
 /**
  * suspend_valid_only_mem - Generic memory-only valid callback.
@@ -222,9 +224,6 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
 			goto Platform_wake;
 	}
 
-	if (suspend_test(TEST_PLATFORM))
-		goto Platform_wake;
-
 	/*
 	 * PM_SUSPEND_FREEZE equals
 	 * frozen processes + suspended devices + idle processors.
@@ -235,6 +234,9 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
 		freeze_enter();
 		goto Platform_wake;
 	}
+
+	if (suspend_test(TEST_PLATFORM))
+		goto Platform_wake;
 
 	error = disable_nonboot_cpus();
 	if (error || suspend_test(TEST_CPUS)) {
