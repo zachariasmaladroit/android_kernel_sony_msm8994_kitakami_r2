@@ -473,6 +473,22 @@ void vmpressure_unregister_event(struct cgroup *cg, struct cftype *cft,
 }
 
 /**
+ * vmpressure_cleanup() - shuts down vmpressure control structure
+ * @vmpr:	Structure to be cleaned up
+ *
+ * This function should be called before the structure in which it is
+ * embedded is cleaned up.
+ */
+void vmpressure_cleanup(struct vmpressure *vmpr)
+{
+	/*
+	 * Make sure there is no pending work before eventfd infrastructure
+	 * goes away.
+	 */
+	flush_work(&vmpr->work);
+}
+
+/**
  * vmpressure_init() - Initialize vmpressure control structure
  * @vmpr:	Structure to be initialized
  *
