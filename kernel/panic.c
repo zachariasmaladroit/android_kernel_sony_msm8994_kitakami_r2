@@ -143,6 +143,13 @@ void panic(const char *fmt, ...)
 
 	kmsg_dump(KMSG_DUMP_PANIC);
 
+	/* print last_kmsg even after console suspend */
+	if (is_console_suspended())
+		resume_console();
+
+	if (is_console_locked())
+		console_unlock();
+
 	atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
 
 	bust_spinlocks(0);
