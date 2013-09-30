@@ -744,6 +744,13 @@ static void isolate_freepages(struct zone *zone,
 		 */
 		cond_resched();
 
+		/*
+		 * This can iterate a massively long zone without finding any
+		 * suitable migration targets, so periodically check if we need
+		 * to schedule.
+		 */
+		cond_resched();
+
 		if (!pfn_valid(pfn))
 			continue;
 
