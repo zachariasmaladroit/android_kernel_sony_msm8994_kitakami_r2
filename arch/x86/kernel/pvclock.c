@@ -43,6 +43,14 @@ unsigned long pvclock_tsc_khz(struct pvclock_vcpu_time_info *src)
 	return pv_tsc_khz;
 }
 
+void pvclock_touch_watchdogs(void)
+{
+	touch_softlockup_watchdog_sync();
+	clocksource_touch_watchdog();
+	rcu_cpu_stall_reset();
+	reset_hung_task_detector();
+}
+
 static atomic64_t last_value = ATOMIC64_INIT(0);
 
 void pvclock_resume(void)
