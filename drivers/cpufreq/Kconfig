@@ -359,5 +359,13 @@ config SH_CPU_FREQ
 	  If unsure, say N.
 endmenu
 
+config ASMP
+	bool "Multi-core automatic hotplug support"
+	depends on SMP && HOTPLUG_CPU
+	default n
+	help
+	  Automatically hotplugs the multiple cpu cores on and off
+	  based on cpu load and suspend state
+
 endif
 endmenu
