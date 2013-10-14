@@ -99,3 +99,4 @@ obj-$(CONFIG_CPU_FREQ_STAT)		+= cpufreq_persistent_stats.o
 
 obj-$(CONFIG_LAZYPLUG)			+= lazyplug.o
 CFLAGS_lazyplug.o			+= -finline-functions
+obj-$(CONFIG_ASMP) 		+= autosmp.o
