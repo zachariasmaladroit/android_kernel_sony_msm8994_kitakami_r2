@@ -854,9 +854,6 @@ static struct mm_struct *dup_mm(struct task_struct *tsk)
 	struct mm_struct *mm, *oldmm = current->mm;
 	int err;
 
-	if (!oldmm)
-		return NULL;
-
 	mm = allocate_mm();
 	if (!mm)
 		goto fail_nomem;
