@@ -896,16 +896,19 @@ static void data_fn_tasklet(unsigned long data)
 	int errno;
 	char buf[MAX_ERR_BUFFER_SIZE] = {0};
 
+	while (1) {
+		wait_for_completion_interruptible(&data_ready);
 
-	spin_lock(&msm_rpm_data.smd_lock_read);
-	while (smd_is_pkt_avail(msm_rpm_data.ch_info)) {
-		if (msm_rpm_read_smd_data(buf))
-			break;
-		msg_id = msm_rpm_get_msg_id_from_ack(buf);
-		errno = msm_rpm_get_error_from_ack(buf);
-		msm_rpm_process_ack(msg_id, errno);
+		spin_lock(&msm_rpm_data.smd_lock_read);
+		while (smd_is_pkt_avail(msm_rpm_data.ch_info)) {
+			if (msm_rpm_read_smd_data(buf))
+				break;
+			msg_id = msm_rpm_get_msg_id_from_ack(buf);
+			errno = msm_rpm_get_error_from_ack(buf);
+			msm_rpm_process_ack(msg_id, errno);
+		}
+		spin_unlock(&msm_rpm_data.smd_lock_read);
 	}
-	spin_unlock(&msm_rpm_data.smd_lock_read);
 }
 
 static void msm_rpm_log_request(struct msm_rpm_request *cdata)
