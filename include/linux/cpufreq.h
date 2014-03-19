@@ -230,6 +230,7 @@ struct cpufreq_driver {
 	unsigned int (*getavg)	(struct cpufreq_policy *policy,
                             unsigned int cpu);
 	int	(*exit)		(struct cpufreq_policy *policy);
+	void	(*stop_cpu)	(struct cpufreq_policy *policy);
 	int	(*suspend)	(struct cpufreq_policy *policy);
 	int	(*resume)	(struct cpufreq_policy *policy);
 	struct freq_attr	**attr;
