@@ -21,8 +21,6 @@ struct zcomp_strm {
 	 * working memory)
 	 */
 	void *private;
-	/* used in multi stream backend, protected by backend strm_lock */
-	struct list_head list;
 };
 
 /* static compression backend */
@@ -41,18 +39,12 @@ struct zcomp_backend {
 
 /* dynamic per-device compression frontend */
 struct zcomp {
-	void *stream;
+	struct mutex strm_lock;
+	struct zcomp_strm *zstrm;
 	struct zcomp_backend *backend;
-
-	struct zcomp_strm *(*strm_find)(struct zcomp *comp);
-	void (*strm_release)(struct zcomp *comp, struct zcomp_strm *zstrm);
-	bool (*set_max_streams)(struct zcomp *comp, int num_strm);
-	void (*destroy)(struct zcomp *comp);
 };
 
-ssize_t zcomp_available_show(const char *comp, char *buf);
-
-struct zcomp *zcomp_create(const char *comp, int max_strm);
+struct zcomp *zcomp_create(const char *comp);
 void zcomp_destroy(struct zcomp *comp);
 
 struct zcomp_strm *zcomp_strm_find(struct zcomp *comp);
@@ -63,6 +55,4 @@ int zcomp_compress(struct zcomp *comp, struct zcomp_strm *zstrm,
 
 int zcomp_decompress(struct zcomp *comp, const unsigned char *src,
 		size_t src_len, unsigned char *dst);
-
-bool zcomp_set_max_streams(struct zcomp *comp, int num_strm);
 #endif /* _ZCOMP_H_ */
