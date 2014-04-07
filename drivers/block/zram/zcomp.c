@@ -9,57 +9,18 @@
 
 #include <linux/kernel.h>
 #include <linux/string.h>
-#include <linux/err.h>
 #include <linux/slab.h>
 #include <linux/wait.h>
 #include <linux/sched.h>
 
 #include "zcomp.h"
 #include "zcomp_lzo.h"
-#ifdef CONFIG_ZRAM_LZ4_COMPRESS
-#include "zcomp_lz4.h"
-#endif
-
-/*
- * single zcomp_strm backend
- */
-struct zcomp_strm_single {
-	struct mutex strm_lock;
-	struct zcomp_strm *zstrm;
-};
-
-/*
- * multi zcomp_strm backend
- */
-struct zcomp_strm_multi {
-	/* protect strm list */
-	spinlock_t strm_lock;
-	/* max possible number of zstrm streams */
-	int max_strm;
-	/* number of available zstrm streams */
-	int avail_strm;
-	/* list of available strms */
-	struct list_head idle_strm;
-	wait_queue_head_t strm_wait;
-};
-
-static struct zcomp_backend *backends[] = {
-	&zcomp_lzo,
-#ifdef CONFIG_ZRAM_LZ4_COMPRESS
-	&zcomp_lz4,
-#endif
-	NULL
-};
 
 static struct zcomp_backend *find_backend(const char *compress)
 {
-	int i = 0;
-	while (backends[i]) {
-		if (sysfs_streq(compress, backends[i]->name))
-			break;
-		i++;
-	}
-	return backends[i];
+	if (strncmp(compress, "lzo", 3) == 0)
+		return &zcomp_lzo;
+	return NULL;
 }
 
 static void zcomp_strm_free(struct zcomp *comp, struct zcomp_strm *zstrm)
@@ -93,212 +54,15 @@ static struct zcomp_strm *zcomp_strm_alloc(struct zcomp *comp)
 	return zstrm;
 }
 
-/*
- * get idle zcomp_strm or wait until other process release
- * (zcomp_strm_release()) one for us
- */
-static struct zcomp_strm *zcomp_strm_multi_find(struct zcomp *comp)
-{
-	struct zcomp_strm_multi *zs = comp->stream;
-	struct zcomp_strm *zstrm;
-
-	while (1) {
-		spin_lock(&zs->strm_lock);
-		if (!list_empty(&zs->idle_strm)) {
-			zstrm = list_entry(zs->idle_strm.next,
-					struct zcomp_strm, list);
-			list_del(&zstrm->list);
-			spin_unlock(&zs->strm_lock);
-			return zstrm;
-		}
-		/* zstrm streams limit reached, wait for idle stream */
-		if (zs->avail_strm >= zs->max_strm) {
-			spin_unlock(&zs->strm_lock);
-			wait_event(zs->strm_wait, !list_empty(&zs->idle_strm));
-			continue;
-		}
-		/* allocate new zstrm stream */
-		zs->avail_strm++;
-		spin_unlock(&zs->strm_lock);
-
-		zstrm = zcomp_strm_alloc(comp);
-		if (!zstrm) {
-			spin_lock(&zs->strm_lock);
-			zs->avail_strm--;
-			spin_unlock(&zs->strm_lock);
-			wait_event(zs->strm_wait, !list_empty(&zs->idle_strm));
-			continue;
-		}
-		break;
-	}
-	return zstrm;
-}
-
-/* add stream back to idle list and wake up waiter or free the stream */
-static void zcomp_strm_multi_release(struct zcomp *comp, struct zcomp_strm *zstrm)
-{
-	struct zcomp_strm_multi *zs = comp->stream;
-
-	spin_lock(&zs->strm_lock);
-	if (zs->avail_strm <= zs->max_strm) {
-		list_add(&zstrm->list, &zs->idle_strm);
-		spin_unlock(&zs->strm_lock);
-		wake_up(&zs->strm_wait);
-		return;
-	}
-
-	zs->avail_strm--;
-	spin_unlock(&zs->strm_lock);
-	zcomp_strm_free(comp, zstrm);
-}
-
-/* change max_strm limit */
-static bool zcomp_strm_multi_set_max_streams(struct zcomp *comp, int num_strm)
-{
-	struct zcomp_strm_multi *zs = comp->stream;
-	struct zcomp_strm *zstrm;
-
-	spin_lock(&zs->strm_lock);
-	zs->max_strm = num_strm;
-	/*
-	 * if user has lowered the limit and there are idle streams,
-	 * immediately free as much streams (and memory) as we can.
-	 */
-	while (zs->avail_strm > num_strm && !list_empty(&zs->idle_strm)) {
-		zstrm = list_entry(zs->idle_strm.next,
-				struct zcomp_strm, list);
-		list_del(&zstrm->list);
-		zcomp_strm_free(comp, zstrm);
-		zs->avail_strm--;
-	}
-	spin_unlock(&zs->strm_lock);
-	return true;
-}
-
-static void zcomp_strm_multi_destroy(struct zcomp *comp)
-{
-	struct zcomp_strm_multi *zs = comp->stream;
-	struct zcomp_strm *zstrm;
-
-	while (!list_empty(&zs->idle_strm)) {
-		zstrm = list_entry(zs->idle_strm.next,
-				struct zcomp_strm, list);
-		list_del(&zstrm->list);
-		zcomp_strm_free(comp, zstrm);
-	}
-	kfree(zs);
-}
-
-static int zcomp_strm_multi_create(struct zcomp *comp, int max_strm)
-{
-	struct zcomp_strm *zstrm;
-	struct zcomp_strm_multi *zs;
-
-	comp->destroy = zcomp_strm_multi_destroy;
-	comp->strm_find = zcomp_strm_multi_find;
-	comp->strm_release = zcomp_strm_multi_release;
-	comp->set_max_streams = zcomp_strm_multi_set_max_streams;
-	zs = kmalloc(sizeof(struct zcomp_strm_multi), GFP_KERNEL);
-	if (!zs)
-		return -ENOMEM;
-
-	comp->stream = zs;
-	spin_lock_init(&zs->strm_lock);
-	INIT_LIST_HEAD(&zs->idle_strm);
-	init_waitqueue_head(&zs->strm_wait);
-	zs->max_strm = max_strm;
-	zs->avail_strm = 1;
-
-	zstrm = zcomp_strm_alloc(comp);
-	if (!zstrm) {
-		kfree(zs);
-		return -ENOMEM;
-	}
-	list_add(&zstrm->list, &zs->idle_strm);
-	return 0;
-}
-
-static struct zcomp_strm *zcomp_strm_single_find(struct zcomp *comp)
-{
-	struct zcomp_strm_single *zs = comp->stream;
-	mutex_lock(&zs->strm_lock);
-	return zs->zstrm;
-}
-
-static void zcomp_strm_single_release(struct zcomp *comp,
-		struct zcomp_strm *zstrm)
-{
-	struct zcomp_strm_single *zs = comp->stream;
-	mutex_unlock(&zs->strm_lock);
-}
-
-static bool zcomp_strm_single_set_max_streams(struct zcomp *comp, int num_strm)
-{
-	/* zcomp_strm_single support only max_comp_streams == 1 */
-	return false;
-}
-
-static void zcomp_strm_single_destroy(struct zcomp *comp)
-{
-	struct zcomp_strm_single *zs = comp->stream;
-	zcomp_strm_free(comp, zs->zstrm);
-	kfree(zs);
-}
-
-static int zcomp_strm_single_create(struct zcomp *comp)
-{
-	struct zcomp_strm_single *zs;
-
-	comp->destroy = zcomp_strm_single_destroy;
-	comp->strm_find = zcomp_strm_single_find;
-	comp->strm_release = zcomp_strm_single_release;
-	comp->set_max_streams = zcomp_strm_single_set_max_streams;
-	zs = kmalloc(sizeof(struct zcomp_strm_single), GFP_KERNEL);
-	if (!zs)
-		return -ENOMEM;
-
-	comp->stream = zs;
-	mutex_init(&zs->strm_lock);
-	zs->zstrm = zcomp_strm_alloc(comp);
-	if (!zs->zstrm) {
-		kfree(zs);
-		return -ENOMEM;
-	}
-	return 0;
-}
-
-/* show available compressors */
-ssize_t zcomp_available_show(const char *comp, char *buf)
-{
-	ssize_t sz = 0;
-	int i = 0;
-
-	while (backends[i]) {
-		if (sysfs_streq(comp, backends[i]->name))
-			sz += scnprintf(buf + sz, PAGE_SIZE - sz - 2,
-					"[%s] ", backends[i]->name);
-		else
-			sz += scnprintf(buf + sz, PAGE_SIZE - sz - 2,
-					"%s ", backends[i]->name);
-		i++;
-	}
-	sz += scnprintf(buf + sz, PAGE_SIZE - sz, "\n");
-	return sz;
-}
-
-bool zcomp_set_max_streams(struct zcomp *comp, int num_strm)
-{
-	return comp->set_max_streams(comp, num_strm);
-}
-
 struct zcomp_strm *zcomp_strm_find(struct zcomp *comp)
 {
-	return comp->strm_find(comp);
+	mutex_lock(&comp->strm_lock);
+	return comp->zstrm;
 }
 
 void zcomp_strm_release(struct zcomp *comp, struct zcomp_strm *zstrm)
 {
-	comp->strm_release(comp, zstrm);
+	mutex_unlock(&comp->strm_lock);
 }
 
 int zcomp_compress(struct zcomp *comp, struct zcomp_strm *zstrm,
@@ -316,38 +80,36 @@ int zcomp_decompress(struct zcomp *comp, const unsigned char *src,
 
 void zcomp_destroy(struct zcomp *comp)
 {
-	comp->destroy(comp);
+	zcomp_strm_free(comp, comp->zstrm);
 	kfree(comp);
 }
 
 /*
  * search available compressors for requested algorithm.
- * allocate new zcomp and initialize it. return compressing
- * backend pointer or ERR_PTR if things went bad. ERR_PTR(-EINVAL)
- * if requested algorithm is not supported, ERR_PTR(-ENOMEM) in
- * case of allocation error.
+ * allocate new zcomp and initialize it. return NULL
+ * if requested algorithm is not supported or in case
+ * of init error
  */
-struct zcomp *zcomp_create(const char *compress, int max_strm)
+struct zcomp *zcomp_create(const char *compress)
 {
 	struct zcomp *comp;
 	struct zcomp_backend *backend;
 
 	backend = find_backend(compress);
 	if (!backend)
-		return ERR_PTR(-EINVAL);
+		return NULL;
 
 	comp = kzalloc(sizeof(struct zcomp), GFP_KERNEL);
 	if (!comp)
-		return ERR_PTR(-ENOMEM);
+		return NULL;
 
 	comp->backend = backend;
-	if (max_strm > 1)
-		zcomp_strm_multi_create(comp, max_strm);
-	else
-		zcomp_strm_single_create(comp);
-	if (!comp->stream) {
+	mutex_init(&comp->strm_lock);
+
+	comp->zstrm = zcomp_strm_alloc(comp);
+	if (!comp->zstrm) {
 		kfree(comp);
-		return ERR_PTR(-ENOMEM);
+		return NULL;
 	}
 	return comp;
 }
