@@ -1058,7 +1058,7 @@ static void l2cap_sock_teardown_cb(struct l2cap_chan *chan, int err)
 		 */
 		if (parent) {
 			bt_accept_unlink(sk);
-			parent->sk_data_ready(parent, 0);
+			parent->sk_data_ready(parent);
 		} else {
 			sk->sk_state_change(sk);
 		}
@@ -1107,7 +1107,7 @@ static void l2cap_sock_ready_cb(struct l2cap_chan *chan)
 	sk->sk_state_change(sk);
 
 	if (parent)
-		parent->sk_data_ready(parent, 0);
+		parent->sk_data_ready(parent);
 
 	release_sock(sk);
 }
@@ -1118,7 +1118,7 @@ static void l2cap_sock_defer_cb(struct l2cap_chan *chan)
 	struct sock *parent = bt_sk(sk)->parent;
 
 	if (parent)
-		parent->sk_data_ready(parent, 0);
+		parent->sk_data_ready(parent);
 }
 
 static struct l2cap_ops l2cap_chan_ops = {
