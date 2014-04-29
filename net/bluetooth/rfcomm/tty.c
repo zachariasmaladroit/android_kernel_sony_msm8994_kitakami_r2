@@ -68,7 +68,7 @@ struct rfcomm_dev {
 };
 
 static LIST_HEAD(rfcomm_dev_list);
-static DEFINE_SPINLOCK(rfcomm_dev_lock);
+static DEFINE_MUTEX(rfcomm_dev_lock);
 
 static void rfcomm_dev_data_ready(struct rfcomm_dlc *dlc, struct sk_buff *skb);
 static void rfcomm_dev_state_change(struct rfcomm_dlc *dlc, int err);
@@ -131,7 +131,7 @@ static struct rfcomm_dev *rfcomm_dev_get(int id)
 {
 	struct rfcomm_dev *dev;
 
-	spin_lock(&rfcomm_dev_lock);
+	mutex_lock(&rfcomm_dev_lock);
 
 	dev = __rfcomm_dev_get(id);
 
@@ -142,7 +142,7 @@ static struct rfcomm_dev *rfcomm_dev_get(int id)
 			tty_port_get(&dev->port);
 	}
 
-	spin_unlock(&rfcomm_dev_lock);
+	mutex_unlock(&rfcomm_dev_lock);
 
 	return dev;
 }
@@ -190,7 +190,7 @@ static int rfcomm_dev_add(struct rfcomm_dev_req *req, struct rfcomm_dlc *dlc)
 	if (!dev)
 		return -ENOMEM;
 
-	spin_lock(&rfcomm_dev_lock);
+	mutex_lock(&rfcomm_dev_lock);
 
 	if (req->dev_id < 0) {
 		dev->id = 0;
@@ -273,7 +273,7 @@ static int rfcomm_dev_add(struct rfcomm_dev_req *req, struct rfcomm_dlc *dlc)
 	__module_get(THIS_MODULE);
 
 out:
-	spin_unlock(&rfcomm_dev_lock);
+	mutex_unlock(&rfcomm_dev_lock);
 
 	if (err < 0)
 		goto free;
@@ -462,7 +462,7 @@ static int rfcomm_get_dev_list(void __user *arg)
 
 	di = dl->dev_info;
 
-	spin_lock(&rfcomm_dev_lock);
+	mutex_lock(&rfcomm_dev_lock);
 
 	list_for_each_entry(dev, &rfcomm_dev_list, list) {
 		if (test_bit(RFCOMM_TTY_RELEASED, &dev->flags))
@@ -477,7 +477,7 @@ static int rfcomm_get_dev_list(void __user *arg)
 			break;
 	}
 
-	spin_unlock(&rfcomm_dev_lock);
+	mutex_unlock(&rfcomm_dev_lock);
 
 	dl->dev_num = n;
 	size = sizeof(*dl) + n * sizeof(*di);
