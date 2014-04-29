@@ -173,7 +173,7 @@ struct rfcomm_dlc {
 	struct sk_buff_head   tx_queue;
 	struct timer_list     timer;
 
-	spinlock_t    lock;
+	struct mutex  lock;
 	unsigned long state;
 	unsigned long flags;
 	atomic_t      refcnt;
@@ -242,8 +242,8 @@ int  rfcomm_dlc_set_modem_status(struct rfcomm_dlc *d, u8 v24_sig);
 int  rfcomm_dlc_get_modem_status(struct rfcomm_dlc *d, u8 *v24_sig);
 void rfcomm_dlc_accept(struct rfcomm_dlc *d);
 
-#define rfcomm_dlc_lock(d)     spin_lock(&d->lock)
-#define rfcomm_dlc_unlock(d)   spin_unlock(&d->lock)
+#define rfcomm_dlc_lock(d)     mutex_lock(&d->lock)
+#define rfcomm_dlc_unlock(d)   mutex_unlock(&d->lock)
 
 static inline void rfcomm_dlc_hold(struct rfcomm_dlc *d)
 {
