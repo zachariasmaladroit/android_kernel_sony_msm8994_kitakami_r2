@@ -639,6 +639,8 @@ queue_balance_callback(struct rq *rq,
 	rq->balance_callback = head;
 }
 
+extern void sched_ttwu_pending(void);
+
 #define rcu_dereference_check_sched_domain(p) \
 	rcu_dereference_check((p), \
 			      lockdep_is_held(&sched_domains_mutex))
