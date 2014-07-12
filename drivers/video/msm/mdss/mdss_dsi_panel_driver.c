@@ -36,6 +36,10 @@
 #include "mdss_mdp.h"
 #include "mdss_dsi.h"
 
+#ifdef CONFIG_POWERSUSPEND
+#include <linux/powersuspend.h>
+#endif
+
 #define DT_CMD_HDR 6
 #define MIN_REFRESH_RATE 30
 #define DEFAULT_MDP_TRANSFER_TIME 14000
@@ -1323,6 +1327,9 @@ static int mdss_dsi_panel_on(struct mdss_panel_data *pdata)
 			mdss_dsi_panel_cmds_send(ctrl_pdata, &ctrl_pdata->on_cmds,
 						CMD_REQ_COMMIT);
 			display_onoff_state = true;
+#ifdef CONFIG_POWERSUSPEND
+			set_power_suspend_state_panel_hook(POWER_SUSPEND_INACTIVE);
+#endif
 			pr_info("%s: ctrl_pdata=%p ndx=%d\n", __func__,
 				ctrl_pdata, ctrl_pdata->ndx);
 
@@ -1386,6 +1393,9 @@ static int mdss_dsi_panel_off(struct mdss_panel_data *pdata)
 			pr_info("%s: ctrl=%p ndx=%d\n",
 					__func__, ctrl, ctrl->ndx);
 			display_onoff_state = false;
+#ifdef CONFIG_POWERSUSPEND
+			set_power_suspend_state_panel_hook(POWER_SUSPEND_ACTIVE);
+#endif
 		}
 	}
 
@@ -1475,6 +1485,9 @@ static int mdss_dsi_panel_disp_on(struct mdss_panel_data *pdata)
 			mdss_dsi_panel_cmds_send(ctrl, &ctrl->on_cmds,
 						CMD_REQ_COMMIT);
 			display_onoff_state = true;
+#ifdef CONFIG_POWERSUSPEND
+			set_power_suspend_state_panel_hook(POWER_SUSPEND_INACTIVE);
+#endif
 			pr_info("%s: ctrl=%p ndx=%d\n", __func__, ctrl, ctrl->ndx);
 
 			mdss_dsi_panel_poll_worker_scheduling(ctrl);
@@ -3573,8 +3586,12 @@ int mdss_dsi_panel_init(struct device_node *node,
 		pr_info("%s:%d Continuous splash flag not found.\n",
 				__func__, __LINE__);
 		pinfo->cont_splash_enabled = 0;
-		if (pinfo->dsi_master == pinfo->pdest)
+		if (pinfo->dsi_master == pinfo->pdest) {
 			display_onoff_state = false;
+#ifdef CONFIG_POWERSUSPEND
+			set_power_suspend_state_panel_hook(POWER_SUSPEND_ACTIVE);
+#endif
+		}
 	} else {
 		pr_info("%s:%d Continuous splash flag enabled.\n",
 				__func__, __LINE__);
@@ -3582,6 +3599,9 @@ int mdss_dsi_panel_init(struct device_node *node,
 		pinfo->cont_splash_enabled = 1;
 		if (pinfo->dsi_master == pinfo->pdest) {
 			display_onoff_state = true;
+#ifdef CONFIG_POWERSUSPEND
+			set_power_suspend_state_panel_hook(POWER_SUSPEND_INACTIVE);
+#endif
 
 			if (polling->enable) {
 				intval_buf = polling->intervals;
