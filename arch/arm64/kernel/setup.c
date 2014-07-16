@@ -49,6 +49,7 @@
 #include <linux/personality.h>
 
 #include <asm/fixmap.h>
+#include <asm/cpu.h>
 #include <asm/cputype.h>
 #include <asm/elf.h>
 #include <asm/cputable.h>
@@ -244,6 +245,8 @@ static void __init setup_processor(void)
 
 	sprintf(init_utsname()->machine, ELF_PLATFORM);
 	elf_hwcap = 0;
+
+	cpuinfo_store_boot_cpu();
 
 	/*
 	 * Check for sane CTR_EL0.CWG value.
