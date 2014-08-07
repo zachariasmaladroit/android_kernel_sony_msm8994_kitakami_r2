@@ -31,6 +31,7 @@
 #include <linux/delay.h>
 #include <linux/regulator/consumer.h>
 #include <linux/delay.h>
+#include <linux/qpnp-led-rgb.h>
 
 #define WLED_MOD_EN_REG(base, n)	(base + 0x60 + n*0x10)
 #define WLED_IDAC_DLY_REG(base, n)	(WLED_MOD_EN_REG(base, n) + 0x01)
@@ -593,6 +594,9 @@ static struct pwm_device *kpdbl_master;
 static u32 kpdbl_master_period_us;
 DECLARE_BITMAP(kpdbl_leds_in_use, NUM_KPDBL_LEDS);
 static bool is_kpdbl_master_turn_on;
+static struct qpnp_led_data *led_rgb_r;
+static struct qpnp_led_data *led_rgb_g;
+static struct qpnp_led_data *led_rgb_b;
 
 static int
 qpnp_led_masked_write(struct qpnp_led_data *led, u16 addr, u8 mask, u8 val)
@@ -1977,6 +1981,29 @@ static void qpnp_led_work(struct work_struct *work)
 	__qpnp_led_work(led, led->cdev.brightness);
 
 	return;
+}
+
+void qpnp_led_rgb_set(enum rgb_color color, int brightness)
+{
+	struct qpnp_led_data *led;
+
+	switch (color) {
+	case COLOR_RED:
+		led = led_rgb_r;
+		break;
+	case COLOR_GREEN:
+		led = led_rgb_g;
+		break;
+	case COLOR_BLUE:
+		led = led_rgb_b;
+		break;
+	default:
+		pr_err("%s: Unknown LED group\n", __func__);
+		return;
+	}
+
+	led->cdev.brightness = brightness;
+	schedule_work(&led->work);
 }
 
 static int qpnp_led_set_max_brightness(struct qpnp_led_data *led)
@@ -4490,6 +4517,14 @@ static int qpnp_leds_probe(struct spmi_device *spmi)
 			dev_err(&led->spmi_dev->dev,
 				"Failure reading led name, rc = %d\n", rc);
 			goto fail_id_check;
+		}
+
+		if (sysfs_streq(led->cdev.name, "led:rgb_red")) {
+			led_rgb_r = led;
+		} else if (sysfs_streq(led->cdev.name, "led:rgb_green")) {
+			led_rgb_g = led;
+		} else if (sysfs_streq(led->cdev.name, "led:rgb_blue")) {
+			led_rgb_b = led;
 		}
 
 		rc = of_property_read_u32(temp, "qcom,max-current",
