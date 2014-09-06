@@ -16,6 +16,7 @@ generic-y += ioctls.h
 generic-y += ipcbuf.h
 generic-y += irq_regs.h
 generic-y += kdebug.h
+generic-y += irq_work.h
 generic-y += local.h
 generic-y += mcs_spinlock.h
 generic-y += msgbuf.h
