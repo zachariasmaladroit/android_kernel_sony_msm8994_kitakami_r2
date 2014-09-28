@@ -16,6 +16,8 @@
  *
  *  v1.5 - fix hybrid-kernel mode cannot be set through sysfs
  *
+ *  v1.6 - replace display pannel hooks by lcd_notify
+ *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
  * may be copied, distributed, and modified under those terms.
@@ -50,7 +52,6 @@ void register_power_suspend(struct power_suspend *handler);
 void unregister_power_suspend(struct power_suspend *handler);
 
 void set_power_suspend_state_autosleep_hook(int new_state);
-void set_power_suspend_state_panel_hook(int new_state);
 
 #endif
 

@@ -16,6 +16,8 @@
  *
  *  v1.5 - fix hybrid-kernel mode cannot be set through sysfs
  *
+ *  v1.6 - replace display pannel hooks by lcd_notify
+ *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
  * may be copied, distributed, and modified under those terms.
@@ -31,9 +33,10 @@
 #include <linux/module.h>
 #include <linux/mutex.h>
 #include <linux/workqueue.h>
+#include <linux/lcd_notify.h>
 
 #define MAJOR_VERSION	1
-#define MINOR_VERSION	5
+#define MINOR_VERSION	6
 
 //#define POWER_SUSPEND_DEBUG // Add debugging prints in dmesg
 
@@ -46,6 +49,7 @@ static void power_resume(struct work_struct *work);
 static DECLARE_WORK(power_suspend_work, power_suspend);
 static DECLARE_WORK(power_resume_work, power_resume);
 static DEFINE_SPINLOCK(state_lock);
+static struct notifier_block lcd_notifier_hook;
 
 static int state; // Yank555.lu : Current powersave state (screen on / off)
 static int mode;  // Yank555.lu : Current powersave mode  (kernel / userspace / panel / hybrid)
@@ -145,19 +149,21 @@ void set_power_suspend_state(int new_state)
 	spin_lock_irqsave(&state_lock, irqflags);
 	if (state == POWER_SUSPEND_INACTIVE && new_state == POWER_SUSPEND_ACTIVE) {
 		#ifdef POWER_SUSPEND_DEBUG
-		pr_info("[POWERSUSPEND] state activated.\n");
+		pr_info("[POWERSUSPEND] suspend state activated.\n");
 		#endif
 		state = new_state;
 		queue_work(suspend_work_queue, &power_suspend_work);
 	} else if (state == POWER_SUSPEND_ACTIVE && new_state == POWER_SUSPEND_INACTIVE) {
 		#ifdef POWER_SUSPEND_DEBUG
-		pr_info("[POWERSUSPEND] state deactivated.\n");
+		pr_info("[POWERSUSPEND] suspend state deactivated.\n");
 		#endif
 		state = new_state;
 		queue_work(suspend_work_queue, &power_resume_work);
 	}
 	spin_unlock_irqrestore(&state_lock, irqflags);
 }
+
+// Autosleep hook
 
 void set_power_suspend_state_autosleep_hook(int new_state)
 {
@@ -171,17 +177,27 @@ void set_power_suspend_state_autosleep_hook(int new_state)
 
 EXPORT_SYMBOL(set_power_suspend_state_autosleep_hook);
 
-void set_power_suspend_state_panel_hook(int new_state)
+// LCD_Notification hook
+
+static int lcd_notifier_call(struct notifier_block *this,
+				unsigned long event, void *data)
 {
 	#ifdef POWER_SUSPEND_DEBUG
-	pr_info("[POWERSUSPEND] panel resquests %s.\n", new_state == POWER_SUSPEND_ACTIVE ? "sleep" : "wakeup");
+	if (event == LCD_EVENT_ON_START || event == LCD_EVENT_OFF_START)
+		pr_info("[POWERSUSPEND] panel resquests %s.\n", event == LCD_EVENT_OFF_START ? "sleep" : "wakeup");
 	#endif
-	// Yank555.lu : Only allow autosleep hook changes in autosleep & hybrid mode
 	if (mode == POWER_SUSPEND_PANEL || mode == POWER_SUSPEND_HYBRID)
-		set_power_suspend_state(new_state);
-}
+		switch (event) {
+			case LCD_EVENT_ON_START: // early notification for resume (alt. use _END for late notification)
+				set_power_suspend_state(POWER_SUSPEND_INACTIVE);
+				break;
+			case LCD_EVENT_OFF_START: // early notification for suspend (alt. use _END for late notification)
+				set_power_suspend_state(POWER_SUSPEND_ACTIVE);
+				break;
+		}
 
-EXPORT_SYMBOL(set_power_suspend_state_panel_hook);
+	return 0;
+}
 
 // ------------------------------------------ sysfs interface ------------------------------------------
 
@@ -298,6 +314,12 @@ static int __init power_suspend_init(void)
 
 	if (suspend_work_queue == NULL) {
 		return -ENOMEM;
+	}
+
+	lcd_notifier_hook.notifier_call = lcd_notifier_call;
+	if (lcd_register_client(&lcd_notifier_hook) != 0) {
+                pr_info("%s lcd_notify hook create failed!\n", __FUNCTION__);
+                return -ENOMEM;
 	}
 
 //	mode = POWER_SUSPEND_AUTOSLEEP;	// Yank555.lu : Default to autosleep mode
