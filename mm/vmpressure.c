@@ -207,7 +207,7 @@ static bool vmpressure_event(struct vmpressure *vmpr,
 	pressure = vmpressure_calc_pressure(scanned, reclaimed);
 	level = vmpressure_level(pressure);
 
-	mutex_lock(&vmpr->events_lock);
+	spin_lock(&vmpr->events_lock);
 
 	list_for_each_entry(ev, &vmpr->events, node) {
 		if (level >= ev->level) {
@@ -227,6 +227,7 @@ static void vmpressure_work_fn(struct work_struct *work)
 	unsigned long scanned;
 	unsigned long reclaimed;
 
+	spin_lock(&vmpr->sr_lock);
 	/*
 	 * Several contexts might be calling vmpressure(), so it is
 	 * possible that the work was rescheduled again before the old
@@ -235,15 +236,16 @@ static void vmpressure_work_fn(struct work_struct *work)
 	 * here. No need for any locks here since we don't care if
 	 * vmpr->reclaimed is in sync.
 	 */
-	if (!vmpr->scanned)
-		return;
-
-	mutex_lock(&vmpr->sr_lock);
 	scanned = vmpr->scanned;
+	if (!scanned) {
+		spin_unlock(&vmpr->sr_lock);
+		return;
+	}
+
 	reclaimed = vmpr->reclaimed;
 	vmpr->scanned = 0;
 	vmpr->reclaimed = 0;
-	mutex_unlock(&vmpr->sr_lock);
+	spin_unlock(&vmpr->sr_lock);
 
 	do {
 		if (vmpressure_event(vmpr, scanned, reclaimed))
@@ -287,11 +289,11 @@ void vmpressure_memcg(gfp_t gfp, struct mem_cgroup *memcg,
 	if (!scanned)
 		return;
 
-	mutex_lock(&vmpr->sr_lock);
+	spin_lock(&vmpr->sr_lock);
 	vmpr->scanned += scanned;
 	vmpr->reclaimed += reclaimed;
 	scanned = vmpr->scanned;
-	mutex_unlock(&vmpr->sr_lock);
+	spin_unlock(&vmpr->sr_lock);
 
 	if (scanned < vmpressure_win || work_pending(&vmpr->work))
 		return;
@@ -311,7 +313,7 @@ void vmpressure_global(gfp_t gfp, unsigned long scanned,
 	if (!scanned)
 		return;
 
-	mutex_lock(&vmpr->sr_lock);
+	spin_lock(&vmpr->sr_lock);
 	vmpr->scanned += scanned;
 	vmpr->reclaimed += reclaimed;
 
@@ -321,16 +323,16 @@ void vmpressure_global(gfp_t gfp, unsigned long scanned,
 	stall = vmpr->stall;
 	scanned = vmpr->scanned;
 	reclaimed = vmpr->reclaimed;
-	mutex_unlock(&vmpr->sr_lock);
+	spin_unlock(&vmpr->sr_lock);
 
 	if (scanned < vmpressure_win)
 		return;
 
-	mutex_lock(&vmpr->sr_lock);
+	spin_lock(&vmpr->sr_lock);
 	vmpr->scanned = 0;
 	vmpr->reclaimed = 0;
 	vmpr->stall = 0;
-	mutex_unlock(&vmpr->sr_lock);
+	spin_unlock(&vmpr->sr_lock);
 
 	pressure = vmpressure_calc_pressure(scanned, reclaimed);
 	pressure = vmpressure_account_stall(pressure, stall, scanned);
@@ -431,7 +433,7 @@ int vmpressure_register_event(struct cgroup *cg, struct cftype *cft,
 	ev->efd = eventfd;
 	ev->level = level;
 
-	mutex_lock(&vmpr->events_lock);
+	spin_lock(&vmpr->events_lock);
 	list_add(&ev->node, &vmpr->events);
 	mutex_unlock(&vmpr->events_lock);
 
@@ -461,7 +463,7 @@ void vmpressure_unregister_event(struct cgroup *cg, struct cftype *cft,
 	if (!vmpr)
 		BUG();
 
-	mutex_lock(&vmpr->events_lock);
+	spin_lock(&vmpr->events_lock);
 	list_for_each_entry(ev, &vmpr->events, node) {
 		if (ev->efd != eventfd)
 			continue;
@@ -497,7 +499,7 @@ void vmpressure_cleanup(struct vmpressure *vmpr)
  */
 void vmpressure_init(struct vmpressure *vmpr)
 {
-	mutex_init(&vmpr->sr_lock);
+	spin_lock_init(&vmpr->sr_lock);
 	mutex_init(&vmpr->events_lock);
 	INIT_LIST_HEAD(&vmpr->events);
 	INIT_WORK(&vmpr->work, vmpressure_work_fn);
