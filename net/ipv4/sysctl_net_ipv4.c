@@ -789,11 +789,11 @@ static struct ctl_table ipv4_table[] = {
 		.extra2		= &gso_max_segs,
 	},
 	{
-		.procname       = "tcp_default_init_rwnd",
-		.data           = &sysctl_tcp_default_init_rwnd,
-		.maxlen         = sizeof(int),
-		.mode           = 0644,
-		.proc_handler   = proc_tcp_default_init_rwnd
+		.procname	= "tcp_invalid_ratelimit",
+		.data		= &sysctl_tcp_invalid_ratelimit,
+		.maxlen		= sizeof(int),
+		.mode		= 0644,
+		.proc_handler	= proc_dointvec_ms_jiffies,
 	},
 	{
 		.procname	= "udp_mem",
