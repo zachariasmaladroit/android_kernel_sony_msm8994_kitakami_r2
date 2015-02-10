@@ -187,6 +187,7 @@ struct bcl_context {
 	struct bcl_threshold vbat_high_thresh;
 	struct bcl_threshold vbat_low_thresh;
 	uint32_t bcl_p_freq_max;
+	struct workqueue_struct *bcl_hotplug_wq;
 };
 
 enum bcl_threshold_state {
@@ -396,7 +397,7 @@ static void power_supply_callback(struct power_supply *psy)
 		if (bcl_soc_state == prev_soc_state)
 			return;
 		if (bcl_hotplug_enabled)
-			schedule_work(&bcl_hotplug_work);
+			queue_work(gbcl->bcl_hotplug_wq, &bcl_hotplug_work);
 		update_cpu_freq();
 	}
 }
@@ -515,7 +516,7 @@ static void bcl_iavail_work(struct work_struct *work)
 static void bcl_ibat_notify(enum bcl_threshold_state thresh_type)
 {
 	if (bcl_hotplug_enabled)
-		schedule_work(&bcl_hotplug_work);
+		queue_work(gbcl->bcl_hotplug_wq, &bcl_hotplug_work);
 	bcl_ibat_state = thresh_type;
 	update_cpu_freq();
 }
@@ -523,7 +524,7 @@ static void bcl_ibat_notify(enum bcl_threshold_state thresh_type)
 static void bcl_vph_notify(enum bcl_threshold_state thresh_type)
 {
 	if (bcl_hotplug_enabled)
-		schedule_work(&bcl_hotplug_work);
+		queue_work(gbcl->bcl_hotplug_wq, &bcl_hotplug_work);
 	bcl_vph_state = thresh_type;
 	update_cpu_freq();
 }
@@ -1822,7 +1823,6 @@ static int bcl_probe(struct platform_device *pdev)
 
 	if (ret == -EPROBE_DEFER)
 		return ret;
-
 	ret = create_bcl_sysfs(bcl);
 	if (ret < 0) {
 		pr_err("Cannot create bcl sysfs\n");
@@ -1835,6 +1835,16 @@ static int bcl_probe(struct platform_device *pdev)
 	bcl_psy.set_property     = bcl_battery_set_property;
 	bcl_psy.num_properties = 0;
 	bcl_psy.external_power_changed = power_supply_callback;
+	ret = power_supply_register(&pdev->dev, &bcl_psy);
+	if (ret < 0) {
+		pr_err("Unable to register bcl_psy rc = %d\n", ret);
+		return ret;
+	}
+	bcl->bcl_hotplug_wq = alloc_workqueue("bcl_hotplug_wq",  WQ_HIGHPRI, 0);
+	if (!bcl->bcl_hotplug_wq) {
+		pr_err("Workqueue alloc failed\n");
+		return -ENOMEM;
+	}
 
 	gbcl = bcl;
 	platform_set_drvdata(pdev, bcl);
@@ -1851,6 +1861,8 @@ static int bcl_probe(struct platform_device *pdev)
 static int bcl_remove(struct platform_device *pdev)
 {
 	remove_bcl_sysfs(gbcl);
+	if (gbcl->bcl_hotplug_wq)
+		destroy_workqueue(gbcl->bcl_hotplug_wq);
 	platform_set_drvdata(pdev, NULL);
 	return 0;
 }
