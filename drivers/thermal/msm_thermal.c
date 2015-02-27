@@ -47,6 +47,7 @@
 #include <linux/suspend.h>
 #include <soc/qcom/msm-core.h>
 #include <linux/cpumask.h>
+#include <linux/qpnp/power-on.h>
 #include <linux/suspend.h>
 
 #define CREATE_TRACE_POINTS
