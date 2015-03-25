@@ -1417,13 +1417,9 @@ static void run_timer_softirq(struct softirq_action *h)
 	hrtimer_run_pending();
 
 #ifdef CONFIG_SMP
-	if (time_after_eq(jiffies, tvec_base_deferral->timer_jiffies)) {
-		if ((atomic_cmpxchg(&deferrable_pending, 1, 0) &&
-			tick_do_timer_cpu == TICK_DO_TIMER_NONE) ||
-			tick_do_timer_cpu == smp_processor_id())
-				__run_timers(tvec_base_deferral);
-
-	}
+	if (smp_processor_id() == tick_do_timer_cpu &&
+	    time_after_eq(jiffies, tvec_base_deferral->timer_jiffies))
+		__run_timers(tvec_base_deferral);
 #endif
 
 	if (time_after_eq(jiffies, base->timer_jiffies))
