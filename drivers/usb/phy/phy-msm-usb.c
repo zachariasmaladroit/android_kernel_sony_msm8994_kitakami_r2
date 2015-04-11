@@ -5281,6 +5281,8 @@ static int msm_otg_probe(struct platform_device *pdev)
 	motg->pdata = pdata;
 	phy = &motg->phy;
 	phy->dev = &pdev->dev;
+	motg->dbg_idx = 0;
+	motg->dbg_lock = __RW_LOCK_UNLOCKED(lck);
 
 	if (motg->pdata->bus_scale_table) {
 		motg->bus_perf_client =
