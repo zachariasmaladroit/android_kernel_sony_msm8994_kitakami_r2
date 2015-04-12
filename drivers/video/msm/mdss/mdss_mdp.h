@@ -905,6 +905,7 @@ static inline uint8_t pp_vig_csc_pipe_val(struct mdss_mdp_pipe *pipe)
 irqreturn_t mdss_mdp_isr(int irq, void *ptr);
 int mdss_iommu_attach(struct mdss_data_type *mdata);
 int mdss_iommu_dettach(struct mdss_data_type *mdata);
+int mdss_mdp_enable_idle_pc(struct mdss_data_type *mdata);
 void mdss_mdp_irq_clear(struct mdss_data_type *mdata,
 		u32 intr_type, u32 intf_num);
 int mdss_mdp_irq_enable(u32 intr_type, u32 intf_num);
