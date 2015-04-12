@@ -1234,6 +1234,18 @@ int mdss_iommu_init(struct mdss_data_type *mdata)
 	return 0;
 }
 
+int mdss_mdp_enable_idle_pc(struct mdss_data_type *mdata)
+{
+	if (mdata->enable_idle_pc)
+		pm_runtime_use_autosuspend(&mdata->pdev->dev);
+	else
+		pm_runtime_dont_use_autosuspend(&mdata->pdev->dev);
+
+	mdata->idle_pc_enabled = mdata->enable_idle_pc;
+
+	return 0;
+}
+
 static void mdss_debug_enable_clock(int on)
 {
 	if (on)
@@ -2908,6 +2920,7 @@ static int mdss_mdp_parse_dt_misc(struct platform_device *pdev)
 		 "qcom,mdss-has-fixed-qos-arbiter-enabled");
 	mdata->idle_pc_enabled = of_property_read_bool(pdev->dev.of_node,
 		 "qcom,mdss-idle-power-collapse-enabled");
+	mdata->enable_idle_pc = mdata->idle_pc_enabled,
 
 	prop = of_find_property(pdev->dev.of_node, "batfet-supply", NULL);
 	mdata->batfet_required = prop ? true : false;
