@@ -483,6 +483,10 @@ static void wakeup_source_activate(struct wakeup_source *ws)
 	if (!enable_bluesleep_ws && !strcmp(ws->name, "bluesleep"))
 		return;
 
+	if (WARN(wakeup_source_not_registered(ws),
+			"unregistered wakeup source\n"))
+		return;
+
 	/*
 	 * active wakeup source should bring the system
 	 * out of PM_SUSPEND_FREEZE state
