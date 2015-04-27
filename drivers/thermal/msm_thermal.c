@@ -62,6 +62,7 @@
 #define MSM_TSENS_PRINT  "log_tsens_temperature"
 #define CPU_BUF_SIZE 64
 #define CPU_DEVICE "cpu%d"
+#define HOTPLUG_RETRY_INTERVAL_MS 100
 
 #define POLLING_DELAY 100
 
@@ -86,7 +87,7 @@ module_param(temp_threshold, int, 0755);
 } while (0)
 
 static struct msm_thermal_data msm_thermal_info;
-static struct delayed_work check_temp_work;
+static struct delayed_work check_temp_work, retry_hotplug_work;
 static bool core_control_enabled;
 static uint32_t cpus_offlined;
 static cpumask_var_t cpus_previously_online;
@@ -137,6 +138,7 @@ static bool therm_reset_enabled;
 static bool online_core;
 static bool cluster_info_probed;
 static bool cluster_info_nodes_called;
+static bool in_suspend, retry_in_progress;
 static int *tsens_id_map;
 static DEFINE_MUTEX(vdd_rstr_mutex);
 static DEFINE_MUTEX(psm_mutex);
@@ -538,11 +540,15 @@ static int msm_thermal_suspend_callback(
 	case PM_HIBERNATION_PREPARE:
 	case PM_SUSPEND_PREPARE:
 		msm_thermal_update_freq(false, true);
+		in_suspend = true;
+		retry_in_progress = false;
+		cancel_delayed_work_sync(&retry_hotplug_work);
 		break;
 
 	case PM_POST_HIBERNATION:
 	case PM_POST_SUSPEND:
 		msm_thermal_update_freq(false, false);
+		in_suspend = false;
 		if (hotplug_task)
 			complete(&hotplug_notify_complete);
 		else
@@ -2452,6 +2458,17 @@ static void therm_reset_notify(struct therm_threshold *thresh_data)
 					thresh_data->threshold);
 }
 
+static void retry_hotplug(struct work_struct *work)
+{
+	mutex_lock(&core_control_mutex);
+	if (retry_in_progress) {
+		pr_debug("Retrying hotplug\n");
+		retry_in_progress = false;
+		complete(&hotplug_notify_complete);
+	}
+	mutex_unlock(&core_control_mutex);
+}
+
 #ifdef CONFIG_SMP
 static void __ref do_core_control(long temp)
 {
@@ -2520,6 +2537,7 @@ static int __ref update_offline_cores(int val)
 	uint32_t cpu = 0;
 	int ret = 0;
 	uint32_t previous_cpus_offlined = 0;
+	bool pend_hotplug_req = false;
 
 	if (!core_control_enabled)
 		return 0;
@@ -2533,11 +2551,14 @@ static int __ref update_offline_cores(int val)
 				continue;
 			trace_thermal_pre_core_offline(cpu);
 			ret = cpu_down(cpu);
-			if (ret)
-				pr_err("Unable to offline CPU%d. err:%d\n",
+			if (ret) {
+				pr_err_ratelimited(
+					"Unable to offline CPU%d. err:%d\n",
 					cpu, ret);
-			else
+				pend_hotplug_req = true;
+			} else {
 				pr_debug("Offlined CPU%d\n", cpu);
+			}
 			trace_thermal_post_core_offline(cpu,
 				cpumask_test_cpu(cpu, cpu_online_mask));
 		} else if (online_core && (previous_cpus_offlined & BIT(cpu))) {
@@ -2553,7 +2574,9 @@ static int __ref update_offline_cores(int val)
 				pr_debug("Onlining CPU%d is vetoed\n", cpu);
 			} else if (ret) {
 				cpus_offlined |= BIT(cpu);
-				pr_err("Unable to online CPU%d. err:%d\n",
+				pend_hotplug_req = true;
+				pr_err_ratelimited(
+					"Unable to online CPU%d. err:%d\n",
 					cpu, ret);
 			} else {
 				pr_debug("Onlined CPU%d\n", cpu);
@@ -2562,6 +2585,13 @@ static int __ref update_offline_cores(int val)
 				cpumask_test_cpu(cpu, cpu_online_mask));
 		}
 	}
+
+	if (pend_hotplug_req && !in_suspend && !retry_in_progress) {
+		retry_in_progress = true;
+		schedule_delayed_work(&retry_hotplug_work,
+			msecs_to_jiffies(HOTPLUG_RETRY_INTERVAL_MS));
+	}
+
 	return ret;
 }
 
@@ -4658,6 +4688,7 @@ int msm_thermal_init(struct msm_thermal_data *pdata)
 
 	register_reboot_notifier(&msm_thermal_reboot_notifier);
 	pm_notifier(msm_thermal_suspend_callback, 0);
+	INIT_DELAYED_WORK(&retry_hotplug_work, retry_hotplug);
 	INIT_DELAYED_WORK(&check_temp_work, check_temp);
 	schedule_delayed_work(&check_temp_work, 0);
 
