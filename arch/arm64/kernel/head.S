@@ -34,6 +34,7 @@
 #include <asm/pgtable.h>
 #include <asm/page.h>
 #include <asm/virt.h>
+#include "sp-adj-macros.S"
 
 #ifdef CONFIG_KEXEC_HARDBOOT
 #include <asm/kexec.h>
@@ -716,6 +717,7 @@ cpu_resume_after_mmu:
 	ldp	x25, x26, [sp, #64]
 	ldp	x27, x28, [sp, #80]
 	ldp	x29, lr, [sp], #96
+	restore_sp_from_page1 x3
 	ret
 ENDPROC(cpu_resume_after_mmu)
 
