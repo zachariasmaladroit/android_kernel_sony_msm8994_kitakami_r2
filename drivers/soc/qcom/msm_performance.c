@@ -1935,6 +1935,40 @@ static int init_events_group(void)
 	return 0;
 }
 
+static int init_events_group(void)
+{
+	int ret;
+	struct kobject *module_kobj;
+
+	module_kobj = kset_find_obj(module_kset, KBUILD_MODNAME);
+	if (!module_kobj) {
+		pr_err("msm_perf: Couldn't find module kobject\n");
+		return -ENOENT;
+	}
+
+	events_kobj = kobject_create_and_add("events", module_kobj);
+	if (!events_kobj) {
+		pr_err("msm_perf: Failed to add events_kobj\n");
+		return -ENOMEM;
+	}
+
+	ret = sysfs_create_group(events_kobj, &events_attr_group);
+	if (ret) {
+		pr_err("msm_perf: Failed to create sysfs\n");
+		return ret;
+	}
+
+	spin_lock_init(&(events_group.cpu_hotplug_lock));
+	events_notify_thread = kthread_run(events_notify_userspace,
+					NULL, "msm_perf:events_notify");
+	if (IS_ERR(events_notify_thread))
+		return PTR_ERR(events_notify_thread);
+
+	events_group.init_success = true;
+
+	return 0;
+}
+
 static int __init msm_performance_init(void)
 {
 	unsigned int cpu;
