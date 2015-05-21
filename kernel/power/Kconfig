@@ -328,8 +328,13 @@ config WAKEUP_IRQ_DEBUG
 	  This enables debug information about wakeup interrupts using
 	  sysfs (/sys/kernel/).
 
+config DEDUCE_WAKEUP_REASONS
+	bool
+	default n
+
 config PARTIALRESUME
 	bool "Partial-resume framework"
+	select DEDUCE_WAKEUP_REASONS
 	---help---
 	  Provides hooks for drivers to register partial-resume handlers.
 	  Similar to suspend_again support already in kernel, except that it
@@ -338,3 +343,4 @@ config PARTIALRESUME
 	  Partial resume will occur only if all wakeup sources have
 	  partial-resume handlers associated with them, and they all return
 	  true.
+
