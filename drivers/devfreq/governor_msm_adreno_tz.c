@@ -20,6 +20,7 @@
 #include <linux/ftrace.h>
 #include <linux/mm.h>
 #include <linux/msm_adreno_devfreq.h>
+#include <linux/state_notifier.h>
 #include <asm/cacheflush.h>
 #include <soc/qcom/scm.h>
 #include "governor.h"
@@ -62,6 +63,9 @@ static DEFINE_SPINLOCK(suspend_lock);
 #define TZ_V2_INIT_ID_64           0xB
 
 #define TAG "msm_adreno_tz: "
+
+/* Boolean to detect if pm has entered suspend mode */
+static bool suspended = false;
 
 static u64 suspend_time;
 static u64 suspend_start;
@@ -292,6 +296,16 @@ static int tz_get_target_freq(struct devfreq *devfreq, unsigned long *freq,
 	}
 
 	*freq = stats.current_frequency;
+
+	/*
+	 * Force to use & record as min freq when system has
+	 * entered pm-suspend or screen-off state.
+	 */
+	if (suspended || state_suspended) {
+		*freq = devfreq->profile->freq_table[devfreq->profile->max_state - 1];
+		return 0;
+	}
+
 	priv->bin.total_time += stats.total_time;
 	priv->bin.busy_time += stats.busy_time;
 
@@ -472,15 +486,34 @@ static int tz_stop(struct devfreq *devfreq)
 	return 0;
 }
 
+static int tz_resume(struct devfreq *devfreq)
+{
+	struct devfreq_dev_profile *profile = devfreq->profile;
+	unsigned long freq;
+
+	suspended = false;
+
+	freq = profile->initial_freq;
+
+	return profile->target(devfreq->dev.parent, &freq, 0);
+}
+
 static int tz_suspend(struct devfreq *devfreq)
 {
 	struct devfreq_msm_adreno_tz_data *priv = devfreq->data;
+	struct devfreq_dev_profile *profile = devfreq->profile;
+	unsigned long freq;
 	unsigned int scm_data[2] = {0, 0};
+
+	suspended = true;
 	__secure_tz_reset_entry2(scm_data, sizeof(scm_data), priv->is_64);
 
 	priv->bin.total_time = 0;
 	priv->bin.busy_time = 0;
-	return 0;
+
+	freq = profile->freq_table[profile->max_state - 1];
+
+	return profile->target(devfreq->dev.parent, &freq, 0);
 }
 
 static int tz_handler(struct devfreq *devfreq, unsigned int event, void *data)
@@ -520,11 +553,14 @@ static int tz_handler(struct devfreq *devfreq, unsigned int event, void *data)
 		break;
 
 	case DEVFREQ_GOV_RESUME:
-		spin_lock(&suspend_lock);
-		suspend_time += suspend_time_ms();
-		/* Reset the suspend_start when gpu resumes */
-		suspend_start = 0;
-		spin_unlock(&suspend_lock);
+		result = tz_resume(devfreq);
+		if (!result) {
+			spin_lock(&suspend_lock);
+			suspend_time += suspend_time_ms();
+			/* Reset the suspend_start when gpu resumes */
+			suspend_start = 0;
+			spin_unlock(&suspend_lock);
+		}
 		break;
 
 	case DEVFREQ_GOV_INTERVAL:
