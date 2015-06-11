@@ -6068,6 +6068,8 @@ static int qseecom_probe(struct platform_device *pdev)
 				goto exit_deinit_clock;
 			}
 		}
+		if(qseecom.appsbl_qseecom_support)
+			qseecom.commonlib_loaded = true;
 	} else {
 		qseecom_platform_support = (struct msm_bus_scale_pdata *)
 						pdev->dev.platform_data;
