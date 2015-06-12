@@ -890,7 +890,6 @@ static int ntrig_input_configured(struct hid_device *hid,
 							"N-Trig MultiTouch";
 		break;
 	}
-
 	return 0;
 }
 
