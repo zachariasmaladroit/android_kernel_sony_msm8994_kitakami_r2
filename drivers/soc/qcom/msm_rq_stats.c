@@ -53,6 +53,22 @@ struct cpu_load_data {
 
 static DEFINE_PER_CPU(struct cpu_load_data, cpuload);
 
+unsigned int get_rq_info(void)
+{
+	unsigned long flags = 0;
+	unsigned int rq = 0;
+
+	spin_lock_irqsave(&rq_lock, flags);
+
+	rq = rq_info.rq_avg;
+	rq_info.rq_avg = 0;
+
+	spin_unlock_irqrestore(&rq_lock, flags);
+
+	return rq;
+}
+EXPORT_SYMBOL(get_rq_info);
+
 
 static int update_average_load(unsigned int freq, unsigned int cpu)
 {
