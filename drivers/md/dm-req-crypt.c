@@ -1153,6 +1153,12 @@ static int req_crypt_ctr(struct dm_target *ti, unsigned int argc, char **argv)
 		}
 	}
 
+	if (encryption_mode != DM_REQ_CRYPT_ENCRYPTION_MODE_TRANSPARENT) {
+		bdev = dev->bdev;
+		q = bdev_get_queue(bdev);
+		blk_queue_max_hw_sectors(q, DM_REQ_CRYPT_QUEUE_SIZE);
+	}
+
 	req_crypt_queue = alloc_workqueue("req_cryptd",
 					WQ_UNBOUND |
 					WQ_CPU_INTENSIVE |
