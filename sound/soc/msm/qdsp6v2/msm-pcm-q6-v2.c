@@ -37,6 +37,7 @@
 
 #include "msm-pcm-q6-v2.h"
 #include "msm-pcm-routing-v2.h"
+#include <linux/ratelimit.h>
 
 enum stream_state {
 	IDLE = 0,
@@ -501,6 +502,7 @@ static int msm_pcm_open(struct snd_pcm_substream *substream)
 	struct msm_audio *prtd;
 	unsigned int be_id = soc_prtd->dai_link->be_id;
 	int ret = 0;
+	static DEFINE_RATELIMIT_STATE(rl, HZ/2, 1);
 
 	prtd = kzalloc(sizeof(struct msm_audio), GFP_KERNEL);
 	if (prtd == NULL) {
@@ -511,7 +513,8 @@ static int msm_pcm_open(struct snd_pcm_substream *substream)
 	prtd->audio_client = q6asm_audio_client_alloc(
 				(app_cb)event_handler, prtd);
 	if (!prtd->audio_client) {
-		pr_info("%s: Could not allocate memory\n", __func__);
+		if (__ratelimit(&rl))
+			pr_err("%s: Could not allocate memory\n", __func__);
 		kfree(prtd);
 		return -ENOMEM;
 	}
