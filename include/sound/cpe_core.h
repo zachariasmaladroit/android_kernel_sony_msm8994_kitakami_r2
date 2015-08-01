@@ -68,6 +68,7 @@ struct wcd_cpe_lsm_lab {
 	struct wcd_cpe_data_pcm_buf *pcm_buf;
 	wait_queue_head_t period_wait;
 	struct completion thread_complete;
+	bool is_lab_enabled;
 };
 
 struct cpe_lsm_session {
