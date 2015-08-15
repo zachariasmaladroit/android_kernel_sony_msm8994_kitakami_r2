@@ -40,6 +40,10 @@
 #define PON_MASK(MSB_BIT, LSB_BIT) \
 	CREATE_MASK(MSB_BIT - LSB_BIT + 1, LSB_BIT)
 
+#ifdef CONFIG_WAKE_GESTURES
+#include <linux/wake_gestures.h>
+#endif
+
 #define PMIC_VER_8941           0x01
 #define PMIC_VERSION_REG        0x0105
 #define PMIC_VERSION_REV4_REG   0x0103
@@ -1477,6 +1481,12 @@ static int qpnp_pon_config_init(struct qpnp_pon *pon)
 				"Can't register pon key: %d\n", rc);
 			goto free_input_dev;
 		}
+#ifdef CONFIG_WAKE_GESTURES
+		else {
+			 wg_setdev(pon->pon_input);
+			 printk(KERN_INFO "[sweep2wake]: set device %s\n", pon->pon_input->name);
+		}
+#endif
 	}
 
 	for (i = 0; i < pon->num_pon_config; i++) {
