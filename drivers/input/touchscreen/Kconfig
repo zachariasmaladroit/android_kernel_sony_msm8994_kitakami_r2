@@ -1094,4 +1094,8 @@ config INPUT_MT_WRAPPER
 
 	  If unsure, say N.
 
+config WAKE_GESTURES
+	default y
+    bool "Wake Gestures"
+
 endif
