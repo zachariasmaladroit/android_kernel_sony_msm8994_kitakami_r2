@@ -667,7 +667,6 @@ config AMSS_ERR_LOG
 	  dump. Data in last_amss log is not available once it is read.
 	  If unsure, say N
 
-
 config MSM_PERFORMANCE_HOTPLUG_ON
         bool "Hotplug functionality through msm_performance turned on"
         depends on MSM_PERFORMANCE
@@ -677,6 +676,14 @@ config MSM_PERFORMANCE_HOTPLUG_ON
 	  capability of msm_performance driver. Setting this flag to false will
           compile out the nodes needed for core-control functionality through
           msm_performance.
+	  
+config MSM_HOTPLUG
+	bool "MSM hotplug driver"
+	depends on HOTPLUG_CPU
+	default y
+	help
+	  The MSM hotplug driver controls on-/offlining of additional cores based
+	  on current cpu load.
 
 source "drivers/soc/qcom/memshare/Kconfig"
 
