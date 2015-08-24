@@ -650,6 +650,10 @@ config BRICKED_HOTPLUG
 	help
 	 This enables kernel based multi core control.
 	  
+config STATE_NOTIFIER
+        bool "State Notifier"
+	default y
+
 config MSM_HOTPLUG
 	bool "MSM hotplug driver"
 	depends on HOTPLUG_CPU
