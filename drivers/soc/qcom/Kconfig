@@ -659,6 +659,10 @@ config KERNEL_TEXT_MPU_PROT
 	  all masters; Write access is only permited to the
 	  secure world.
 
+config STATE_NOTIFIER
+        bool "State Notifier"
+	default y
+
 config AMSS_ERR_LOG
 	bool "support last amss log"
 	help
