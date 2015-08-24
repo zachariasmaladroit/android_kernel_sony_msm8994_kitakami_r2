@@ -99,3 +99,4 @@ obj-$(CONFIG_ARCH_MSM8994) += board-ramdump.o
 obj-$(CONFIG_AMSS_ERR_LOG) += last_amsslog.o
 obj-$(CONFIG_ARCH_MSM8994) += console_setup.o
 obj-$(CONFIG_BRICKED_HOTPLUG) += bricked_hotplug.o
+obj-$(CONFIG_MSM_HOTPLUG) += msm_hotplug.o
