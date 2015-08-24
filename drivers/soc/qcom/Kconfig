@@ -677,6 +677,10 @@ config MSM_PERFORMANCE_HOTPLUG_ON
           compile out the nodes needed for core-control functionality through
           msm_performance.
 	  
+config STATE_NOTIFIER
+        bool "State Notifier"
+	default y
+
 config MSM_HOTPLUG
 	bool "MSM hotplug driver"
 	depends on HOTPLUG_CPU
