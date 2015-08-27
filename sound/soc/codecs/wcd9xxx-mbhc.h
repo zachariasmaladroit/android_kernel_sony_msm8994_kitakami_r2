@@ -439,6 +439,8 @@ struct wcd9xxx_mbhc {
 	struct mutex impedl_lock;
 	struct mutex impedr_lock;
 	struct mutex mclk_lock;
+
+	bool force_linein;
 };
 
 #define WCD9XXX_MBHC_CAL_SIZE(buttons, rload) ( \
