@@ -217,6 +217,7 @@ static int prepare_tsc_input_device(uint16_t ind,
 		__func__,
 		input_info->req_buttons_bitmap,
 		max_buttons_bitmap);
+		input_free_device(in_dev);
 		return -EINVAL;
 	}
 
