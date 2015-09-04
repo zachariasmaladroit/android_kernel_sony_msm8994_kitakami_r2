@@ -525,6 +525,7 @@ extern char bcm_wlan_ver_info[BCM_WLAN_CRASH_REASON_LEN];
 #ifdef PNO_SUPPORT
 int dhd_pno_clean(dhd_pub_t *dhd);
 #endif /* PNO_SUPPORT */
+
 /*
  *  Wake locks are an Android power management concept. They are used by applications and services
  *  to request CPU resources.
