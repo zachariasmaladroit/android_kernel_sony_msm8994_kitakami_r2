@@ -159,16 +159,18 @@ static void s2s_input_event(struct input_handle *handle, unsigned int type,
 		release_count++;
 	}
 
+	if (code == ABS_MT_TRACKING_ID) {
+		release_count = 0;
+	}
+
 	if (code == ABS_MT_POSITION_X) {
 		touch_x = value;
 		touch_x_called = true;
-		release_count = 0;
 	}
 
 	if (code == ABS_MT_POSITION_Y) {
 		touch_y = value;
 		touch_y_called = true;
-		release_count = 0;
 	}
 
 	if (release_count == 2){
