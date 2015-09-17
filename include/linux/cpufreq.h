@@ -520,4 +520,7 @@ int cpufreq_stats_get_max_state(int cpu);
 void update_freq_table(unsigned int* freq_table, int cpu,
 		       unsigned int max_state);
 #endif
+
+struct sched_domain;
+unsigned long cpufreq_scale_freq_capacity(struct sched_domain *sd, int cpu);
 #endif /* _LINUX_CPUFREQ_H */
