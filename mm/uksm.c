@@ -4710,6 +4710,10 @@ void uksm_control(unsigned int state)
 	// is uksm really enabled (via sysfs)?
 	if (uksm_run_saved) {
 		
+		// do we already have what we want?
+		if (uksm_run == state)
+			return;
+		
 		// uksm is enabled, but do we want it on or off now?
 		mutex_lock(&uksm_thread_mutex);
 		if (uksm_run != state) {
