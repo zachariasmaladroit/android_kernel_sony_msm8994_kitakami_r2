@@ -2493,7 +2493,7 @@ static int clearpad_set_normal_mode(struct clearpad_t *this)
 		rc = clearpad_set_cover_status(this);
 
 	this->active |= SYN_ACTIVE_POWER;
-	dev_info(&this->pdev->dev, "normal mode OK\n");
+	dev_dbg(&this->pdev->dev, "normal mode OK\n");
 exit:
 	return rc;
 }
@@ -2557,7 +2557,7 @@ static int clearpad_set_suspend_mode(struct clearpad_t *this)
 	}
 
 	this->active &= ~SYN_ACTIVE_POWER;
-	dev_info(&this->pdev->dev, "suspend mode OK\n");
+	dev_dbg(&this->pdev->dev, "suspend mode OK\n");
 exit:
 	return rc;
 }
@@ -2576,7 +2576,7 @@ static int clearpad_set_power(struct clearpad_t *this)
 		 this->input->users,
 		 !!(active & SYN_STANDBY));
 
-	dev_info(&this->pdev->dev, "%s: state=%s\n", __func__,
+	dev_dbg(&this->pdev->dev, "%s: state=%s\n", __func__,
 		 clearpad_state_name[this->state]);
 	should_wake = !(active & SYN_STANDBY);
 
@@ -2585,7 +2585,7 @@ static int clearpad_set_power(struct clearpad_t *this)
 	else if (!should_wake && (active & SYN_ACTIVE_POWER))
 		rc = clearpad_set_suspend_mode(this);
 	else
-		dev_info(&this->pdev->dev, "no change (%d)\n", should_wake);
+		dev_dbg(&this->pdev->dev, "no change (%d)\n", should_wake);
 
 	if (rc)
 		clearpad_reset_power(this, __func__);
@@ -3372,7 +3372,7 @@ static int clearpad_process_irq(struct clearpad_t *this)
 
 	rc = 0;
 
-	dev_info(&this->pdev->dev, "no work, interrupt=[0x%02x]\n", interrupt);
+	dev_dbg(&this->pdev->dev, "no work, interrupt=[0x%02x]\n", interrupt);
 unlock:
 	if (rc) {
 		dev_err(&this->pdev->dev, "%s: error %d\n", __func__, rc);
@@ -4668,8 +4668,9 @@ static int clearpad_pm_suspend(struct device *dev)
 
 	if (device_may_wakeup(dev)) {
 		enable_irq_wake(this->irq);
-		dev_info(&this->pdev->dev, "enable irq wake");
+		dev_dbg(&this->pdev->dev, "enable irq wake");
 	}
+
 	return 0;
 }
 
@@ -4682,7 +4683,7 @@ static int clearpad_pm_resume(struct device *dev)
 
 	if (device_may_wakeup(dev)) {
 		disable_irq_wake(this->irq);
-		dev_info(&this->pdev->dev, "disable irq wake");
+		dev_dbg(&this->pdev->dev, "disable irq wake");
 	}
 
 	spin_lock_irqsave(&this->slock, flags);
