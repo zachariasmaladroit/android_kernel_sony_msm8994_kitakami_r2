@@ -6068,6 +6068,7 @@ static int dev_cpu_callback(struct notifier_block *nfb,
 	if (action != CPU_DEAD && action != CPU_DEAD_FROZEN)
 		return NOTIFY_OK;
 
+
 	local_irq_disable();
 	cpu = smp_processor_id();
 	sd = &per_cpu(softnet_data, cpu);
