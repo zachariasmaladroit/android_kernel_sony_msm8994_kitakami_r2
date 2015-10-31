@@ -73,5 +73,13 @@ config MHL_SIMG_SONY
 	uses USB connector to output HDMI content.
 	This driver is specific to Sony boards (Xperia).
 
+config FB_MSM_MDSS_KCAL_CTRL
+	depends on FB_MSM_MDSS
+	bool "MDSS color control"
+	default y
+	---help---
+	  Enable sysfs for rgb/lut control for mdss-mdp display controllers
+	  in the MDSS sub-system.
+
 source "drivers/video/msm/mdss/somc_panel/Kconfig"
 source "drivers/video/msm/mdss/mhl_simg_sony/Kconfig"
