@@ -1870,13 +1870,9 @@ static int _mmc_suspend(struct mmc_host *host, bool is_suspend)
 	if (!mmc_try_claim_host(host))
 		return -EBUSY;
 
-	/*
-	 * Disable clock scaling before suspend and enable it after resume so
-	 * as to avoid clock scaling decisions kicking in during this window.
-	 */
-	mmc_disable_clk_scaling(host);
-
 	err = mmc_cache_ctrl(host, 0);
+//=======
+//	err = mmc_flush_cache(host->card);
 	if (err)
 		goto out;
 
