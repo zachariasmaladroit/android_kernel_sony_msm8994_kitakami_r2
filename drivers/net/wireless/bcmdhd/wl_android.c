@@ -1158,11 +1158,13 @@ int wl_android_wifi_on(struct net_device *dev)
 			DHD_ERROR(("\nfailed to power up wifi chip, max retry reached **\n\n"));
 			goto exit;
 		}
-#ifdef BCMSDIO
+#if defined(BCMSDIO) || defined(BCMPCIE)
 		ret = dhd_net_bus_devreset(dev, FALSE);
-		dhd_net_bus_resume(dev, 1);
+#ifdef BCMSDIO
+		if (!ret)
+			dhd_net_bus_resume(dev, 1);
 #endif /* BCMSDIO */
-
+#endif /* BCMSDIO || BCMPCIE */
 #ifndef BCMPCIE
 		if (!ret) {
 			if (dhd_dev_init_ioctl(dev) < 0)
