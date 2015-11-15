@@ -629,9 +629,10 @@ static int cpufreq_interactive_speedchange_task(void *data)
 				continue;
 			}
 
+			max_freq = ppol->target_freq;
 			if (unlikely(!mdss_screen_on))
-				if (ppol->target_freq > screen_off_max) max_freq = screen_off_max;
-			else max_freq = ppol->target_freq;
+				if (ppol->target_freq > screen_off_max) 
+					max_freq = screen_off_max;
 
 			if (ppol->target_freq != ppol->policy->cur)
 				__cpufreq_driver_target(ppol->policy,
