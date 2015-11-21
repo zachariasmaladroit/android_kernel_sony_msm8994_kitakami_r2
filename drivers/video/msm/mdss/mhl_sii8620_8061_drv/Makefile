@@ -1,3 +1,9 @@
+# Base MHL drivers for platform glue
+obj-y += mhl_platform_base.o
+obj-y += mhl_platform_power.o
+obj-y += mhl_platform.o
+obj-y += mhl_platform_i2c.o
+
 # MHL SII8620/SII8061 chip support
 obj-y += mhl_sii8620_8061_device.o mhl_sii8620_device_edid.o
 obj-y += mhl_driver.o mhl_tx.o mhl_tx_rcp.o
