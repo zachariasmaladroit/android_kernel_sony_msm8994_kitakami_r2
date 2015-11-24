@@ -1,3 +1,5 @@
+CFLAGS_KERNEL := -fno-unsafe-math-optimizations -fno-strict-aliasing
+
 obj-y = base.o
 obj-y += cmdline_helper.o
 obj-$(CONFIG_OF_FLATTREE) += fdt.o
