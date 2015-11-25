@@ -18,11 +18,14 @@
 #include <linux/module.h>
 #include <linux/kobject.h>
 #include <linux/sysfs.h>
-#include <linux/powersuspend.h>
 #include <linux/mutex.h>
 #include <linux/notifier.h>
 #include <linux/reboot.h>
 #include <linux/writeback.h>
+
+#ifdef CONFIG_STATE_NOTIFIER
+#include <linux/state_notifier.h>
+#endif
 
 #define DYN_FSYNC_VERSION_MAJOR 2
 #define DYN_FSYNC_VERSION_MINOR 0
@@ -31,6 +34,13 @@ static DEFINE_MUTEX(fsync_mutex);
 
 bool power_suspend_active __read_mostly = true;
 bool dyn_fsync_active __read_mostly = true;
+
+#ifdef CONFIG_STATE_NOTIFIER
+static void dyn_fsync_power_suspend(void);
+static void dyn_fsync_resume(void);
+#endif
+
+static struct notifier_block notif;
 
 static ssize_t dyn_fsync_active_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
@@ -74,15 +84,15 @@ static ssize_t dyn_fsync_powersuspend_show(struct kobject *kobj,
 	return sprintf(buf, "power suspend active: %u\n", power_suspend_active);
 }
 
-static struct kobj_attribute dyn_fsync_active_attribute = 
+static struct kobj_attribute dyn_fsync_active_attribute =
 	__ATTR(Dyn_fsync_active, 0666,
 		dyn_fsync_active_show,
 		dyn_fsync_active_store);
 
-static struct kobj_attribute dyn_fsync_version_attribute = 
+static struct kobj_attribute dyn_fsync_version_attribute =
 	__ATTR(Dyn_fsync_version, 0444, dyn_fsync_version_show, NULL);
 
-static struct kobj_attribute dyn_fsync_powersuspend_attribute = 
+static struct kobj_attribute dyn_fsync_powersuspend_attribute =
 	__ATTR(Dyn_fsync_powersuspend, 0444, dyn_fsync_powersuspend_show, NULL);
 
 static struct attribute *dyn_fsync_active_attrs[] =
@@ -108,7 +118,28 @@ static void dyn_fsync_force_flush(void)
 	sync_filesystems(1);
 }
 
-static void dyn_fsync_power_suspend(struct power_suspend *h)
+#ifdef CONFIG_STATE_NOTIFIER
+static int state_notifier_callback(struct notifier_block *this,
+				unsigned long event, void *data)
+{
+	if (dyn_fsync_active == 0)
+		return NOTIFY_OK;
+
+	switch (event) {
+		case STATE_NOTIFIER_ACTIVE:
+			dyn_fsync_resume();
+			break;
+		case STATE_NOTIFIER_SUSPEND:
+			dyn_fsync_power_suspend();
+			break;
+		default:
+			break;
+	}
+
+	return NOTIFY_OK;
+}
+
+static void dyn_fsync_power_suspend()
 {
 	mutex_lock(&fsync_mutex);
 	if (dyn_fsync_active) {
@@ -118,18 +149,14 @@ static void dyn_fsync_power_suspend(struct power_suspend *h)
 	mutex_unlock(&fsync_mutex);
 }
 
-static void dyn_fsync_resume(struct power_suspend *h)
+static void dyn_fsync_resume()
 {
 	mutex_lock(&fsync_mutex);
 	power_suspend_active = false;
 	mutex_unlock(&fsync_mutex);
 }
 
-static struct power_suspend dyn_fsync_power_suspend_handler = 
-	{
-		.suspend = dyn_fsync_power_suspend,
-		.resume = dyn_fsync_resume,
-	};
+#endif
 
 static int dyn_fsync_panic_event(struct notifier_block *this,
 		unsigned long event, void *ptr)
@@ -165,7 +192,13 @@ static int dyn_fsync_init(void)
 {
 	int sysfs_result;
 
-	register_power_suspend(&dyn_fsync_power_suspend_handler);
+#ifdef CONFIG_STATE_NOTIFIER
+	notif.notifier_call = state_notifier_callback;
+	if (state_register_client(&notif)) {
+		pr_err("Dynamic Fsync: Failed to register State notifier callback\n");
+		return -ENOMEM;
+	}
+#endif
 	register_reboot_notifier(&dyn_fsync_notifier);
 	atomic_notifier_chain_register(&panic_notifier_list,
 		&dyn_fsync_panic_block);
@@ -188,7 +221,10 @@ static int dyn_fsync_init(void)
 
 static void dyn_fsync_exit(void)
 {
-	unregister_power_suspend(&dyn_fsync_power_suspend_handler);
+#ifdef CONFIG_STATE_NOTIFIER
+	state_unregister_client(&notif);
+#endif
+
 	unregister_reboot_notifier(&dyn_fsync_notifier);
 	atomic_notifier_chain_unregister(&panic_notifier_list,
 		&dyn_fsync_panic_block);
