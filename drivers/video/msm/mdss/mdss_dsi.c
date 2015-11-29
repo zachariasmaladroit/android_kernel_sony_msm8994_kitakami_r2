@@ -28,6 +28,7 @@
 #include <linux/regulator/consumer.h>
 #include <linux/leds-qpnp-wled.h>
 #include <linux/clk.h>
+#include <linux/lcd_notify.h>
 #ifdef CONFIG_FB_MSM_MDSS_SPECIFIC_PANEL
 #include <linux/regulator/qpnp-labibb-regulator.h>
 #endif /* CONFIG_FB_MSM_MDSS_SPECIFIC_PANEL */
