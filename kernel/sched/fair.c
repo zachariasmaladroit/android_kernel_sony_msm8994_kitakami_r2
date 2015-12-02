@@ -2414,6 +2414,12 @@ static inline void __update_cfs_rq_tg_load_contrib(struct cfs_rq *cfs_rq,
 	if (!tg_contrib)
 		return;
 
+	/*
+	 * No need to update load_avg for root_task_group as it is not used.
+	 */
+	if (cfs_rq->tg == &root_task_group)
+		return;
+
 	if (force_update || abs(tg_contrib) > cfs_rq->tg_load_contrib / 8) {
 		atomic_long_add(tg_contrib, &tg->load_avg);
 		cfs_rq->tg_load_contrib += tg_contrib;
