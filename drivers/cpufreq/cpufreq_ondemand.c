@@ -299,9 +299,6 @@ static void update_sampling_rate(struct dbs_data *dbs_data,
 		dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
 		cpufreq_cpu_put(policy);
 
-		if (!delayed_work_pending(&dbs_info->cdbs.work))
-			continue;
-
 		next_sampling = jiffies + usecs_to_jiffies(new_rate);
 		appointed_at = dbs_info->cdbs.work.timer.expires;
 
