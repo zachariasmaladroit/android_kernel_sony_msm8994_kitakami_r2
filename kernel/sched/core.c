@@ -1605,7 +1605,7 @@ void scheduler_ipi(void)
 	 */
 	preempt_fold_need_resched();
 
-	if (llist_empty(&this_rq()->wake_list) && !got_nohz_idle_kick()) {
+	if (llist_empty_relaxed(&this_rq()->wake_list) && !got_nohz_idle_kick()) {
 #ifdef CONFIG_MTPROF
 		mt_trace_ISR_start(IPI_RESCHEDULE);
 		mt_trace_ISR_end(IPI_RESCHEDULE);
@@ -1748,7 +1748,7 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	 * this task as prev, wait until its done referencing the task.
 	 */
 	while (p->on_cpu)
-		cpu_relax();
+		cpu_read_relax();
 	/*
 	 * Pairs with the smp_wmb() in finish_lock_switch().
 	 */
@@ -3407,7 +3407,7 @@ int idle_cpu(int cpu)
 		return 0;
 
 #ifdef CONFIG_SMP
-	if (!llist_empty(&rq->wake_list))
+	if (!llist_empty_relaxed(&rq->wake_list))
 		return 0;
 #endif
 
@@ -4481,7 +4481,7 @@ int __cond_resched_lock(spinlock_t *lock)
 		if (resched)
 			__cond_resched();
 		else
-			cpu_relax();
+			cpu_read_relax();
 		ret = 1;
 		spin_lock(lock);
 	}
