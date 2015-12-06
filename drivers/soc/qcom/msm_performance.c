@@ -27,6 +27,9 @@
 #include <linux/kthread.h>
 
 static unsigned int use_input_evts_with_hi_slvt_detect;
+
+static int touchboost = 1;
+
 static struct mutex managed_cpus_lock;
 
 
@@ -188,6 +191,29 @@ static struct input_handler *handler;
 
 
 /**************************sysfs start********************************/
+
+static int set_touchboost(const char *buf, const struct kernel_param *kp)
+{
+	int val;
+
+	if (sscanf(buf, "%d\n", &val) != 1)
+		return -EINVAL;
+
+	touchboost = val;
+
+	return 0;
+}
+
+static int get_touchboost(char *buf, const struct kernel_param *kp)
+{
+	return snprintf(buf, PAGE_SIZE, "%d", touchboost);
+}
+
+static const struct kernel_param_ops param_ops_touchboost = {
+	.set = set_touchboost,
+	.get = get_touchboost,
+};
+device_param_cb(touchboost, &param_ops_touchboost, NULL, 0644);
 
 static int set_num_clusters(const char *buf, const struct kernel_param *kp)
 {
