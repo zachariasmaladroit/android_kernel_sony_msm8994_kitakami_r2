@@ -86,7 +86,7 @@ struct cpufreq_impulse_tunables {
 #define HISPEED_FREQ 960000;
 	unsigned int hispeed_freq;
 	/* Go to hi speed when CPU load at or above this value. */
-#define DEFAULT_GO_HISPEED_LOAD 95
+#define DEFAULT_GO_HISPEED_LOAD 90
 	unsigned long go_hispeed_load;
 /* Go to lowest speed when CPU load at or below this value. */
 #define DEFAULT_GO_LOWSPEED_LOAD 10
@@ -130,7 +130,9 @@ struct cpufreq_impulse_tunables {
 	bool io_is_busy;
 
 	/* scheduler input related flags */
+#define DEFAULT_USE_SCHED_LOAD 1
 	bool use_sched_load;
+#define DEFAULT_USE_MIGRATION_NOTIF 1
 	bool use_migration_notif;
 
 	/*
@@ -1532,6 +1534,8 @@ static struct cpufreq_impulse_tunables *alloc_tunable(
 	tunables->timer_slack_val = DEFAULT_TIMER_SLACK;
 	tunables->io_is_busy = DEFAULT_IO_IS_BUSY;
 	tunables->max_freq_hysteresis = DEFAULT_MAX_FREQ_HYSTERESIS;
+	tunables->use_sched_load = DEFAULT_USE_SCHED_LOAD;
+	tunables->use_migration_notif = DEFAULT_USE_MIGRATION_NOTIF;
 
 	spin_lock_init(&tunables->target_loads_lock);
 	spin_lock_init(&tunables->above_hispeed_delay_lock);
