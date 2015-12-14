@@ -37,6 +37,13 @@
 #define CREATE_TRACE_POINTS
 #include <trace/events/cpufreq_flash.h>
 
+//extern bool mdss_screen_on;
+
+#ifndef TJK_HMP
+ATOMIC_NOTIFIER_HEAD(migration_notifier_head);
+ATOMIC_NOTIFIER_HEAD(load_alert_notifier_head);
+#endif
+
 struct cpufreq_flash_policyinfo {
 	struct timer_list policy_timer;
 	struct timer_list policy_slack_timer;
