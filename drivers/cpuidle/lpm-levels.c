@@ -709,7 +709,7 @@ static int lpm_cpuidle_enter(struct cpuidle_device *dev,
 	struct power_params *pwr_params;
 
 	pwr_params = &cluster->cpu->levels[idx].pwr;
-	sched_set_cpu_cstate(smp_processor_id(), idx + 1,
+	sched_set_cpu_cstate(smp_processor_id(), idx + 1, &drv->states[idx+1],
 		pwr_params->energy_overhead, pwr_params->latency_us);
 
 	cpu_prepare(cluster, idx, true);
@@ -736,7 +736,7 @@ exit:
 	cluster_unprepare(cluster, cpumask, idx, true);
 	cpu_unprepare(cluster, idx, true);
 
-	sched_set_cpu_cstate(smp_processor_id(), 0, 0, 0);
+	sched_set_cpu_cstate(smp_processor_id(), 0, &drv->states[0], 0, 0);
 	trace_cpu_idle_exit(idx, success);
 	end_time = ktime_to_ns(ktime_get()) - start_time;
 	dev->last_residency = do_div(end_time, 1000);
