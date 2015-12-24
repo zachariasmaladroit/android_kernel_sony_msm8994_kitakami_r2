@@ -669,9 +669,9 @@ config AMSS_ERR_LOG
 
 config INTELLI_PLUG
     bool "Enable intelli-plug cpu hotplug driver"
-    default
+    default y
 	help
-	Generic Intelli-plug cpu hotplug driver for ARM SOCs
+	  Generic Intelli-plug cpu hotplug driver for ARM SOCs.
 
 source "drivers/soc/qcom/memshare/Kconfig"
 
