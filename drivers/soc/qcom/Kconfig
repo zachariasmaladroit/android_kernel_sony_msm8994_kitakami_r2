@@ -685,15 +685,6 @@ config MSM_HOTPLUG
 	  The MSM hotplug driver controls on-/offlining of additional cores based
 	  on current cpu load.
 
-config AMSS_ERR_LOG
-	bool "support last amss log"
-	help
-	  when ever there is modem fatal, Export amss error log as last_amss
-	  log in procfs. last_amss is export in both system dump and sub-system
-	  dump. Data in last_amss log is not available once it is read.
-	  If unsure, say N
-
-
 config MSM_PERFORMANCE_HOTPLUG_ON
         bool "Hotplug functionality through msm_performance turned on"
         depends on MSM_PERFORMANCE
@@ -703,6 +694,20 @@ config MSM_PERFORMANCE_HOTPLUG_ON
 	  capability of msm_performance driver. Setting this flag to false will
           compile out the nodes needed for core-control functionality through
           msm_performance.
+
+config INTELLI_PLUG
+    bool "Enable intelli-plug cpu hotplug driver"
+    default y
+	help
+	Generic Intelli-plug cpu hotplug driver for ARM SOCs.
+
+config AMSS_ERR_LOG
+	bool "support last amss log"
+	help
+	  when ever there is modem fatal, Export amss error log as last_amss
+	  log in procfs. last_amss is export in both system dump and sub-system
+	  dump. Data in last_amss log is not available once it is read.
+	  If unsure, say N
 
 source "drivers/soc/qcom/memshare/Kconfig"
 
