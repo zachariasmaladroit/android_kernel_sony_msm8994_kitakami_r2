@@ -91,6 +91,7 @@ obj-$(CONFIG_BRICKED_HOTPLUG) += bricked_hotplug.o
 obj-$(CONFIG_STATE_NOTIFIER)		+= state_notifier.o
 obj-$(CONFIG_MSM_LIMITER) += msm_limiter.o
 obj-$(CONFIG_MSM_HOTPLUG) += msm_hotplug.o
+obj-$(CONFIG_INTELLI_PLUG) +=intelli_plug.o
 
 obj-$(CONFIG_RAMDUMP_TAGS) += board-rdtags.o
 obj-$(CONFIG_SONY_SSM) += sony_ssm.o
