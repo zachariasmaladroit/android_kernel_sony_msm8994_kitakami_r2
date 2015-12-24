@@ -685,6 +685,12 @@ config MSM_HOTPLUG
 	  The MSM hotplug driver controls on-/offlining of additional cores based
 	  on current cpu load.
 
+config INTELLI_PLUG
+    bool "Enable intelli-plug cpu hotplug driver"
+    default y
+	help
+	Generic Intelli-plug cpu hotplug driver for ARM SOCs.
+
 config MSM_PERFORMANCE_HOTPLUG_ON
         bool "Hotplug functionality through msm_performance turned on"
         depends on MSM_PERFORMANCE
