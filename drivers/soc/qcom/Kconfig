@@ -667,6 +667,12 @@ config AMSS_ERR_LOG
 	  dump. Data in last_amss log is not available once it is read.
 	  If unsure, say N
 
+config INTELLI_PLUG
+    bool "Enable intelli-plug cpu hotplug driver"
+    default
+	help
+	Generic Intelli-plug cpu hotplug driver for ARM SOCs
+
 source "drivers/soc/qcom/memshare/Kconfig"
 
 endif # ARCH_MSM
