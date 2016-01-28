@@ -31,6 +31,7 @@
 #include <linux/err.h>
 #include <linux/string.h>
 #include <linux/regulator/consumer.h>
+#include <linux/display_state.h>
 
 #include "mdss_mdp.h"
 #include "mdss_dsi.h"
@@ -108,6 +109,11 @@ enum {
 
 #define QPNP_REGULATOR_VSP_V_5P4V	5400000
 #define QPNP_REGULATOR_VSN_V_M5P4V	5400000
+
+bool is_display_on()
+{
+	return display_onoff_state;
+}
 
 static int __init lcdid_adc_setup(char *str)
 {
