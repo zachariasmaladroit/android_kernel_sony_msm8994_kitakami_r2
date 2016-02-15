@@ -26,6 +26,9 @@
 #include <linux/gpio.h>
 #include <linux/err.h>
 #include <linux/regulator/consumer.h>
+#ifdef CONFIG_STATE_NOTIFIER
+#include <linux/state_notifier.h>
+#endif
 #include <linux/leds-qpnp-wled.h>
 #include <linux/clk.h>
 #ifdef CONFIG_FB_MSM_MDSS_SPECIFIC_PANEL
