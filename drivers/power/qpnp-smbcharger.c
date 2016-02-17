@@ -42,6 +42,7 @@
 #include <linux/of_batterydata.h>
 #include <linux/msm_bcl.h>
 #include <linux/ktime.h>
+#include <linux/qpnp-led-rgb.h>
 
 #ifdef CONFIG_QPNP_SMBCHARGER_EXTENSION
 #include "qpnp-smbcharger_extension.h"
@@ -774,6 +775,12 @@ static void read_usb_type(struct smbchg_chip *chip, char **usb_type_name,
 }
 #endif
 
+static void show_chg_done(void)
+{
+	qpnp_led_rgb_set(COLOR_GREEN, 255);
+	qpnp_led_rgb_set(COLOR_BLUE, 255);
+}
+
 #define CHGR_STS			0x0E
 #define BATT_LESS_THAN_2V		BIT(4)
 #define CHG_HOLD_OFF_BIT		BIT(3)
@@ -821,8 +828,11 @@ static int get_prop_batt_status(struct smbchg_chip *chip)
 		return POWER_SUPPLY_STATUS_UNKNOWN;
 	}
 
-	if (reg & BAT_TCC_REACHED_BIT)
+	if (reg & BAT_TCC_REACHED_BIT) {
+		/* Switch LED color to cyan */
+		show_chg_done();
 		return POWER_SUPPLY_STATUS_FULL;
+	}
 
 	chg_inhibit = reg & CHG_INHIBIT_BIT;
 	if (chg_inhibit)
