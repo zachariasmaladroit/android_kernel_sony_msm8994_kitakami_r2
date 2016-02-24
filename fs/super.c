@@ -53,6 +53,7 @@ static char *sb_writers_name[SB_FREEZE_LEVELS] = {
  * shrinker path and that leads to deadlock on the shrinker_rwsem. Hence we
  * take a passive reference to the superblock to avoid this from occurring.
  */
+#define SB_CACHE_LOW 5
 static int prune_super(struct shrinker *shrink, struct shrink_control *sc)
 {
 	struct super_block *sb;
@@ -66,6 +67,13 @@ static int prune_super(struct shrinker *shrink, struct shrink_control *sc)
 	 * to recurse into the FS that called us in clear_inode() and friends..
 	 */
 	if (sc->nr_to_scan && !(sc->gfp_mask & __GFP_FS))
+		return -1;
+
+	/*
+	 * Don't prune if we have few cached objects to reclaim to
+	 * avoid useless sb_lock contention
+	 */
+	if ((sb->s_nr_dentry_unused + sb->s_nr_inodes_unused) <= SB_CACHE_LOW)
 		return -1;
 
 	if (!grab_super_passive(sb))
