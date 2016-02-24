@@ -20,6 +20,32 @@
 #include <linux/syscalls.h>
 #include <linux/file.h>
 
+unsigned long max_readahead_pages = VM_MAX_READAHEAD * 1024 / PAGE_CACHE_SIZE;
+
+static int __init readahead(char *str)
+{
+	unsigned long bytes;
+	if (!str)
+	return -EINVAL;
+	bytes = memparse(str, &str);
+	if (*str != '\0')
+	return -EINVAL;
+
+	if (bytes) {
+		if (bytes < PAGE_CACHE_SIZE)	/* missed 'k'/'m' suffixes? */
+		return -EINVAL;
+
+		if (bytes > 256 << 20)	/* limit to 256MB */
+		bytes = 256 << 20;
+	}
+
+	max_readahead_pages = bytes / PAGE_CACHE_SIZE;
+	default_backing_dev_info.ra_pages = max_readahead_pages;
+	return 0;
+}
+
+early_param("readahead", readahead);
+
 /*
  * Initialise a struct file's readahead state.  Assumes that the caller has
  * memset *ra to zero.
@@ -161,6 +187,9 @@ __do_page_cache_readahead(struct address_space *mapping, struct file *filp,
 	int page_idx;
 	int ret = 0;
 	loff_t isize = i_size_read(inode);
+#ifdef CONFIG_SCFS_LOWER_PAGECACHE_INVALIDATION
+	//struct scfs_sb_info *sbi;
+#endif
 
 	if (isize == 0)
 		goto out;
@@ -185,10 +214,17 @@ __do_page_cache_readahead(struct address_space *mapping, struct file *filp,
 		page = page_cache_alloc_readahead(mapping);
 		if (!page)
 			break;
+
+#ifdef CONFIG_SCFS_LOWER_PAGECACHE_INVALIDATION
+		/*
+		   if (filp->f_flags & O_SCFSLOWER) {
+		   sbi = ;
+		   sbi->scfs_lowerpage_alloc_count++;
+		   }
+		 */
+#endif
+
 		page->index = page_offset;
-
-		page->flags |= (1L << PG_readahead);
-
 		list_add(&page->lru, &page_pool);
 		if (page_idx == nr_to_read - lookahead_size)
 			SetPageReadahead(page);
@@ -266,8 +302,6 @@ unsigned long ra_submit(struct file_ra_state *ra,
 
 /*
  * Set the initial window size, round to next power of 2 and square
- * Small size is not dependant on max value - only a one-page read is regarded
- * as small.
  * for small size, x 4 for medium, and x 2 for large
  * for 128k (32 page) max ra
  * 1-8 page = 32k initial, > 8 page = 128k initial
@@ -379,7 +413,7 @@ static int try_context_readahead(struct address_space *mapping,
 	 * no history pages:
 	 * it could be a random read
 	 */
-	if (!size)
+	if (!size <= req_size)
 		return 0;
 
 	/*
@@ -390,8 +424,8 @@ static int try_context_readahead(struct address_space *mapping,
 		size *= 2;
 
 	ra->start = offset;
-	ra->size = get_init_ra_size(size + req_size, max);
-	ra->async_size = ra->size;
+	ra->size = min(size + req_size, max);
+	ra->async_size = 1;
 
 	return 1;
 }
