@@ -239,10 +239,16 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 	  else if [ -x /bin/bash ]; then echo /bin/bash; \
 	  else echo sh; fi ; fi)
 
+GRAPHITE = -fgraphite -fgraphite-identity -floop-interchange -ftree-loop-distribution -floop-strip-mine -floop-block -ftree-loop-linear
+SPACEBALLS = -fdevirtualize-speculatively -ftree-loop-distribution -fgraphite-identity -fira-loop-pressure -fsched-pressure -fschedule-insns -fno-tree-reassoc -ftracer -fweb -fsched2-use-superblocks -fivopts -fpredictive-commoning -fgcse-after-reload -ftree-loop-im -funswitch-loops -ftree-loop-ivcanon -fvariable-expansion-in-unroller -fsplit-ivs-in-unroller -fgcse -fgcse-las -fgcse-sm -fvect-cost-model -ftree-partial-pre -fno-aggressive-loop-optimizations
+MODULATION = -fmodulo-sched-allow-regmoves -freschedule-modulo-scheduled-loops -fmodulo-sched
+CCACHESPEED = -fdirectives-only
+
 HOSTCC       = ccache gcc
 HOSTCXX      = ccache g++
-HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89
-HOSTCXXFLAGS = -O2
+HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -pipe -DNDEBUG $(SPACEBALLS) $(MODULATION) $(CCACHESPEED)
+HOSTCXXFLAGS = -O2 -pipe -DNDEBUG $(SPACEBALLS) $(MODULATION) $(CCACHESPEED)
+# -std=gnu89
 
 # Decide whether to build built-in, modular, or both.
 # Normally, just do built-in.
@@ -374,7 +380,10 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
 		   -fno-delete-null-pointer-checks \
-		   -std=gnu89
+		   -fdevirtualize-speculatively -ftree-loop-distribution -fgraphite-identity -fira-loop-pressure -fsched-pressure -fschedule-insns -fno-tree-reassoc -ftracer -fweb -fsched2-use-superblocks -fivopts -fpredictive-commoning -fgcse-after-reload -ftree-loop-im -funswitch-loops -ftree-loop-ivcanon -fvariable-expansion-in-unroller -fsplit-ivs-in-unroller -fgcse -fgcse-las -fgcse-sm -fmodulo-sched-allow-regmoves -freschedule-modulo-scheduled-loops -fmodulo-sched -fvect-cost-model -ftree-partial-pre \
+		   -fno-aggressive-loop-optimizations \
+		   -mcpu=cortex-a57.cortex-a53 -mtune=cortex-a57.cortex-a53
+#		   -std=gnu89
 
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
