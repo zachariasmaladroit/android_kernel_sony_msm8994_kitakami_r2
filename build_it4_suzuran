@@ -1,5 +1,9 @@
 ### GCC 4.9.x
 
+export USE_CCACHE=1
+
+export CACHE_DIR=~/.ccache
+
 if [ ! -e ./arch/arm/boot/dts/msm8994-v1-kitakami_suzuran_generic.dtb ]; then
 rm ./arch/arm/boot/dts/*.dtb
 fi
@@ -36,7 +40,7 @@ then
 ### Zip boot.img
 cd ../final_files/
 mv boot_E5823.img boot.img
-zip -r Z5C_AndroPlusKernel_v.zip boot.img META-INF/
+zip -r Z5C_Sunkernel_v.zip boot.img META-INF/
 rm -f boot.img
 
 ### Version number
@@ -47,6 +51,6 @@ echo " "
 echo "Copying to z5-kernelbuild"
 echo " "
 
-cp ~/android/final_files/Z5C_AndroPlusKernel_Enforcing_v.zip ~/android/z5-kernelbuild/Z5C_AndroPlusKernel_Enforcing_v$version.zip
+cp ~/android/final_files/Z5C_Sunkernel_Enforcing_v.zip ~/android/z5-kernelbuild/Z5C_Sunkernel_Enforcing_v$version.zip
 
 fi

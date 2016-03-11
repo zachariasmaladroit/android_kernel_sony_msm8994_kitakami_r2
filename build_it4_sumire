@@ -1,6 +1,10 @@
 ### GCC 4.9.x
 ### I'm using UBERTC https://bitbucket.org/UBERTC/aarch64-linux-android-4.9-kernel
 
+export USE_CCACHE=1
+
+export CACHE_DIR=~/.ccache
+
 if [ ! -e ./arch/arm/boot/dts/msm8994-v1-kitakami_sumire_generic.dtb ]; then
 rm ./arch/arm/boot/dts/*.dtb
 fi
@@ -47,14 +51,14 @@ then
 ### Zip boot.img
 cd ../final_files/
 mv boot_E6653.img boot.img
-zip -r Z5_AP-mod-Sunkernel_Permissive_v.zip boot.img META-INF/
+zip -r Z5_Sunkernel_Permissive_v.zip boot.img META-INF/
 rm -f boot.img
 
 echo " "
 echo "Copying to z5-kernelbuild"
 echo " "
 
-cp ~/android/final_files/Z5_AP-mod-Sunkernel_Permissive_v.zip ~/android/z5-kernelbuild/Z5_AP-mod-Sunkernel_Permissive_v$version.zip
+cp ~/android/final_files/Z5_Sunkernel_Permissive_v.zip ~/android/z5-kernelbuild/Z5_Sunkernel_Permissive_v$version.zip
 
 echo "Packaging 'Enforcing' kernel"
 echo " "
@@ -66,13 +70,13 @@ then
 ### Zip boot.img
 cd ../final_files/
 mv boot_E6653_E.img boot.img
-zip -r Z5_AP-mod-Sunkernel_Enforcing_v.zip boot.img META-INF/
+zip -r Z5_Sunkernel_Enforcing_v.zip boot.img META-INF/
 rm -f boot.img
 
 echo " "
 echo "Copying to z5-kernelbuild"
 echo " "
 
-cp ~/android/final_files/Z5_AP-mod-Sunkernel_Enforcing_v.zip ~/android/z5-kernelbuild/Z5_AP-mod-Sunkernel_Enforcing_v$version.zip
+cp ~/android/final_files/Z5_Sunkernel_Enforcing_v.zip ~/android/z5-kernelbuild/Z5_Sunkernel_Enforcing_v$version.zip
 
 fi
