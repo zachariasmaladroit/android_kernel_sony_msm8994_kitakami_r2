@@ -37,9 +37,6 @@
 #include <linux/string.h>
 #include <linux/vmalloc.h>
 #include <linux/err.h>
-#ifdef CONFIG_STATE_NOTIFIER
-#include <linux/state_notifier.h>
-#endif
 
 #include "zram_drv.h"
 
@@ -50,10 +47,6 @@ static const char *default_compressor = "lzo";
 
 /* Module params (documentation at end) */
 static unsigned int num_devices = 1;
-
-#ifdef CONFIG_STATE_NOTIFIER
-static struct notifier_block notif;
-#endif
 
 #define ZRAM_ATTR_RO(name)						\
 static ssize_t name##_show(struct device *d,		\
@@ -780,52 +773,6 @@ static void zram_reset_device(struct zram *zram, bool reset_capacity)
 		revalidate_disk(zram->disk);
 }
 
-#ifdef CONFIG_STATE_NOTIFIER
-static void zram_compact(struct zram *zram)
-{
-	if (!down_read_trylock(&zram->init_lock))
-		return;
-
-	if (init_done(zram)) {
-		struct zram_meta *meta = zram->meta;
-		u64 data_size, new_size;
-
-		data_size = atomic64_read(&zram->stats.compr_data_size);
-
-		zs_compact(meta->mem_pool);
-
-		new_size = atomic64_read(&zram->stats.compr_data_size);
-		if (new_size < data_size)
-			pr_info("%s compacted. Saved %llu kb.\n", zram->disk->disk_name,
-			(unsigned long long)(data_size - new_size));
-	}
-	up_read(&zram->init_lock);
-}
-
-static int zram_compact_cb(int id, void *ptr, void *data)
-{
-	zram_compact(ptr);
-	return 0;
-}
-
-static int state_notifier_callback(struct notifier_block *this,
-				unsigned long event, void *data)
-{
-	if (!num_devices)
-		return NOTIFY_OK;
-
-	switch (event) {
-		case STATE_NOTIFIER_SUSPEND:
-			idr_for_each(&zram_index_idr, &zram_compact_cb, NULL);
-			break;
-		default:
-			break;
-	}
-
-	return NOTIFY_OK;
-}
-#endif
-
 static ssize_t disksize_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t len)
 {
@@ -1198,11 +1145,6 @@ static int __init zram_init(void)
 
 	pr_info("Created %u device(s) ...\n", num_devices);
 
-#ifdef CONFIG_STATE_NOTIFIER
-	notif.notifier_call = state_notifier_callback;
-	if (state_register_client(&notif))
-		pr_warn("Failed to register State notifier callback\n");
-#endif
 	return 0;
 
 free_devices:
@@ -1217,7 +1159,6 @@ out:
 
 static void __exit zram_exit(void)
 {
-<<<<<<< HEAD
 	int i;
 	struct zram *zram;
 
@@ -1236,13 +1177,6 @@ static void __exit zram_exit(void)
 
 	kfree(zram_devices);
 	pr_debug("Cleanup done!\n");
-=======
-#ifdef CONFIG_STATE_NOTIFIER
-	state_unregister_client(&notif);
-	notif.notifier_call = NULL;
-#endif
-	destroy_devices();
->>>>>>> 41b1818... zram: compact zram when suspended
 }
 
 module_init(zram_init);
