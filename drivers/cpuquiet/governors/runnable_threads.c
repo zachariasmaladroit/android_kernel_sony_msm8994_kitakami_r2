@@ -195,6 +195,7 @@ static void runnables_work_func(struct work_struct *work)
 		cpuquiet_quiesce_cpu(cpu, false);
 }
 
+#ifdef CONFIG_CPU_QUIET_STATS
 CPQ_SIMPLE_ATTRIBUTE(sample_rate, 0644, uint);
 CPQ_SIMPLE_ATTRIBUTE(nr_run_hysteresis, 0644, uint);
 
@@ -218,6 +219,17 @@ static void runnables_sysfs_exit(void)
 {
 	cpuquiet_unregister_attrs(&runnables_group);
 }
+#else
+static inline int runnables_sysfs_init(void)
+{
+	return 0;
+}
+
+static inline void runnables_sysfs_exit(void)
+{
+	return;
+}
+#endif
 
 static void runnables_stop(void)
 {
