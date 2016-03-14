@@ -22,19 +22,11 @@
 #include <linux/io.h>
 #include <linux/err.h>
 #include <linux/types.h>
-#include <soc/qcom/socinfo.h>
 #include <linux/msm-bus.h>
 #include <linux/qrng.h>
 #include <linux/fs.h>
 #include <linux/cdev.h>
-#include <linux/delay.h>
-
-#include <linux/platform_data/qcom_crypto_device.h>
-
-#include "msm_rng.h"
-#include "ctr_drbg.h"
-#include "fips_drbg.h"
-#include "msm_fips_selftest.h"
+#include <linux/of.h>
 
 #define DRIVER_NAME "msm_rng"
 
@@ -53,40 +45,22 @@
 #define MAX_HW_FIFO_DEPTH 16                     /* FIFO is 16 words deep */
 #define MAX_HW_FIFO_SIZE (MAX_HW_FIFO_DEPTH * 4) /* FIFO is 32 bits wide  */
 
-/* Global FIPS status  */
-#ifdef CONFIG_FIPS_ENABLE
-enum fips_status g_fips140_status = FIPS140_STATUS_FAIL;
-EXPORT_SYMBOL(g_fips140_status);
 
-#else
-enum fips_status g_fips140_status = FIPS140_STATUS_NA;
-EXPORT_SYMBOL(g_fips140_status);
-
-#endif
-
-/*FIPS140-2 call back for DRBG self test */
-void *drbg_call_back;
-EXPORT_SYMBOL(drbg_call_back);
-
-
-
-enum {
-	FIPS_NOT_STARTED = 0,
-	DRBG_FIPS_STARTED
+struct msm_rng_device {
+	struct platform_device *pdev;
+	void __iomem *base;
+	struct clk *prng_clk;
+	unsigned int qrng_perf_client;
 };
 
 struct msm_rng_device msm_rng_device_info;
-
-#ifdef CONFIG_FIPS_ENABLE
-static int fips_mode_enabled = FIPS_NOT_STARTED;
-#endif
 
 static long msm_rng_ioctl(struct file *filp, unsigned int cmd,
 				unsigned long arg)
 {
 	long ret = 0;
 
-	pr_debug("ioctl: cmd = %d\n", cmd);
+	pr_debug("ioctl: cmd = %u\n", cmd);
 	switch (cmd) {
 	case QRNG_IOCTL_RESET_BUS_BANDWIDTH:
 		pr_info("calling msm_rng_bus_scale(LOW)\n");
@@ -102,52 +76,39 @@ static long msm_rng_ioctl(struct file *filp, unsigned int cmd,
 	return ret;
 }
 
-/*
- *
- *  This function calls hardware random bit generator directory and retuns it
- *  back to caller
- *
- */
-int msm_rng_direct_read(struct msm_rng_device *msm_rng_dev, void *data)
+static int msm_rng_read(struct hwrng *rng, void *data, size_t max, bool wait)
 {
+	struct msm_rng_device *msm_rng_dev;
 	struct platform_device *pdev;
 	void __iomem *base;
+	size_t maxsize;
 	size_t currsize = 0;
-	u32 val;
-	u32 *retdata = data;
+	unsigned long val;
+	unsigned long *retdata = data;
 	int ret;
-	int failed = 0;
 
+	msm_rng_dev = (struct msm_rng_device *)rng->priv;
 	pdev = msm_rng_dev->pdev;
 	base = msm_rng_dev->base;
 
-	mutex_lock(&msm_rng_dev->rng_lock);
+	/* calculate max size bytes to transfer back to caller */
+	maxsize = min_t(size_t, MAX_HW_FIFO_SIZE, max);
 
-	if (msm_rng_dev->qrng_perf_client) {
-		ret = msm_bus_scale_client_update_request(
-				msm_rng_dev->qrng_perf_client, 1);
-		if (ret)
-			pr_err("bus_scale_client_update_req failed!\n");
-	}
+	/* no room for word data */
+	if (maxsize < 4)
+		return 0;
+
 	/* enable PRNG clock */
 	ret = clk_prepare_enable(msm_rng_dev->prng_clk);
 	if (ret) {
 		dev_err(&pdev->dev, "failed to enable clock in callback\n");
-		goto err;
+		return 0;
 	}
 	/* read random data from h/w */
 	do {
 		/* check status bit if data is available */
-		while (!(readl_relaxed(base + PRNG_STATUS_OFFSET)
-					& 0x00000001)) {
-			if (failed == 10) {
-				pr_err("Data not available after retry\n");
-				break;
-			}
-			pr_err("msm_rng:Data not available!\n");
-			msleep_interruptible(10);
-			failed++;
-		}
+		if (!(readl_relaxed(base + PRNG_STATUS_OFFSET) & 0x00000001))
+			break;	/* no data to read so just bail */
 
 		/* read FIFO */
 		val = readl_relaxed(base + PRNG_DATA_OUT_OFFSET);
@@ -158,210 +119,15 @@ int msm_rng_direct_read(struct msm_rng_device *msm_rng_dev, void *data)
 		*(retdata++) = val;
 		currsize += 4;
 
-	} while (currsize < Q_HW_DRBG_BLOCK_BYTES);
-
-	/* vote to turn off clock */
-	clk_disable_unprepare(msm_rng_dev->prng_clk);
-err:
-	if (msm_rng_dev->qrng_perf_client) {
-		ret = msm_bus_scale_client_update_request(
-				msm_rng_dev->qrng_perf_client, 0);
-		if (ret)
-			pr_err("bus_scale_client_update_req failed!\n");
-	}
-	mutex_unlock(&msm_rng_dev->rng_lock);
-
-	val = 0L;
-	return currsize;
-}
-
-static int msm_rng_drbg_read(struct hwrng *rng,
-			void *data, size_t max, bool wait)
-{
-	struct msm_rng_device *msm_rng_dev;
-	struct platform_device *pdev;
-	void __iomem *base;
-	size_t currsize = 0;
-	u32 val;
-	u32 *retdata = data;
-	int ret, ret1;
-	int failed = 0;
-
-	msm_rng_dev = (struct msm_rng_device *)rng->priv;
-	pdev = msm_rng_dev->pdev;
-	base = msm_rng_dev->base;
-
-	/* no room for word data */
-	if (max < 4)
-		return 0;
-
-	mutex_lock(&msm_rng_dev->rng_lock);
-
-	/* read random data from CTR-AES based DRBG */
-	if (FIPS140_DRBG_ENABLED == msm_rng_dev->fips140_drbg_enabled) {
-		ret1 = fips_drbg_gen(msm_rng_dev->drbg_ctx, data, max);
-		if (FIPS140_PRNG_ERR == ret1)
-			panic("random number generator generator error.\n");
-	} else
-		ret1 = 1;
-
-	if (msm_rng_dev->qrng_perf_client) {
-		ret = msm_bus_scale_client_update_request(
-				msm_rng_dev->qrng_perf_client, 1);
-		if (ret)
-			pr_err("bus_scale_client_update_req failed!\n");
-	}
-
-	/* read random data from h/w */
-	/* enable PRNG clock */
-	ret = clk_prepare_enable(msm_rng_dev->prng_clk);
-	if (ret) {
-		dev_err(&pdev->dev, "failed to enable clock in callback\n");
-		goto err;
-	}
-	/* read random data from h/w */
-	do {
-		/* check status bit if data is available */
-		while (!(readl_relaxed(base + PRNG_STATUS_OFFSET)
-				& 0x00000001)) {
-			if (failed == 10) {
-				pr_err("Data not available after retry\n");
-				break;
-			}
-			pr_err("msm_rng:Data not available!\n");
-			msleep_interruptible(10);
-			failed++;
-		}
-
-		/* read FIFO */
-		val = readl_relaxed(base + PRNG_DATA_OUT_OFFSET);
-		if (!val)
-			break;	/* no data to read so just bail */
-
-		/* write data back to callers pointer */
-		if (0 != ret1)
-			*(retdata++) = val;
-		currsize += 4;
-
 		/* make sure we stay on 32bit boundary */
-		if ((max - currsize) < 4)
+		if ((maxsize - currsize) < 4)
 			break;
-	} while (currsize < max);
+	} while (currsize < maxsize);
 	/* vote to turn off clock */
 	clk_disable_unprepare(msm_rng_dev->prng_clk);
-err:
-	if (msm_rng_dev->qrng_perf_client) {
-		ret = msm_bus_scale_client_update_request(
-				msm_rng_dev->qrng_perf_client, 0);
-		if (ret)
-			pr_err("bus_scale_client_update_req failed!\n");
-	}
-
-	mutex_unlock(&msm_rng_dev->rng_lock);
 
 	return currsize;
 }
-
-#ifdef CONFIG_FIPS_ENABLE
-static void _fips_drbg_init_error(struct msm_rng_device  *msm_rng_dev)
-{
-	unregister_chrdev(QRNG_IOC_MAGIC, DRIVER_NAME);
-	clk_put(msm_rng_dev->prng_clk);
-	iounmap(msm_rng_dev->base);
-	kzfree(msm_rng_dev->drbg_ctx);
-	kzfree(msm_rng_dev);
-	panic("software random number generator initialization error.\n");
-}
-#else
-static inline void _fips_drbg_init_error(struct msm_rng_device *msm_rng_dev)
-{
-	return;
-}
-
-#endif
-
-#ifdef CONFIG_FIPS_ENABLE
-int _do_msm_fips_drbg_init(void *rng_dev)
-{
-	struct msm_rng_device *msm_rng_dev = (struct msm_rng_device *) rng_dev;
-
-	int ret;
-
-	if (NULL == msm_rng_dev)
-		return 1;
-
-	ret = fips_drbg_init(msm_rng_dev);
-	if (0 == ret) {
-		pr_debug("start fips self test\n");
-		ret = fips_self_test();
-		if (ret) {
-			msm_rng_dev->fips140_drbg_enabled =
-				FIPS140_DRBG_DISABLED;
-			_fips_drbg_init_error(msm_rng_dev);
-		} else {
-			msm_rng_dev->fips140_drbg_enabled =
-				FIPS140_DRBG_ENABLED;
-		}
-	} else {
-		msm_rng_dev->fips140_drbg_enabled = FIPS140_DRBG_DISABLED;
-		_fips_drbg_init_error(msm_rng_dev);
-	}
-
-	return ret;
-}
-#else
-int _do_msm_fips_drbg_init(void *rng_dev)
-{
-	return 0;
-}
-#endif
-
-#ifdef CONFIG_FIPS_ENABLE
-static int msm_rng_read(struct hwrng *rng, void *data, size_t max, bool wait)
-{
-	struct msm_rng_device *msm_rng_dev = (struct msm_rng_device *)rng->priv;
-	unsigned char a[Q_HW_DRBG_BLOCK_BYTES];
-	int read_size;
-	unsigned char *p = data;
-
-	switch (fips_mode_enabled) {
-	case DRBG_FIPS_STARTED:
-		return msm_rng_drbg_read(rng, data, max, wait);
-		break;
-	case FIPS_NOT_STARTED:
-		if (g_fips140_status != FIPS140_STATUS_PASS) {
-			do {
-				read_size = msm_rng_direct_read(msm_rng_dev, a);
-				if (read_size <= 0)
-					break;
-				if ((max - read_size > 0)) {
-					memcpy(p, a, read_size);
-					p += read_size;
-					max -= read_size;
-				} else {
-					memcpy(p, a, max);
-				break;
-				}
-			} while (1);
-			return p - (unsigned char *)data;
-		} else {
-				fips_mode_enabled  = DRBG_FIPS_STARTED;
-				return msm_rng_drbg_read(rng, data, max, wait);
-			}
-		break;
-	default:
-		return 0;
-		break;
-	}
-
-	return 0;
-}
-#else
-static int msm_rng_read(struct hwrng *rng, void *data, size_t max, bool wait)
-{
-	return msm_rng_drbg_read(rng, data, max, wait);
-}
-#endif
 
 static struct hwrng msm_rng = {
 	.name = DRIVER_NAME,
@@ -411,14 +177,6 @@ static int msm_rng_enable_hw(struct msm_rng_device *msm_rng_dev)
 		mb();
 	}
 	clk_disable_unprepare(msm_rng_dev->prng_clk);
-
-	if (msm_rng_dev->qrng_perf_client) {
-		ret = msm_bus_scale_client_update_request(
-				msm_rng_dev->qrng_perf_client, 0);
-		if (ret)
-			pr_err("bus_scale_client_update_req failed!\n");
-	}
-
 	return 0;
 }
 
@@ -427,20 +185,6 @@ static const struct file_operations msm_rng_fops = {
 };
 static struct class *msm_rng_class;
 static struct cdev msm_rng_cdev;
-
-#ifdef CONFIG_FIPS_ENABLE
-
-static void _first_msm_drbg_init(struct msm_rng_device *msm_rng_dev)
-{
-	fips_reg_drbg_callback((void *)msm_rng_dev);
-	return;
-}
-#else
-static void _first_msm_drbg_init(struct msm_rng_device *msm_rng_dev)
-{
-	_do_msm_fips_drbg_init(msm_rng_dev);
-}
-#endif
 
 static int msm_rng_probe(struct platform_device *pdev)
 {
@@ -460,7 +204,7 @@ static int msm_rng_probe(struct platform_device *pdev)
 		goto err_exit;
 	}
 
-	msm_rng_dev = kzalloc(sizeof(struct msm_rng_device), GFP_KERNEL);
+	msm_rng_dev = kzalloc(sizeof(msm_rng_dev), GFP_KERNEL);
 	if (!msm_rng_dev) {
 		dev_err(&pdev->dev, "cannot allocate memory\n");
 		error = -ENOMEM;
@@ -474,14 +218,6 @@ static int msm_rng_probe(struct platform_device *pdev)
 		goto err_iomap;
 	}
 	msm_rng_dev->base = base;
-
-	msm_rng_dev->drbg_ctx = kzalloc(sizeof(struct fips_drbg_ctx_s),
-					GFP_KERNEL);
-	if (!msm_rng_dev->drbg_ctx) {
-		dev_err(&pdev->dev, "cannot allocate memory\n");
-		error = -ENOMEM;
-		goto err_clk_get;
-	}
 
 	/* create a handle for clock control */
 	if ((pdev->dev.of_node) && (of_property_read_bool(pdev->dev.of_node,
@@ -517,8 +253,6 @@ static int msm_rng_probe(struct platform_device *pdev)
 	if (error)
 		goto rollback_clk;
 
-	mutex_init(&msm_rng_dev->rng_lock);
-
 	/* register with hwrng framework */
 	msm_rng.priv = (unsigned long) msm_rng_dev;
 	error = hwrng_register(&msm_rng);
@@ -544,9 +278,7 @@ static int msm_rng_probe(struct platform_device *pdev)
 	}
 	cdev_init(&msm_rng_cdev, &msm_rng_fops);
 
-	_first_msm_drbg_init(msm_rng_dev);
-
-	return error;
+	return ret;
 
 unregister_chrdev:
 	unregister_chrdev(QRNG_IOC_MAGIC, DRIVER_NAME);
@@ -555,8 +287,7 @@ rollback_clk:
 err_clk_get:
 	iounmap(msm_rng_dev->base);
 err_iomap:
-	kzfree(msm_rng_dev->drbg_ctx);
-	kzfree(msm_rng_dev);
+	kfree(msm_rng_dev);
 err_exit:
 	return error;
 }
@@ -564,7 +295,6 @@ err_exit:
 static int msm_rng_remove(struct platform_device *pdev)
 {
 	struct msm_rng_device *msm_rng_dev = platform_get_drvdata(pdev);
-
 	unregister_chrdev(QRNG_IOC_MAGIC, DRIVER_NAME);
 	hwrng_unregister(&msm_rng);
 	clk_put(msm_rng_dev->prng_clk);
@@ -572,13 +302,7 @@ static int msm_rng_remove(struct platform_device *pdev)
 	platform_set_drvdata(pdev, NULL);
 	if (msm_rng_dev->qrng_perf_client)
 		msm_bus_scale_unregister_client(msm_rng_dev->qrng_perf_client);
-
-	if (msm_rng_dev->drbg_ctx) {
-		fips_drbg_final(msm_rng_dev->drbg_ctx);
-		kzfree(msm_rng_dev->drbg_ctx);
-		msm_rng_dev->drbg_ctx = NULL;
-	}
-	kzfree(msm_rng_dev);
+	kfree(msm_rng_dev);
 	return 0;
 }
 
@@ -611,10 +335,6 @@ static void __exit msm_rng_exit(void)
 }
 
 module_exit(msm_rng_exit);
-#ifdef CONFIG_FIPS_ENABLE
-EXPORT_SYMBOL(fips_ctraes128_df_known_answer_test);
-#endif
-EXPORT_SYMBOL(_do_msm_fips_drbg_init);
 
 MODULE_AUTHOR("The Linux Foundation");
 MODULE_DESCRIPTION("Qualcomm MSM Random Number Driver");
