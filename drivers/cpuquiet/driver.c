@@ -22,7 +22,6 @@
 #include <linux/cpu.h>
 #include <linux/jiffies.h>
 #include <linux/slab.h>
-#include <linux/hrtimer.h>
 #include <linux/cputime.h>
 
 #include "cpuquiet.h"
@@ -35,8 +34,6 @@ struct cpuquiet_cpu_stat {
 	u64 time_up;
 	u64 time_down;
 	u64 last_update;
-	u64 hotplug_up_overhead_us;
-	u64 hotplug_down_overhead_us;
 	unsigned int transitions;
 	bool up;
 };
@@ -44,7 +41,7 @@ struct cpuquiet_cpu_stat {
 static DEFINE_SPINLOCK(stats_lock);
 static struct cpuquiet_cpu_stat *stats;
 
-static void __stats_update(unsigned int cpu, bool up, u64 trans_overhead_us)
+static void __stats_update(unsigned int cpu, bool up)
 {
 	struct cpuquiet_cpu_stat *stat = &stats[cpu];
 	u64 cur_jiffies = get_jiffies_64();
@@ -57,11 +54,6 @@ static void __stats_update(unsigned int cpu, bool up, u64 trans_overhead_us)
 	if (stat->up != up) {
 		stat->transitions++;
 		stat->up = up;
-
-		if (up)
-			stat->hotplug_up_overhead_us += trans_overhead_us;
-		else
-			stat->hotplug_down_overhead_us += trans_overhead_us;
 	}
 
 	stat->last_update = cur_jiffies;
@@ -74,21 +66,7 @@ static ssize_t show_transitions(unsigned int cpu, char *buf)
 	return sprintf(buf, "%u\n", stat->transitions);
 }
 
-static ssize_t show_hp_up(unsigned int cpu, char *buf)
-{
-	struct cpuquiet_cpu_stat *stat = &stats[cpu];
-
-	return sprintf(buf, "%llu\n", stat->hotplug_up_overhead_us);
-}
-
-static ssize_t show_hp_down(unsigned int cpu, char *buf)
-{
-	struct cpuquiet_cpu_stat *stat = &stats[cpu];
-
-	return sprintf(buf, "%llu\n", stat->hotplug_down_overhead_us);
-}
-
-static ssize_t show_overhead_us_in_state(unsigned int cpu, char *buf)
+static ssize_t show_time_in_state(unsigned int cpu, char *buf)
 {
 	struct cpuquiet_cpu_stat *stat = &stats[cpu];
 	u64 up, down;
@@ -96,7 +74,7 @@ static ssize_t show_overhead_us_in_state(unsigned int cpu, char *buf)
 	unsigned long flags;
 
 	spin_lock_irqsave(&stats_lock, flags);
-	__stats_update(cpu, stat->up, 0);
+	__stats_update(cpu, stat->up);
 	up = stat->time_up;
 	down = stat->time_down;
 	spin_unlock_irqrestore(&stats_lock, flags);
@@ -108,15 +86,11 @@ static ssize_t show_overhead_us_in_state(unsigned int cpu, char *buf)
 }
 
 CPQ_CPU_ATTRIBUTE(transitions, 0444, show_transitions, NULL);
-CPQ_CPU_ATTRIBUTE(time_in_state, 0444, show_overhead_us_in_state, NULL);
-CPQ_CPU_ATTRIBUTE(hotplug_up_us, 0444, show_hp_up, NULL);
-CPQ_CPU_ATTRIBUTE(hotplug_down_us, 0444, show_hp_down, NULL);
+CPQ_CPU_ATTRIBUTE(time_in_state, 0444, show_time_in_state, NULL);
 
 static struct attribute *stats_attrs[] = {
 	&transitions_attr.attr,
 	&time_in_state_attr.attr,
-	&hotplug_up_us_attr.attr,
-	&hotplug_down_us_attr.attr,
 	NULL,
 };
 
@@ -138,8 +112,6 @@ static int cpuquiet_stats_init(void)
 		if (cpu_online(cpu)) {
 			stats[cpu].last_update = get_jiffies_64();
 			stats[cpu].up = true;
-			stats[cpu].hotplug_up_overhead_us = 0;
-			stats[cpu].hotplug_down_overhead_us = 0;
 		}
 	}
 
@@ -156,12 +128,12 @@ static void cpuquiet_stats_exit(void)
 	kfree(stats);
 }
 
-static void stats_update(unsigned int cpu, bool up, u64 trans_overhead_us)
+static void stats_update(unsigned int cpu, bool up)
 {
 	unsigned long flags;
 
 	spin_lock_irqsave(&stats_lock, flags);
-	__stats_update(cpu, up, trans_overhead_us);
+	__stats_update(cpu, up);
 	spin_unlock_irqrestore(&stats_lock, flags);
 }
 #else
@@ -174,8 +146,7 @@ static inline void cpuquiet_stats_exit(void)
 {
 }
 
-static inline void stats_update(unsigned int cpu, bool up,
-		u64 trans_overhead_us)
+static inline void stats_update(unsigned int cpu, bool up)
 {
 }
 #endif
@@ -183,24 +154,14 @@ static inline void stats_update(unsigned int cpu, bool up,
 int cpuquiet_quiesce_cpu(unsigned int cpunumber, bool sync)
 {
 	int err = -EPERM;
-	ktime_t before, after;
-	u64 delta;
 
 	mutex_lock(&cpuquiet_lock);
-	if (cpuquiet_curr_driver && cpuquiet_curr_driver->quiesce_cpu) {
-		/*
-		 * If sync is false, we will not be collecting hotplug overhead
-		 * and this value should be ignored.
-		 */
-		before = ktime_get();
+	if (cpuquiet_curr_driver && cpuquiet_curr_driver->quiesce_cpu)
 		err = cpuquiet_curr_driver->quiesce_cpu(cpunumber, sync);
-		after = ktime_get();
-		delta = (u64) ktime_to_us(ktime_sub(after, before));
-	}
 	mutex_unlock(&cpuquiet_lock);
 
 	if (!err)
-		stats_update(cpunumber, false, delta);
+		stats_update(cpunumber, false);
 
 	return err;
 }
@@ -209,24 +170,14 @@ EXPORT_SYMBOL(cpuquiet_quiesce_cpu);
 int cpuquiet_wake_cpu(unsigned int cpunumber, bool sync)
 {
 	int err = -EPERM;
-	ktime_t before, after;
-	u64 delta;
 
 	mutex_lock(&cpuquiet_lock);
-	if (cpuquiet_curr_driver && cpuquiet_curr_driver->wake_cpu) {
-		/*
-		 * If sync is false, we will not be collecting hotplug overhead
-		 * and this value should be ignored.
-		 */
-		before = ktime_get();
+	if (cpuquiet_curr_driver && cpuquiet_curr_driver->wake_cpu)
 		err = cpuquiet_curr_driver->wake_cpu(cpunumber, sync);
-		after = ktime_get();
-		delta = (u64) ktime_to_us(ktime_sub(after, before));
-	}
 	mutex_unlock(&cpuquiet_lock);
 
 	if (!err)
-		stats_update(cpunumber, true, delta);
+		stats_update(cpunumber, true);
 
 	return err;
 }
