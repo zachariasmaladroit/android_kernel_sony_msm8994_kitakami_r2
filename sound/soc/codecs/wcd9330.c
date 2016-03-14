@@ -356,7 +356,7 @@ static struct afe_param_id_clip_bank_sel clip_bank_sel = {
 #define TOMTOM_MCLK_CLK_9P6MHZ 9600000
 
 #define TOMTOM_FORMATS_S16_S24_LE (SNDRV_PCM_FMTBIT_S16_LE | \
-			SNDRV_PCM_FORMAT_S24_LE)
+			SNDRV_PCM_FMTBIT_S24_LE)
 
 #define TOMTOM_FORMATS (SNDRV_PCM_FMTBIT_S16_LE)
 
@@ -3873,8 +3873,6 @@ static int tomtom_codec_enable_dec(struct snd_soc_dapm_widget *w,
 							CF_MIN_3DB_150HZ << 4);
 			}
 
-			/* enable HPF */
-			snd_soc_update_bits(codec, tx_mux_ctl_reg , 0x08, 0x00);
 		} else
 			/* bypass HPF */
 			snd_soc_update_bits(codec, tx_mux_ctl_reg , 0x08, 0x08);
@@ -3883,8 +3881,8 @@ static int tomtom_codec_enable_dec(struct snd_soc_dapm_widget *w,
 
 	case SND_SOC_DAPM_POST_PMU:
 
-		/* Disable TX digital mute */
-		snd_soc_update_bits(codec, tx_vol_ctl_reg, 0x01, 0x00);
+		/* enable HPF */
+		snd_soc_update_bits(codec, tx_mux_ctl_reg , 0x08, 0x00);
 
 		if ((tx_hpf_work[decimator - 1].tx_hpf_cut_of_freq !=
 				CF_MIN_3DB_150HZ) &&
@@ -5376,23 +5374,10 @@ static int tomtom_volatile(struct snd_soc_codec *ssc, unsigned int reg)
 	if (tomtom_is_digital_gain_register(reg))
 		return 1;
 
-	/* HPH status registers */
-	if (reg == TOMTOM_A_RX_HPH_L_STATUS || reg == TOMTOM_A_RX_HPH_R_STATUS)
-		return 1;
-
-	if (reg == TOMTOM_A_MBHC_INSERT_DET_STATUS)
-		return 1;
-
-	if (reg == TOMTOM_A_RX_HPH_CNP_EN)
-		return 1;
-
 	if (((reg >= TOMTOM_A_CDC_SPKR_CLIPDET_VAL0 &&
 	    reg <= TOMTOM_A_CDC_SPKR_CLIPDET_VAL7)) ||
 	    ((reg >= TOMTOM_A_CDC_SPKR2_CLIPDET_VAL0) &&
 	     (reg <= TOMTOM_A_CDC_SPKR2_CLIPDET_VAL7)))
-		return 1;
-
-	if (reg == TOMTOM_A_CDC_VBAT_GAIN_MON_VAL)
 		return 1;
 
 	for (i = 0; i < ARRAY_SIZE(audio_reg_cfg); i++)
@@ -5400,38 +5385,31 @@ static int tomtom_volatile(struct snd_soc_codec *ssc, unsigned int reg)
 		    TOMTOM_REGISTER_START_OFFSET == reg)
 			return 1;
 
-	if (reg == TOMTOM_A_SVASS_SPE_INBOX_TRG)
+	switch (reg) {
+	case TOMTOM_A_RX_HPH_R_STATUS:
+	case TOMTOM_A_RX_HPH_L_STATUS:
+	case TOMTOM_A_MBHC_INSERT_DET_STATUS:
+	case TOMTOM_A_RX_HPH_CNP_EN:
+	case TOMTOM_A_CDC_VBAT_GAIN_MON_VAL:
+	case TOMTOM_A_SVASS_SPE_INBOX_TRG:
+	case TOMTOM_A_BIAS_OSC_BG_CTL:
+	case TOMTOM_A_CLK_BUFF_EN2:
 		return 1;
+	}
 
 	return 0;
 }
 
-static int tomtom_write(struct snd_soc_codec *codec, unsigned int reg,
-	unsigned int value)
-{
-	int ret;
-	struct wcd9xxx *wcd9xxx = codec->control_data;
-	struct tomtom_priv *tomtom_p = snd_soc_codec_get_drvdata(codec);
+#ifdef CONFIG_SOUND_CONTROL_HAX_3_GPL
+extern int snd_hax_reg_access(unsigned int);
+extern unsigned int snd_hax_cache_read(unsigned int);
+extern void snd_hax_cache_write(unsigned int, unsigned int);
+#endif
 
-	if (reg == SND_SOC_NOPM)
-		return 0;
-
-	BUG_ON(reg > TOMTOM_MAX_REGISTER);
-
-	if (!tomtom_volatile(codec, reg)) {
-		ret = snd_soc_cache_write(codec, reg, value);
-		if (ret != 0)
-			dev_err(codec->dev, "Cache write to %x failed: %d\n",
-				reg, ret);
-	}
-
-	if (unlikely(test_bit(BUS_DOWN, &tomtom_p->status_mask))) {
-		dev_err(codec->dev, "write 0x%02x while offline\n", reg);
-		return -ENODEV;
-	} else
-		return wcd9xxx_reg_write(&wcd9xxx->core_res, reg, value);
-}
-static unsigned int tomtom_read(struct snd_soc_codec *codec,
+#ifndef CONFIG_SOUND_CONTROL_HAX_3_GPL 
+static
+#endif
+unsigned int tomtom_read(struct snd_soc_codec *codec,
 				unsigned int reg)
 {
 	unsigned int val;
@@ -5463,6 +5441,51 @@ static unsigned int tomtom_read(struct snd_soc_codec *codec,
 		return val;
 	}
 }
+#ifdef CONFIG_SOUND_CONTROL_HAX_3_GPL
+EXPORT_SYMBOL(tomtom_read);
+#endif
+
+#ifndef CONFIG_SOUND_CONTROL_HAX_3_GPL
+static
+#endif
+int tomtom_write(struct snd_soc_codec *codec, unsigned int reg,
+ unsigned int value)
+{
+ int ret;
+ struct wcd9xxx *wcd9xxx = codec->control_data;
+#ifdef CONFIG_SOUND_CONTROL_HAX_3_GPL
+ unsigned int val;
+#endif
+
+ if (reg == SND_SOC_NOPM)
+ return 0;
+
+ BUG_ON(reg > TOMTOM_MAX_REGISTER);
+
+ if (!tomtom_volatile(codec, reg)) {
+ ret = snd_soc_cache_write(codec, reg, value);
+ if (ret != 0)
+ dev_err(codec->dev, "Cache write to %x failed: %d\n",
+ reg, ret);
+ }
+#ifdef CONFIG_SOUND_CONTROL_HAX_3_GPL
+	if (!snd_hax_reg_access(reg)) {
+		if (!((val = snd_hax_cache_read(reg)) != -1)) {
+			val = wcd9xxx_reg_read_safe(&wcd9xxx->core_res, reg);
+		}
+	} else {
+		snd_hax_cache_write(reg, value);
+		val = value;
+	}
+	return wcd9xxx_reg_write(&wcd9xxx->core_res, reg, val);
+#else
+	return wcd9xxx_reg_write(&wcd9xxx->core_res, reg, value);
+#endif
+}
+#ifdef CONFIG_SOUND_CONTROL_HAX_3_GPL
+EXPORT_SYMBOL(tomtom_write);
+#endif
+
 
 static int tomtom_startup(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *dai)
@@ -6067,6 +6090,84 @@ static int tomtom_hw_params(struct snd_pcm_substream *substream,
 	return 0;
 }
 
+static int tomtom_digital_mute(struct snd_soc_dai *dai, int mute)
+{
+	struct snd_soc_codec *codec = NULL;
+	struct wcd9xxx_ch *ch = NULL;
+	struct tomtom_priv *tomtom;
+	u32 tx_port = 0;
+	u16 tx_vol_ctl_reg = 0, tx_port_reg = 0;
+	u8 tx_port_reg_val = 0;
+	s8 decimator = 0;
+
+	 if (!dai || !dai->codec) {
+		pr_err("%s: Invalid params\n", __func__);
+		return -EINVAL;
+	}
+
+	codec = dai->codec;
+	if (dai->id != AIF1_CAP &&
+	    dai->id != AIF2_CAP &&
+	    dai->id != AIF3_CAP) {
+		dev_dbg(codec->dev, "%s: Not capture use case skip\n",
+			__func__);
+		return 0;
+	}
+
+	tomtom = snd_soc_codec_get_drvdata(codec);
+	if (!tomtom) {
+		dev_err(codec->dev,
+			"%s: drvdata get failed\n", __func__);
+		return -EINVAL;
+	}
+
+	dev_dbg(codec->dev, "%s: enter, mute = %d\n", __func__, mute);
+
+	mute = (mute) ? 1 : 0;
+	/* sleep for 10ms before unmuting the TX path as per HW requirement */
+	usleep_range(10000, 10100);
+	list_for_each_entry(ch, &tomtom->dai[dai->id].wcd9xxx_ch_list, list) {
+		tx_port = ch->port + 1;
+		dev_dbg(codec->dev, "%s: dai->id = %d, tx_port = %d",
+			__func__, dai->id, tx_port);
+		if ((tx_port < 1) || (tx_port > NUM_DECIMATORS)) {
+			dev_err(codec->dev, "%s: Invalid SLIM TX%u DAI ID is %d\n",
+				__func__, tx_port, dai->id);
+			return -EINVAL;
+		}
+
+		tx_port_reg = TOMTOM_A_CDC_CONN_TX_SB_B1_CTL + (tx_port - 1);
+		tx_port_reg_val = snd_soc_read(codec, tx_port_reg);
+		decimator = 0;
+		if ((tx_port >= 1) && (tx_port <= 6)) {
+			tx_port_reg_val = tx_port_reg_val & 0x0F;
+			if (tx_port_reg_val == 0x8)
+				decimator = tx_port;
+		} else if ((tx_port >= 7) && (tx_port <= NUM_DECIMATORS)) {
+			tx_port_reg_val = tx_port_reg_val & 0x1F;
+			if ((tx_port_reg_val >= 0x8) &&
+			    (tx_port_reg_val <= 0x11)) {
+				decimator = (tx_port_reg_val - 0x8) + 1;
+			}
+		}
+
+		if (decimator && decimator <= NUM_DECIMATORS) {
+			dev_dbg(codec->dev, "%s: Decimator used %d\n",
+				__func__, decimator);
+			tx_vol_ctl_reg =
+				TOMTOM_A_CDC_TX1_VOL_CTL_CFG +
+				8 * (decimator - 1);
+			/* Set TX digital mute */
+			snd_soc_update_bits(codec, tx_vol_ctl_reg, 0x01, mute);
+		} else {
+			dev_err(codec->dev, "%s: Invalid Decimator used %d\n",
+				__func__, decimator);
+		}
+	}
+
+	return 0;
+}
+
 static struct snd_soc_dai_ops tomtom_dai_ops = {
 	.startup = tomtom_startup,
 	.shutdown = tomtom_shutdown,
@@ -6075,6 +6176,7 @@ static struct snd_soc_dai_ops tomtom_dai_ops = {
 	.set_fmt = tomtom_set_dai_fmt,
 	.set_channel_map = tomtom_set_channel_map,
 	.get_channel_map = tomtom_get_channel_map,
+	.digital_mute = tomtom_digital_mute,
 };
 
 static struct snd_soc_dai_driver tomtom_dai[] = {
@@ -6182,7 +6284,7 @@ static struct snd_soc_dai_driver tomtom_dai[] = {
 		.capture = {
 			.stream_name = "AIF4 MAD TX",
 			.rates = SNDRV_PCM_RATE_16000,
-			.formats = TOMTOM_FORMATS,
+			.formats = TOMTOM_FORMATS_S16_S24_LE,
 			.rate_min = 16000,
 			.rate_max = 16000,
 			.channels_min = 1,
@@ -8807,6 +8909,13 @@ static int tomtom_cpe_initialize(struct snd_soc_codec *codec)
 	return 0;
 }
 
+#ifdef CONFIG_SOUND_CONTROL_HAX_3_GPL
+struct snd_soc_codec *fauxsound_codec_ptr;
+EXPORT_SYMBOL(fauxsound_codec_ptr);
+int wcd9xxx_hw_revision;
+EXPORT_SYMBOL(wcd9xxx_hw_revision);
+#endif
+
 static int tomtom_codec_probe(struct snd_soc_codec *codec)
 {
 	struct wcd9xxx *control;
@@ -8818,6 +8927,11 @@ static int tomtom_codec_probe(struct snd_soc_codec *codec)
 	int i, rco_clk_rate;
 	void *ptr = NULL;
 	struct wcd9xxx_core_resource *core_res;
+
+#ifdef CONFIG_SOUND_CONTROL_HAX_3_GPL
+	pr_info("tomtom codec probe...\n");
+	fauxsound_codec_ptr = codec;
+#endif
 
 	codec->control_data = dev_get_drvdata(codec->dev->parent);
 	control = codec->control_data;
