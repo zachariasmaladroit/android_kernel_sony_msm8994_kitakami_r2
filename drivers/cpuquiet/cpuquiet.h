@@ -82,8 +82,9 @@ static int cpuquiet_register_attrs(struct attribute_group *attrs)
 {
 	return 0;
 }
-static void cpuquiet_unregister_attrs(struct attribute_group *attrs)
+static void cpuquiet_unregister_attrs(struct attribute_group *attrs);
 {
+	return 0;
 }
 #endif
 
