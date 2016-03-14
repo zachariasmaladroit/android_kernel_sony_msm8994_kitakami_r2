@@ -14,7 +14,7 @@ export PATH=~/android/z5_build-environment/UBERTC_aarch64-linux-android-4.9-kern
 ### See prefix of file names in the toolchain's bin directory
 export CROSS_COMPILE=aarch64-linux-android-
 
-#export KBUILD_DIFFCONFIG=sumire_diffconfig
+export KBUILD_DIFFCONFIG=aosp_Sun-Kernel_kitakami_sumire_diffconfig
 make aosp_kitakami_sumire_defconfig
 make -j 8
 
