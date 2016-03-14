@@ -34,11 +34,7 @@ struct cpuquiet_governor {
 	struct module		*owner;
 };
 
-/**
- * Contains platform specific information for CPU Quiet
- *
- * Provided by platform
- */
+/* Contains platform specific information for CPU Quiet */
 struct cpuquiet_platform_info {
 	char	plat_name[CPUQUIET_NAME_LEN];
 	unsigned int	avg_hotplug_latency_ms;
@@ -47,16 +43,6 @@ struct cpuquiet_platform_info {
 extern int cpuquiet_init(struct cpuquiet_platform_info *plat_info);
 extern int cpuquiet_register_governor(struct cpuquiet_governor *gov);
 extern void cpuquiet_unregister_governor(struct cpuquiet_governor *gov);
-
-/**
- * cpuquiet_wake_quiesce_cpu - brings cpu up/down and collects stats
- *
- * @cpunumber: number of cpu to bring up/down
- * @sync: whether or not we are collecting hotplug overhead
- * @up: whether we want to bring the cpu up or down
- *
- * Returns 0 on success, an error otherwise
- */
 extern int cpuquiet_wake_quiesce_cpu(unsigned int cpunumber, bool sync,
 								bool up);
 
