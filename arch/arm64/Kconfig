@@ -756,6 +756,8 @@ source "drivers/cpuidle/Kconfig"
 
 endmenu
 
+source "arch/arm64/hotplug/Kconfig"
+
 source "net/Kconfig"
 
 source "drivers/Kconfig"
