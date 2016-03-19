@@ -3213,7 +3213,6 @@
 		qcom,therm-reset-temp = <115>;
 		qcom,freq-step = <2>;
 		qcom,freq-control-mask = <0xff>;
-		qcom,core-limit-temp = <80>;
 		qcom,core-temp-hysteresis = <10>;
 		qcom,core-control-mask = <0xfe>;
 		qcom,hotplug-temp = <105>;
