@@ -1053,7 +1053,7 @@ void zs_unmap_object(struct zs_pool *pool, unsigned long handle)
 }
 EXPORT_SYMBOL_GPL(zs_unmap_object);
 
-unsigned long zs_get_total_pages(struct zs_pool *pool)
+u64 zs_get_total_size_bytes(struct zs_pool *pool)
 {
 	int i;
 	u64 npages = 0;
@@ -1061,9 +1061,9 @@ unsigned long zs_get_total_pages(struct zs_pool *pool)
 	for (i = 0; i < ZS_SIZE_CLASSES; i++)
 		npages += pool->size_class[i].pages_allocated;
 
-	return npages;
+	return npages << PAGE_SHIFT;
 }
-EXPORT_SYMBOL_GPL(zs_get_total_pages);
+EXPORT_SYMBOL_GPL(zs_get_total_size_bytes);
 
 module_init(zs_init);
 module_exit(zs_exit);
