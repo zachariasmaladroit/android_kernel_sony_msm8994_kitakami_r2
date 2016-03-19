@@ -494,7 +494,7 @@ static int zswap_get_swap_cache_page(swp_entry_t entry,
 				struct page **retpage)
 {
 	struct page *found_page, *new_page = NULL;
-	struct address_space *swapper_space = &swapper_spaces[swp_type(entry)];
+	struct address_space *swapper_space = swap_address_space(entry);
 	int err;
 
 	*retpage = NULL;
@@ -620,6 +620,9 @@ static int zswap_writeback_entry(struct zswap_tree *tree,
 		/* page is up to date */
 		SetPageUptodate(page);
 	}
+
+	/* move it to the tail of the inactive list after end_writeback */
+	SetPageReclaim(page);
 
 	/* start writeback */
 	SetPageReclaim(page);
