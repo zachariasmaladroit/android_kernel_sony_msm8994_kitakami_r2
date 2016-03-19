@@ -561,9 +561,7 @@ static unsigned long long uksm_sleep_times;
 
 #define UKSM_RUN_STOP	0
 #define UKSM_RUN_MERGE	1
-#define UKSM_RUN_DEFAULT	1
-static unsigned int uksm_run = UKSM_RUN_DEFAULT;
-static unsigned int uksm_run_saved = UKSM_RUN_DEFAULT;
+static unsigned int uksm_run = 1;
 
 static DECLARE_WAIT_QUEUE_HEAD(uksm_thread_wait);
 static DEFINE_MUTEX(uksm_thread_mutex);
@@ -4705,25 +4703,6 @@ out:
 	return ret;
 }
 
-void uksm_control(unsigned int state)
-{
-	// is uksm really enabled (via sysfs)?
-	if (uksm_run_saved) {
-		
-		// uksm is enabled, but do we want it on or off now?
-		mutex_lock(&uksm_thread_mutex);
-		if (uksm_run != state) {
-			uksm_run = state;
-		}
-		mutex_unlock(&uksm_thread_mutex);
-		
-		if (state & UKSM_RUN_MERGE)
-			wake_up_interruptible(&uksm_thread_wait);
-		
-	}
-}
-EXPORT_SYMBOL(uksm_control);
-
 #ifdef CONFIG_MIGRATION
 /* Common ksm interface but may be specific to uksm */
 void ksm_migrate_page(struct page *newpage, struct page *oldpage)
@@ -4851,7 +4830,7 @@ static ssize_t sleep_millisecs_store(struct kobject *kobj,
 	int err;
 
 	err = strict_strtoul(buf, 10, &msecs);
-	if (err || msecs > 60000)
+	if (err || msecs > MSEC_PER_SEC)
 		return -EINVAL;
 
 	uksm_sleep_jiffies = msecs_to_jiffies(msecs);
@@ -4927,7 +4906,7 @@ UKSM_ATTR(cpu_governor);
 static ssize_t run_show(struct kobject *kobj, struct kobj_attribute *attr,
 			char *buf)
 {
-	return sprintf(buf, "%u\n", uksm_run_saved);
+	return sprintf(buf, "%u\n", uksm_run);
 }
 
 static ssize_t run_store(struct kobject *kobj, struct kobj_attribute *attr,
@@ -4945,7 +4924,6 @@ static ssize_t run_store(struct kobject *kobj, struct kobj_attribute *attr,
 	mutex_lock(&uksm_thread_mutex);
 	if (uksm_run != flags) {
 		uksm_run = flags;
-		uksm_run_saved = flags;
 	}
 	mutex_unlock(&uksm_thread_mutex);
 
@@ -5475,7 +5453,7 @@ static int __init uksm_init(void)
 	struct task_struct *uksm_thread;
 	int err;
 
-	uksm_sleep_jiffies = msecs_to_jiffies(500);
+	uksm_sleep_jiffies = msecs_to_jiffies(100);
 	uksm_sleep_saved = uksm_sleep_jiffies;
 
 	slot_tree_init();
