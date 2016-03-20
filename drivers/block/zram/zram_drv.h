@@ -11,17 +11,12 @@
  * Released under the terms of GNU General Public License Version 2.0
  *
  */
-/*
- * NOTE: This file has been modified by Sony Mobile Communications Inc.
- * Modifications are Copyright (c) 2015 Sony Mobile Communications Inc,
- * and licensed under the license of the file.
- */
 
 #ifndef _ZRAM_DRV_H_
 #define _ZRAM_DRV_H_
 
 #include <linux/spinlock.h>
-#include "../../staging/zsmalloc/zsmalloc.h"
+#include <linux/zsmalloc.h>
 
 #include "zcomp.h"
 
@@ -37,7 +32,7 @@ static const unsigned max_num_devices = 32;
  * Pages that compress to size greater than this are stored
  * uncompressed in memory.
  */
-static const size_t max_zpage_size = PAGE_SIZE / 4 * 3;
+static const size_t max_zpage_size = PAGE_SIZE / 10 * 9;
 
 /*
  * NOTE: max_zpage_size must be less than or equal to:
@@ -71,8 +66,8 @@ static const size_t max_zpage_size = PAGE_SIZE / 4 * 3;
 /* Flags for zram pages (table[page_no].value) */
 enum zram_pageflags {
 	/* Page consists entirely of zeros */
-	ZRAM_ZERO = ZRAM_FLAG_SHIFT,
-	ZRAM_ACCESS,	/* page is now accessed */
+	ZRAM_ZERO = ZRAM_FLAG_SHIFT + 1,
+	ZRAM_ACCESS,	/* page in now accessed */
 
 	__NR_ZRAM_PAGEFLAGS,
 };
@@ -95,7 +90,6 @@ struct zram_stats {
 	atomic64_t notify_free;	/* no. of swap slot free notifications */
 	atomic64_t zero_pages;		/* no. of zero filled pages */
 	atomic64_t pages_stored;	/* no. of pages currently stored */
-	atomic_long_t max_used_pages;	/* no. of maximum pages stored */
 };
 
 struct zram_meta {
@@ -116,14 +110,8 @@ struct zram {
 	 * we can store in a disk.
 	 */
 	u64 disksize;	/* bytes */
-
 	int max_comp_streams;
 	struct zram_stats stats;
-	/*
-	 * the number of pages zram can consume for storing compressed data
-	 */
-	unsigned long limit_pages;
-
 	char compressor[10];
 };
 #endif
