@@ -293,7 +293,7 @@ dtb-$(CONFIG_MACH_SONY_SATSUKI_DSDS) += msm8994-v2.0-kitakami_satsuki_dsds.dtb \
 	msm8994-v2.1-kitakami_satsuki_dsds.dtb
 endif
 
-DTB_NAMES := $(subst $\",,$(CONFIG_BUILD_ARM_APPENDED_DTB_IMAGE_NAMES))
+DTB_NAMES := $(subst $\",,$(CONFIG_BUILD_ARM64_APPENDED_DTB_IMAGE_NAMES))
 ifneq ($(DTB_NAMES),)
 DTB_LIST := $(addsuffix .dtb,$(DTB_NAMES))
 else
@@ -304,19 +304,9 @@ targets += dtbs
 targets += $(addprefix ../, $(DTB_LIST))
 endif
 
-ifeq ($(CONFIG_ARM64),y)
-always          := $(dtb-y)
-subdir-y        := $(dts-dirs)
-$(obj)/%.dtb: $(src)/%.dts FORCE
-	$(call if_changed_dep,dtc)
-
-dtbs: $(addprefix $(obj)/,$(DTB_LIST))
-else
-targets += $(addprefix ../, $(dtb-y))
-
 $(obj)/../%.dtb: $(src)/%.dts FORCE
 	$(call if_changed_dep,dtc)
 
 dtbs: $(addprefix $(obj)/../,$(DTB_LIST))
-endif
+
 clean-files := *.dtb
