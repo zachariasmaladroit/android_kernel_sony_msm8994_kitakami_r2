@@ -225,7 +225,9 @@ static const struct kernel_param_ops param_ops_max_cpus = {
 	.get = get_max_cpus,
 };
 
+#ifdef CONFIG_MSM_PERFORMANCE_HOTPLUG_ON
 device_param_cb(max_cpus, &param_ops_max_cpus, NULL, 0644);
+#endif
 
 static int set_managed_cpus(const char *buf, const struct kernel_param *kp)
 {
@@ -308,15 +310,18 @@ static int get_managed_online_cpus(char *buf, const struct kernel_param *kp)
 static const struct kernel_param_ops param_ops_managed_online_cpus = {
 	.get = get_managed_online_cpus,
 };
-device_param_cb(managed_online_cpus, &param_ops_managed_online_cpus,
-								NULL, 0444);
 
+#ifdef CONFIG_MSM_PERFORMANCE_HOTPLUG_ON
+device_param_cb(managed_online_cpus, &param_ops_managed_online_cpus,
+							NULL, 0444);
+#endif
 /*
  * Userspace sends cpu#:min_freq_value to vote for min_freq_value as the new
  * scaling_min. To withdraw its vote it needs to enter cpu#:0
  */
 static int set_cpu_min_freq(const char *buf, const struct kernel_param *kp)
 {
+#if 0
 	int i, j, ntokens = 0;
 	unsigned int val, cpu;
 	const char *cp = buf;
@@ -372,6 +377,7 @@ static int set_cpu_min_freq(const char *buf, const struct kernel_param *kp)
 			cpumask_clear_cpu(j, limit_mask);
 	}
 	put_online_cpus();
+#endif
 
 	return 0;
 }

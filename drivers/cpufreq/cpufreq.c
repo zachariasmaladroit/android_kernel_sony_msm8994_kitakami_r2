@@ -30,17 +30,9 @@
 #include <linux/tick.h>
 #include <trace/events/power.h>
 
-// the hard limits are not per core but per cpu cluster
-static unsigned int min_freq_hardlimit[8] = {0, 0};
-static unsigned int max_freq_hardlimit[8] = {0, 0};
-
-#define GOVERNOR_NAME_MAX	16
-static char governor_hard[2][GOVERNOR_NAME_MAX];
-
-#define CONFIG_MSM_CPU_FREQ_MIN_GROUP1 302400
-#define CONFIG_MSM_CPU_FREQ_MAX_GROUP1 1555200
-#define CONFIG_MSM_CPU_FREQ_MIN_GROUP2 302400
-#define CONFIG_MSM_CPU_FREQ_MAX_GROUP2 1958400
+#ifdef CONFIG_MSM_LIMITER
+#include <linux/msm_thermal.h>
+#endif
 
 /**
  * The "cpufreq driver" - the arch- or hardware-dependent low
@@ -65,15 +57,6 @@ struct cpufreq_cpu_save_data {
 };
 static DEFINE_PER_CPU(struct cpufreq_cpu_save_data, cpufreq_policy_save);
 #endif
-
-static inline int map_core_to_cluster(int core)
-{
-	// cores 0..3 are the little cluster, cores 4..7 are the big cluster
-	if (core <=3)
-		return 0;
-
-	return 1;
-}
 
 static inline bool has_target(void)
 {
@@ -358,6 +341,12 @@ void cpufreq_notify_transition(struct cpufreq_policy *policy,
 }
 EXPORT_SYMBOL_GPL(cpufreq_notify_transition);
 
+void cpufreq_notify_utilization(struct cpufreq_policy *policy,
+		unsigned int util)
+{
+	if (policy)
+		policy->util = util;
+}
 
 /*********************************************************************
  *                          SYSFS INTERFACE                          *
@@ -444,7 +433,7 @@ show_one(cpuinfo_transition_latency, cpuinfo.transition_latency);
 show_one(scaling_min_freq, min);
 show_one(scaling_max_freq, max);
 show_one(scaling_cur_freq, cur);
-
+show_one(cpu_utilization, util);
 static int cpufreq_set_policy(struct cpufreq_policy *policy,
 				struct cpufreq_policy *new_policy);
 
@@ -457,6 +446,10 @@ static ssize_t store_##file_name					\
 {									\
 	int ret;							\
 	struct cpufreq_policy new_policy;				\
+	int mpd = strcmp(current->comm, "mpdecision");			\
+									\
+	if (mpd == 0)							\
+		return ret;						\
 									\
 	ret = cpufreq_get_policy(&new_policy, policy->cpu);		\
 	if (ret)							\
@@ -481,204 +474,8 @@ static ssize_t store_##file_name					\
 	return ret ? ret : count;					\
 }
 
-// store_one(scaling_min_freq, min);
-// store_one(scaling_max_freq, max);
-
-
-/**
- * show_scaling_governor_hard - scaling governor hard lock
- */
-static ssize_t show_scaling_governor_hard(struct cpufreq_policy *policy, char *buf)
-{							\
-	return sprintf(buf, "%s\n", governor_hard[map_core_to_cluster(policy->cpu)]);
-}
-
-
-/**
- * store_scaling_governor_hard - scaling governor hard lock
- */
-static ssize_t store_scaling_governor_hard(struct cpufreq_policy *policy, const char *buf, size_t count)
-{
-	if (strlen(buf) < GOVERNOR_NAME_MAX)
-		sscanf(buf, "%s", governor_hard[map_core_to_cluster(policy->cpu)]);
-
-	return count;
-}
-
-
-/**
- * show_scaling_min_freq_hardlimit - minimum scaling frequency hard limit 
- */
-static ssize_t show_scaling_min_freq_hardlimit(struct cpufreq_policy *policy, char *buf)
-{							\
-	return sprintf(buf, "%u\n", min_freq_hardlimit[map_core_to_cluster(policy->cpu)]);
-}
-
-
-/**
- * store_scaling_min_freq_hardlimit() - minimum scaling frequency hard limit
- */
-static ssize_t store_scaling_min_freq_hardlimit(struct cpufreq_policy *policy, const char *buf, size_t count)
-{
-	unsigned int ret = -EINVAL;
-	unsigned int input;
-	int i;
-	struct cpufreq_frequency_table *table;
-
-	ret = sscanf(buf, "%u", &input);
-	if (ret != 1)
-		return -EINVAL;
-
-	// zero is an allowed value to disable the hard limit check
-	if (input == 0)
-	{
-		max_freq_hardlimit[map_core_to_cluster(policy->cpu)] = 0;
-		pr_debug("cpufreq : max frequency hard limit check disabled\n");
-		return count;
-	}
-
-	// Get system frequency table
-	table = cpufreq_frequency_get_table(policy->cpu);	
-
-	if (!table) 
-	{
-		pr_err("cpufreq : could not retrieve cpu freq table\n");
-		return -EINVAL;
-	} 
-
-	// Allow only frequencies in the system table
-	for (i = 0; (table[i].frequency != CPUFREQ_TABLE_END); i++) 
-		if (table[i].frequency == input) 
-		{
-			pr_debug("cpufreq : frequency for minimum scaling freq hard limit found\n");
-			min_freq_hardlimit[map_core_to_cluster(policy->cpu)] = input;
-			return count;
-		}
-
-	pr_err("cpufreq : invalid frequency requested for minimum scaling freq hard limit\n");
-	return -EINVAL;
-}
-
-
-/**
- * show_scaling_max_freq_hardlimit - maximum scaling frequency hard limit 
- */
-static ssize_t show_scaling_max_freq_hardlimit(struct cpufreq_policy *policy, char *buf)
-{							\
-	return sprintf(buf, "%u\n", max_freq_hardlimit[map_core_to_cluster(policy->cpu)]);
-}
-
-
-/**
- * store_scaling_max_freq_hardlimit() - maximum scaling frequency hard limit
- */
-static ssize_t store_scaling_max_freq_hardlimit(struct cpufreq_policy *policy, const char *buf, size_t count)
-{
-	unsigned int ret = -EINVAL;
-	unsigned int input;
-	int i;
-	struct cpufreq_frequency_table *table;
-
-	ret = sscanf(buf, "%u", &input);
-	if (ret != 1)
-		return -EINVAL;
-
-	// zero is an allowed value to disable the hard limit check
-	if (input == 0)
-	{
-		min_freq_hardlimit[map_core_to_cluster(policy->cpu)] = 0;
-		pr_debug("cpufreq : min frequency hard limit check disabled\n");
-		return count;
-	}
-
-	// Get system frequency table
-	table = cpufreq_frequency_get_table(policy->cpu);	
-
-	if (!table) 
-	{
-		pr_err("cpufreq : could not retrieve cpu freq table\n");
-		return -EINVAL;
-	} 
-
-	// Allow only frequencies in the system table
-	for (i = 0; (table[i].frequency != CPUFREQ_TABLE_END); i++) 
-		if (table[i].frequency == input) 
-		{
-			pr_debug("cpufreq : frequency for maximum scaling freq hard limit found\n");
-			max_freq_hardlimit[map_core_to_cluster(policy->cpu)] = input;
-			return count;
-		}
-
-	pr_err("cpufreq : invalid frequency requested for maximum scaling freq hard limit\n");
-	return -EINVAL;
-}
-
-
-/**
- * store_scaling_min_freq() - minimum scaling frequency
- */
-static ssize_t store_scaling_min_freq(struct cpufreq_policy *policy, const char *buf, size_t count)
-{
-	unsigned int ret = -EINVAL;
-	struct cpufreq_policy new_policy;
-
-	ret = cpufreq_get_policy(&new_policy, policy->cpu);
-	if (ret)
-		return -EINVAL;
-
-	ret = sscanf(buf, "%u", &new_policy.min);
-	if (ret != 1)
-		return -EINVAL;
-
-	// if hard limit check is enabled + if new min frequency is below hard limit,
-	// overwrite with hard limit
-	if (min_freq_hardlimit[map_core_to_cluster(policy->cpu)] != 0)
-		if (new_policy.min < min_freq_hardlimit[map_core_to_cluster(policy->cpu)])
-			new_policy.min = min_freq_hardlimit[map_core_to_cluster(policy->cpu)];
-
-	ret = cpufreq_driver->verify(&new_policy);
-	if (ret)
-		pr_err("cpufreq: Frequency verification failed\n");
-
-	policy->user_policy.min = new_policy.min;
-	ret = cpufreq_set_policy(policy, &new_policy);
-
-	return ret ? ret : count;
-}
-
-
-/**
- * store_scaling_max_freq() - maximum scaling frequency
- */
-static ssize_t store_scaling_max_freq(struct cpufreq_policy *policy, const char *buf, size_t count)
-{
-	unsigned int ret = -EINVAL;
-	struct cpufreq_policy new_policy;
-
-	ret = cpufreq_get_policy(&new_policy, policy->cpu);
-	if (ret)
-		return -EINVAL;
-
-	ret = sscanf(buf, "%u", &new_policy.max);
-	if (ret != 1)
-		return -EINVAL;
-
-	// if hard limit check is enabled + if new max frequency is above hard limit,
-	// overwrite with hard limit
-	if (max_freq_hardlimit[map_core_to_cluster(policy->cpu)] != 0)
-		if (new_policy.max > max_freq_hardlimit[map_core_to_cluster(policy->cpu)])
-			new_policy.max = max_freq_hardlimit[map_core_to_cluster(policy->cpu)];
-
-	ret = cpufreq_driver->verify(&new_policy);
-	if (ret)
-		pr_err("cpufreq: Frequency verification failed\n");
-
-	policy->user_policy.max = new_policy.max;
-	ret = cpufreq_set_policy(policy, &new_policy);
-
-	return ret ? ret : count;
-}
-
+store_one(scaling_min_freq, min);
+store_one(scaling_max_freq, max);
 
 /**
  * show_cpuinfo_cur_freq - current CPU frequency as detected by hardware
@@ -724,14 +521,6 @@ static ssize_t store_scaling_governor(struct cpufreq_policy *policy,
 	ret = sscanf(buf, "%15s", str_governor);
 	if (ret != 1)
 		return -EINVAL;
-
-	// if hard limit for governor is set, only allow this governor to be set
-	if ((strlen(governor_hard[map_core_to_cluster(policy->cpu)]) != 0) &&
-		(! strstr(str_governor, governor_hard[map_core_to_cluster(policy->cpu)])))
-	{
-		printk(KERN_ERR "scaling governor: switch to %s failed due to Boeffla hard value set to %s\n", str_governor, governor_hard[policy->cpu]);
-		return -EINVAL;
-	}
 
 	if (cpufreq_parse_governor(str_governor, &new_policy.policy,
 						&new_policy.governor))
@@ -884,12 +673,10 @@ cpufreq_freq_attr_ro(scaling_cur_freq);
 cpufreq_freq_attr_ro(bios_limit);
 cpufreq_freq_attr_ro(related_cpus);
 cpufreq_freq_attr_ro(affected_cpus);
+cpufreq_freq_attr_ro(cpu_utilization);
 cpufreq_freq_attr_rw(scaling_min_freq);
-cpufreq_freq_attr_rw(scaling_min_freq_hardlimit);
 cpufreq_freq_attr_rw(scaling_max_freq);
-cpufreq_freq_attr_rw(scaling_max_freq_hardlimit);
 cpufreq_freq_attr_rw(scaling_governor);
-cpufreq_freq_attr_rw(scaling_governor_hard);
 cpufreq_freq_attr_rw(scaling_setspeed);
 cpufreq_freq_attr_rw(UV_mV_table);
 
@@ -898,13 +685,11 @@ static struct attribute *default_attrs[] = {
 	&cpuinfo_max_freq.attr,
 	&cpuinfo_transition_latency.attr,
 	&scaling_min_freq.attr,
-	&scaling_min_freq_hardlimit.attr,
 	&scaling_max_freq.attr,
-	&scaling_max_freq_hardlimit.attr,
 	&affected_cpus.attr,
+	&cpu_utilization.attr,
 	&related_cpus.attr,
 	&scaling_governor.attr,
-	&scaling_governor_hard.attr,
 	&scaling_driver.attr,
 	&scaling_available_governors.attr,
 	&scaling_setspeed.attr,
@@ -919,15 +704,10 @@ static ssize_t show(struct kobject *kobj, struct attribute *attr, char *buf)
 {
 	struct cpufreq_policy *policy = to_policy(kobj);
 	struct freq_attr *fattr = to_attr(attr);
-	ssize_t ret = -EINVAL;
-
-	get_online_cpus();
-
-	if (!cpu_online(policy->cpu))
-		goto unlock;
+	ssize_t ret;
 
 	if (!down_read_trylock(&cpufreq_rwsem))
-		goto unlock;
+		return -EINVAL;
 
 	down_read(&policy->rwsem);
 
@@ -938,8 +718,7 @@ static ssize_t show(struct kobject *kobj, struct attribute *attr, char *buf)
 
 	up_read(&policy->rwsem);
 	up_read(&cpufreq_rwsem);
-unlock:
-	put_online_cpus();
+
 	return ret;
 }
 
@@ -1675,6 +1454,27 @@ static void cpufreq_out_of_sync(unsigned int cpu, unsigned int old_freq,
 }
 
 /**
+ * cpufreq_quick_get_util - get the CPU utilization from policy->util
+ * @cpu: CPU number
+ *
+ * This is the last known util, without actually getting it from the driver.
+ * Return value will be same as what is shown in util in sysfs.
+ */
+unsigned int cpufreq_quick_get_util(unsigned int cpu)
+{
+	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
+	unsigned int ret_util = 0;
+
+	if (policy) {
+		ret_util = policy->util;
+		cpufreq_cpu_put(policy);
+	}
+
+	return ret_util;
+}
+EXPORT_SYMBOL(cpufreq_quick_get_util);
+
+/**
  * cpufreq_quick_get - get the CPU frequency (in kHz) from policy->cur
  * @cpu: CPU number
  *
@@ -2079,6 +1879,22 @@ EXPORT_SYMBOL_GPL(cpufreq_driver_target);
  * when "event" is CPUFREQ_GOV_LIMITS
  */
 
+ int __cpufreq_driver_getavg(struct cpufreq_policy *policy, unsigned int cpu)
+ {
+     int ret = 0;
+     
+     policy = cpufreq_cpu_get(policy->cpu);
+     if (!policy)
+     return -EINVAL;
+     
+     if (cpu_online(cpu) && cpufreq_driver->getavg)
+     ret = cpufreq_driver->getavg(policy, cpu);
+     
+     cpufreq_cpu_put(policy);
+     return ret;
+ }
+ EXPORT_SYMBOL_GPL(__cpufreq_driver_getavg);
+ 
 static int __cpufreq_governor(struct cpufreq_policy *policy,
 					unsigned int event)
 {
@@ -2252,18 +2068,6 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
 
 	memcpy(&new_policy->cpuinfo, &policy->cpuinfo, sizeof(policy->cpuinfo));
 
-	// if hard limit check is enabled + if new max frequency is above hard limit,
-	// overwrite with hard limit
-	if (min_freq_hardlimit[map_core_to_cluster(policy->cpu)] != 0)
-		if (policy->min < min_freq_hardlimit[map_core_to_cluster(policy->cpu)])
-			policy->min = min_freq_hardlimit[map_core_to_cluster(policy->cpu)];
-
-	// if hard limit check is enabled + if new max frequency is above hard limit,
-	// overwrite with hard limit
-	if (max_freq_hardlimit[map_core_to_cluster(policy->cpu)] != 0)
-		if (policy->max > max_freq_hardlimit[map_core_to_cluster(policy->cpu)])
-			policy->max = max_freq_hardlimit[map_core_to_cluster(policy->cpu)];
-
 	if (new_policy->min > policy->user_policy.max
 	    || new_policy->max < policy->user_policy.min) {
 		ret = -EINVAL;
@@ -2411,6 +2215,144 @@ no_policy:
 }
 EXPORT_SYMBOL(cpufreq_update_policy);
 
+#ifdef CONFIG_MSM_LIMITER
+/*
+ *	cpufreq_set_freq - set max/min freq for a cpu
+ *	@cpu: CPU whose frequency needs to be changed
+ */
+int cpufreq_set_freq(unsigned int max_freq, unsigned int min_freq,
+			unsigned int cpu)
+{
+	struct cpufreq_policy *policy;
+	unsigned int ret = 0;
+
+	if (!max_freq && !min_freq)
+		return ret;
+
+	get_online_cpus();
+	if (!cpu_online(cpu)) {
+		if (max_freq)
+			per_cpu(cpufreq_policy_save, cpu).max = max_freq;
+		if (min_freq)
+			per_cpu(cpufreq_policy_save, cpu).min = min_freq;
+	} else {
+		policy = cpufreq_cpu_get(cpu);
+		if (!policy) {
+			ret = -EINVAL;
+			goto skip;
+		}
+
+		down_write(&policy->rwsem);
+		if (max_freq && max_freq >= policy->min) {
+			policy->user_policy.max = max_freq;
+			policy->max = max_freq;
+			msm_thermal_set_frequency(cpu, max_freq, true);
+		}
+		if (min_freq && min_freq <= policy->max) {
+			policy->user_policy.min = min_freq;
+			policy->min = min_freq;
+			msm_thermal_set_frequency(cpu, min_freq, false);
+		}
+		up_write(&policy->rwsem);
+
+		cpufreq_cpu_put(policy);
+	}
+skip:
+	put_online_cpus();
+
+	return ret;
+}
+EXPORT_SYMBOL(cpufreq_set_freq);
+
+/*
+ *	cpufreq_get_max - get max freq of a cpu
+ *	@cpu: CPU whose max frequency needs to be known
+ */
+int cpufreq_get_max(unsigned int cpu)
+{
+	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
+	unsigned int freq = per_cpu(cpufreq_policy_save, cpu).max;
+
+	if (policy) {
+		freq = policy->max;
+		cpufreq_cpu_put(policy);
+	}
+
+	return freq;
+}
+EXPORT_SYMBOL(cpufreq_get_max);
+
+/*
+ *	cpufreq_get_min - get min freq of a cpu
+ *	@cpu: CPU whose min frequency needs to be known
+ */
+int cpufreq_get_min(unsigned int cpu)
+{
+	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
+	unsigned int freq = per_cpu(cpufreq_policy_save, cpu).min;
+
+	if (policy) {
+		freq = policy->min;
+		cpufreq_cpu_put(policy);
+	}
+
+	return freq;
+}
+EXPORT_SYMBOL(cpufreq_get_min);
+
+/*
+ *	cpufreq_set_gov - set governor for a cpu
+ *	@cpu: CPU whose governor needs to be changed
+ *	@target_gov: new governor to be set
+ */
+int cpufreq_set_gov(char *target_gov, unsigned int cpu)
+{
+	struct cpufreq_policy *policy;
+	unsigned int ret = 0;
+
+	get_online_cpus();
+	if (!cpu_online(cpu)) {
+		strncpy(per_cpu(cpufreq_policy_save, cpu).gov, target_gov,
+			CPUFREQ_NAME_LEN);
+	} else {
+		policy = cpufreq_cpu_get(cpu);
+		if (!policy) {
+			ret = -EINVAL;
+			goto skip;
+		}
+
+		down_write(&policy->rwsem);
+		ret = store_scaling_governor(policy, target_gov, ret);
+		up_write(&policy->rwsem);
+
+		cpufreq_cpu_put(policy);
+	}
+skip:
+	put_online_cpus();
+
+	return ret;
+}
+EXPORT_SYMBOL(cpufreq_set_gov);
+
+/*
+ *	cpufreq_get_gov - get governor for a cpu
+ *	@cpu: CPU whose governor needs to be known
+ */
+char *cpufreq_get_gov(unsigned int cpu)
+{
+	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
+	char *val = per_cpu(cpufreq_policy_save, cpu).gov;
+
+	if (policy) {
+		val = policy->governor->name;
+		cpufreq_cpu_put(policy);
+	}
+
+	return val;
+}
+EXPORT_SYMBOL(cpufreq_get_gov);
+#endif
+
 static int cpufreq_cpu_callback(struct notifier_block *nfb,
 					unsigned long action, void *hcpu)
 {
@@ -2515,16 +2457,6 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
 	}
 
 	pr_debug("driver %s up and running\n", driver_data->name);
-
-	// Initialize min and max scaling freq hard limits
-	min_freq_hardlimit[0] = CONFIG_MSM_CPU_FREQ_MIN_GROUP1;
-	max_freq_hardlimit[0] = CONFIG_MSM_CPU_FREQ_MAX_GROUP1;
-	min_freq_hardlimit[1] = CONFIG_MSM_CPU_FREQ_MIN_GROUP2;
-	max_freq_hardlimit[1] = CONFIG_MSM_CPU_FREQ_MAX_GROUP2;
-
-	// Initialize governor hard limits
-	sprintf(governor_hard[0], "%s", "");
-	sprintf(governor_hard[1], "%s", "");
 
 	return 0;
 err_if_unreg:
