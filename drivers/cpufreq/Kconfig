@@ -288,7 +288,6 @@ config CPU_FREQ_GOV_INTERACTIVE
 
 	  If in doubt, say N.
 
-<<<<<<< HEAD
 config CPU_FREQ_GOV_ZZMOOVE
 	tristate "'zzmoove' cpufreq governor"
 	depends on CPU_FREQ
@@ -298,7 +297,7 @@ config CPU_FREQ_GOV_ZZMOOVE
 	  % frequency steps to get smooth up/downscaling dependant on CPU load.
 
 	  if in doubt, say N.
-=======
+
 config CPU_FREQ_GOV_IMPULSE
 	tristate "'interactive' cpufreq policy governor"
 	help
@@ -306,7 +305,6 @@ config CPU_FREQ_GOV_IMPULSE
 	  designed for latency-sensitive workloads.
 
 	  If in doubt, say N.
->>>>>>> 5d15ee0... cpufreq: Add Impulse governor
 
 config CPU_FREQ_GOV_CONSERVATIVE
 	tristate "'conservative' cpufreq governor"
