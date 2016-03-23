@@ -251,7 +251,7 @@ CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-15"
 # Faux Sound Control for WCD9330 TomTom codec
 # disabled for now, needs adjustment
 
-# CONFIG_SOUND_CONTROL_HAX_3_GPL is not set
+CONFIG_SOUND_CONTROL_HAX_3_GPL=y
 
 # CONFIG_WAKE_GESTURES is not set
 CONFIG_WQ_POWER_EFFICIENT_DEFAULT=y
@@ -289,7 +289,3 @@ CONFIG_CPU_FREQ_GOV_BARRY_ALLEN=y
 
 # enough of this shit !
 CONFIG_MODULE_FORCE_LOAD=y
-
-# Faux Sound Control for WCD9330 TomTom codec
-# disabled for now, needs adjustment
-CONFIG_SOUND_CONTROL_HAX_3_GPL=y
