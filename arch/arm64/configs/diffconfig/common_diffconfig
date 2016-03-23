@@ -281,3 +281,7 @@ CONFIG_CPU_FREQ_GOV_BARRY_ALLEN=y
 # wake gestures - disable, partial implementation only
 # undecided yet on actual implementation
 # CONFIG_WAKE_GESTURES is not set
+
+# eCryptFS
+CONFIG_ECRYPT_FS=m
+CONFIG_ECRYPT_FS_MESSAGING=y
