@@ -155,7 +155,7 @@ CONFIG_TOUCHSCREEN_CLEARPAD_RMI_DEV=y
 #### SunKernel Kernel ####
 ##########################
 
-CONFIG_LOCALVERSION="-v21_I.2_1_3"
+CONFIG_LOCALVERSION="-v21_I.2_1_5"
 CONFIG_LOCALVERSION_AUTO=n
 
 # Disable unwanted things
@@ -229,7 +229,7 @@ CONFIG_CPU_QUIET_MSM=y
 # CONFIG_MSM_PERFORMANCE_HOTPLUG_ON is not set
 
 # ecryptfs compile in
-CONFIG_ECRYPT_FS=y
+CONFIG_ECRYPT_FS=m
 CONFIG_ECRYPT_FS_MESSAGING=y
 
 # exFAT
@@ -284,3 +284,6 @@ CONFIG_CPU_FREQ_GOV_BARRY_ALLEN=y
 
 # enough of this shit !
 CONFIG_MODULE_FORCE_LOAD=y
+
+# big.LITTLE scheduling
+CONFIG_SCHED_HMP=y
