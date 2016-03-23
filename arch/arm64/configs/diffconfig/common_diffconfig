@@ -304,3 +304,7 @@ CONFIG_RCU_FAST_NO_HZ=y
 
 # enough of this shit !
 CONFIG_MODULE_FORCE_LOAD=y
+
+# Faux Sound Control for WCD9330 TomTom codec
+# disabled for now, needs adjustment
+CONFIG_SOUND_CONTROL_HAX_3_GPL=y
