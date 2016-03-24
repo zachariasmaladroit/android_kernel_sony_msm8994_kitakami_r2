@@ -1152,6 +1152,8 @@ static void namespace_unlock(void)
 	list_splice_init(&unmounted, &head);
 	up_write(&namespace_sem);
 
+	synchronize_rcu_expedited();
+
 	while (!list_empty(&head)) {
 		mnt = list_first_entry(&head, struct mount, mnt_hash);
 		list_del_init(&mnt->mnt_hash);
