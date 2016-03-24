@@ -3209,12 +3209,14 @@
 		qcom,sensor-id = <7>;
 		qcom,poll-ms = <250>;
 		qcom,limit-temp = <60>;
+		qcom,limit-temp-big = <58>;
+		qcom,big-core-start = <4>;
 		qcom,temp-hysteresis = <10>;
 		qcom,therm-reset-temp = <115>;
 		qcom,freq-step = <2>;
 		qcom,freq-control-mask = <0xff>;
 		qcom,core-limit-temp = <80>;
-		qcom,core-temp-hysteresis = <10>;
+		qcom,core-temp-hysteresis = <2>;
 		qcom,core-control-mask = <0xfe>;
 		qcom,hotplug-temp = <105>;
 		qcom,hotplug-temp-hysteresis = <40>;
@@ -3224,7 +3226,7 @@
 				   "tsens_tz_sensor15", "tsens_tz_sensor6";
 		qcom,freq-mitigation-temp = <95>;
 		qcom,freq-mitigation-temp-hysteresis = <10>;
-		qcom,freq-mitigation-value = <960000>;
+		qcom,freq-mitigation-value = <864000>;
 		qcom,freq-mitigation-control-mask = <0xF0>;
 		qcom,online-hotplug-core;
 		qcom,synchronous-cluster-id = <0 1>;
