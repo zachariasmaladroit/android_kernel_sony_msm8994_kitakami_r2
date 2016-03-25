@@ -1150,6 +1150,9 @@ enum perf_event_task_context {
 	perf_nr_task_contexts,
 };
 
+/* mm/madvise.c */
+struct madvise_state_info;
+
 struct task_struct {
 	volatile long state;	/* -1 unrunnable, 0 runnable, >0 stopped */
 	void *stack;
@@ -1479,6 +1482,8 @@ struct task_struct {
 	struct pipe_inode_info *splice_pipe;
 
 	struct page_frag task_frag;
+
+	struct madvise_state_info *madvise_state;
 
 #ifdef	CONFIG_TASK_DELAY_ACCT
 	struct task_delay_info *delays;
