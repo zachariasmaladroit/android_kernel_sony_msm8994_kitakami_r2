@@ -36,6 +36,25 @@
 		(RECLAIM_WB_ASYNC) \
 	)
 
+TRACE_EVENT(mm_vmscan_frob,
+
+	TP_PROTO(unsigned long  zonefile, unsigned long zonefree),
+
+	TP_ARGS(zonefile, zonefree),
+
+	TP_STRUCT__entry(
+		__field(	unsigned long,	zonefile	)
+		__field(	unsigned long,	zonefree	)
+	),
+
+	TP_fast_assign(
+		__entry->zonefile	= zonefile;
+		__entry->zonefree	= zonefree;
+	),
+
+	TP_printk("file=%lu free =%lu", __entry->zonefile, __entry->zonefree)
+);
+
 TRACE_EVENT(mm_vmscan_kswapd_sleep,
 
 	TP_PROTO(int nid),
