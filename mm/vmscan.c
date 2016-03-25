@@ -1978,22 +1978,6 @@ bool enough_file_pages(struct zone *zone)
 	return ret;
 }
 
-bool enough_file_pages(struct zone *zone)
-{
-	bool ret = true;
-	unsigned long zonefile;
-	unsigned long zonefree;
-
-	zonefree = zone_page_state(zone, NR_FREE_PAGES);
-	zonefile = zone_page_state(zone, NR_ACTIVE_FILE) +
-		   zone_page_state(zone, NR_INACTIVE_FILE);
-
-	if (unlikely(zonefile + zonefree <= high_wmark_pages(zone)))
-		ret = false;
-
-	return ret;
-}
-
 /*
  * Determine how aggressively the anon and file LRU lists should be
  * scanned.  The relative value of each set of LRU lists is determined
