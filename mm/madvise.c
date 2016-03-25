@@ -19,6 +19,7 @@
 #include <linux/blkdev.h>
 #include <linux/swap.h>
 #include <linux/swapops.h>
+#include <linux/vmacache.h>
 
 /*
  * Any behaviour which results in changes to the vma->vm_flags needs to
@@ -252,6 +253,57 @@ static long madvise_willneed(struct vm_area_struct * vma,
 	return 0;
 }
 
+#define MADVISE_HASH		VMACACHE_HASH
+#define MADVISE_STATE_SIZE	VMACACHE_SIZE
+#define MADVISE_THRESHOLD	8
+
+struct madvise_state_info {
+	unsigned long start;
+	unsigned long end;
+	int count;
+	unsigned long jiffies;
+};
+
+/* Returns true if userspace is continually dropping the same address range */
+static bool ignore_madvise_hint(unsigned long start, unsigned long end)
+{
+	int i;
+
+	if (!current->madvise_state)
+		current->madvise_state = kzalloc(sizeof(struct madvise_state_info) * MADVISE_STATE_SIZE, GFP_KERNEL);
+	if (!current->madvise_state)
+		return false;
+
+	i = VMACACHE_HASH(start);
+	if (current->madvise_state[i].start != start ||
+	    current->madvise_state[i].end != end) {
+		/* cache miss */
+		current->madvise_state[i].start = start;
+		current->madvise_state[i].end = end;
+		current->madvise_state[i].count = 0;
+		current->madvise_state[i].jiffies = jiffies;
+	} else {
+		/* cache hit */
+		unsigned long reset = current->madvise_state[i].jiffies + HZ;
+		if (time_after(jiffies, reset)) {
+			/*
+			 * If it is a second since the last madvise on this
+			 * range or since madvise hints got ignored then reset
+			 * the counts and apply the hint again.
+			 */
+			current->madvise_state[i].count = 0;
+			current->madvise_state[i].jiffies = jiffies;
+		} else
+			current->madvise_state[i].count++;
+
+		if (current->madvise_state[i].count > MADVISE_THRESHOLD)
+			return true;
+		current->madvise_state[i].jiffies = jiffies;
+	}
+
+	return false;
+}
+
 /*
  * Application no longer needs these pages.  If the pages are dirty,
  * it's OK to just throw them away.  The app will be more careful about
@@ -278,6 +330,10 @@ static long madvise_dontneed(struct vm_area_struct * vma,
 	*prev = vma;
 	if (vma->vm_flags & (VM_LOCKED|VM_HUGETLB|VM_PFNMAP))
 		return -EINVAL;
+
+	/* Ignore hint if madvise is continually dropping the same range */
+	if (ignore_madvise_hint(start, end))
+		return 0;
 
 	if (unlikely(vma->vm_flags & VM_NONLINEAR)) {
 		struct zap_details details = {
