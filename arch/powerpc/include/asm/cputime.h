@@ -32,6 +32,9 @@ static inline void setup_cputime_one_jiffy(void) { }
 typedef u64 __nocast cputime_t;
 typedef u64 __nocast cputime64_t;
 
+typedef s64 signed_cputime_t;
+typedef s64 signed_cputime64_t;
+
 #ifdef __KERNEL__
 
 /*

@@ -21,6 +21,9 @@
 typedef u64 __nocast cputime_t;
 typedef u64 __nocast cputime64_t;
 
+typedef s64 signed_cputime_t;
+typedef s64 signed_cputime64_t;
+
 #define cputime_one_jiffy		jiffies_to_cputime(1)
 
 #define cputime_div(__ct, divisor)  div_u64((__force u64)__ct, divisor)

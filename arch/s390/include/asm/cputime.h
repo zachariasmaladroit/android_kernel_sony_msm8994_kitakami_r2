@@ -21,6 +21,9 @@
 typedef unsigned long long __nocast cputime_t;
 typedef unsigned long long __nocast cputime64_t;
 
+typedef signed long long signed_cputime_t;
+typedef signed long long signed_cputime64_t;
+
 static inline unsigned long __div(unsigned long long n, unsigned long base)
 {
 #ifndef CONFIG_64BIT
