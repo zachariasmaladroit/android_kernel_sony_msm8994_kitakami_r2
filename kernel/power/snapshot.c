@@ -814,9 +814,13 @@ void clear_free_pages(void)
 	memory_bm_position_reset(bm);
 	pfn = memory_bm_next_pfn(bm);
 	while (pfn != BM_END_OF_MAP) {
-		if (pfn_valid(pfn))
+		if (pfn_valid(pfn)) {
+#ifdef CONFIG_SANITIZE_FREED_PAGES_DEBUG
+			printk(KERN_INFO "Clearing page %p\n",
+					page_address(pfn_to_page(pfn)));
+#endif
 			clear_highpage(pfn_to_page(pfn));
-
+		}
 		pfn = memory_bm_next_pfn(bm);
 	}
 	memory_bm_position_reset(bm);
