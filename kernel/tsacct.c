@@ -126,24 +126,15 @@ static void __acct_update_integrals(struct task_struct *tsk,
 {
 	cputime_t time, dtime;
 	struct timeval value;
+	unsigned long flags;
 	u64 delta;
 
 	if (unlikely(!tsk->mm))
 		return;
 
-	/*
-	 * This code is called both from task context and irq context.
-	 * There is a rare race where irq context advances tsk->acct_timexpd
-	 * to a value larger than time, leading to a negative dtime, which
-	 * could lead to a divide error in cputime_to_jiffies.
-	 * The statistics updated here are fairly rough estimates; just
-	 * ignore irq and task double accounting the same timer tick.
-	 */
+	local_irq_save(flags);
 	time = stime + utime;
-	dtime = time - READ_ONCE(tsk->acct_timexpd);
-	if (unlikely((signed_cputime_t)dtime <= 0))
-		return;
-
+	dtime = time - tsk->acct_timexpd;
 	jiffies_to_timeval(cputime_to_jiffies(dtime), &value);
 	delta = value.tv_sec;
 	delta = delta * USEC_PER_SEC + value.tv_usec;
@@ -153,6 +144,7 @@ static void __acct_update_integrals(struct task_struct *tsk,
 		tsk->acct_rss_mem1 += delta * get_mm_rss(tsk->mm);
 		tsk->acct_vm_mem1 += delta * tsk->mm->total_vm;
 	}
+	local_irq_restore(flags);
 }
 
 /**
