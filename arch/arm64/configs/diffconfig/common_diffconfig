@@ -292,3 +292,6 @@ CONFIG_KSM_CHECK_PAGE=y
 
 # enable powermanagement for bluetooth
 CONFIG_MSM_BT_POWER=y
+
+# enable additional security features
+CONFIG_SANITIZE_FREED_PAGES=y
