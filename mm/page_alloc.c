@@ -905,24 +905,6 @@ static int prep_new_page(struct page *page, int order, gfp_t gfp_flags)
 		for (i = 0; i < (1 << order); i++)
 			clear_highpage(page + i);
 #endif
-#ifdef CONFIG_SANITIZE_FREED_PAGES_DEBUG
-	for (i = 0; i < (1 << order); i++) {
-		struct page *p = page + i;
-		void *kaddr = kmap_atomic(p);
-		void *found = memchr_inv(kaddr, 0, PAGE_SIZE);
-		kunmap_atomic(kaddr);
-
-		if (found) {
-			pr_err("page %p is not zero on alloc! %s\n",
-					page_address(p), (gfp_flags &
-						__GFP_ZERO) ?
-					"fixing." : "");
-			if (gfp_flags & __GFP_ZERO) {
-				clear_highpage(p);
-			}
-		}
-	}
-#endif
 
 	if (order && (gfp_flags & __GFP_COMP))
 		prep_compound_page(page, order);

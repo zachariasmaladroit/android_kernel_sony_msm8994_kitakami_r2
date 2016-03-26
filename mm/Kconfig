@@ -545,16 +545,6 @@ config SANITIZE_FREED_PAGES
 
 	  If unsure, say N.
 
-config SANITIZE_FREED_PAGES_DEBUG
-	bool "Debug sanitize pages feature"
-	default n
-	depends on SANITIZE_FREED_PAGES && DEBUG_KERNEL
-	help
-	  This option adds some debugging code for the SANITIZE_FREED_PAGES
-	  option, as well as verification code to ensure pages are really
-	  zeroed. Don't enable unless you want to debug this feature.
-	  If unsure, say N.
-
 config DIRECT_RECLAIM_FILE_PAGES_ONLY
 	bool "Reclaim file pages only on direct reclaim path"
 	depends on ZSWAP
