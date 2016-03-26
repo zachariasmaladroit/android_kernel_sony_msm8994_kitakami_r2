@@ -288,7 +288,9 @@ CONFIG_MODULE_FORCE_LOAD=y
 # big.LITTLE scheduling
 CONFIG_SCHED_HMP=y
 
+CONFIG_KSM=y
 CONFIG_KSM_CHECK_PAGE=y
+CONFIG_UKSM=y
 
 # enable powermanagement for bluetooth
 # CONFIG_MSM_BT_POWER is not set
