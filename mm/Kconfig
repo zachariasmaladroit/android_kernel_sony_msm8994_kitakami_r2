@@ -533,18 +533,6 @@ config ZSWAP_ENABLE_WRITEBACK
 	depends on ZSWAP
 	default n
 
-config SANITIZE_FREED_PAGES
-	bool "Sanitize memory pages after free"
-	default n
-	help
-	  This option is used to make sure all pages freed are zeroed. This is
-	  quite low-level and doesn't handle your slab buffers.
-	  It has various applications, from preventing some info leaks to
-	  helping kernel same-page merging in virtualised environments.
-	  Depending on your workload it will greatly reduce performance.
-
-	  If unsure, say N.
-
 config DIRECT_RECLAIM_FILE_PAGES_ONLY
 	bool "Reclaim file pages only on direct reclaim path"
 	depends on ZSWAP
