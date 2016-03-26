@@ -310,8 +310,8 @@ CONFIG_BCMDHD_PCIE=y
 # CONFIG_BCM4354 is not set
 CONFIG_BCM4356=y
 # CONFIG_BCM4358 is not set
-CONFIG_BCMDHD_FW_PATH="/system/etc/firmware/wlan/bcmdhd/fw_bcmdhd.bin"
-CONFIG_BCMDHD_NVRAM_PATH="/system/etc/firmware/wlan/bcmdhd/bcmdhd.cal"
+CONFIG_BCMDHD_FW_PATH="/system/etc/firmware/wlan/bcmdhd/fw_bcmdhd_2.bin"
+CONFIG_BCMDHD_NVRAM_PATH="/system/etc/firmware/wlan/bcmdhd/bcmdhd_2.cal"
 CONFIG_DHD_USE_STATIC_BUF=y
 # CONFIG_DHD_USE_SCHED_SCAN is not set
 CONFIG_DHD_SET_RANDOM_MAC_VAL=0x001A11
