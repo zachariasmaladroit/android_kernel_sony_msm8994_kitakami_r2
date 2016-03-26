@@ -155,7 +155,7 @@ CONFIG_TOUCHSCREEN_CLEARPAD_RMI_DEV=y
 #### SunKernel Kernel ####
 ##########################
 
-CONFIG_LOCALVERSION="-v21_I.4_6_2"
+CONFIG_LOCALVERSION="-v21_I.4_7_2"
 CONFIG_LOCALVERSION_AUTO=n
 
 # Disable unwanted things
@@ -323,3 +323,8 @@ CONFIG_DHD_SET_RANDOM_MAC_VAL=0x001A11
 # CONFIG_WL_TI is not set
 # CONFIG_MWIFIEX is not set
 CONFIG_WIFI_CONTROL_FUNC=y
+
+# uneeded modules
+# CONFIG_MMC_BLOCK_TEST is not set
+# CONFIG_IOSCHED_TEST is not set
+# CONFIG_E1000E is not set
