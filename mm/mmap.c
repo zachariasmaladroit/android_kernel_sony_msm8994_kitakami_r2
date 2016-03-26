@@ -1313,17 +1313,6 @@ unsigned long do_mmap_pgoff(struct file *file, unsigned long addr,
 		default:
 			return -EINVAL;
 		}
-		
-		/*
-		 * Read-only SUID/SGID binares are mapped as copy-on-read
-		 * this protects them against exploiting with Rowhammer.
-		 */
-		if (!(file->f_mode & FMODE_WRITE) &&
-		    ((inode->i_mode & S_ISUID) || ((inode->i_mode & S_ISGID) &&
-			    (inode->i_mode & S_IXGRP)))) {
-			vm_flags &= ~(VM_SHARED | VM_MAYSHARE);
-			vm_flags |= VM_COR;
-		}
 	} else {
 		switch (flags & MAP_TYPE) {
 		case MAP_SHARED:

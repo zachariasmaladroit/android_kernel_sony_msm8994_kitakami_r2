@@ -3524,7 +3524,6 @@ static int do_linear_fault(struct mm_struct *mm, struct vm_area_struct *vma,
 			- vma->vm_start) >> PAGE_SHIFT) + vma->vm_pgoff;
 
 	pte_unmap(page_table);
-	if (!(flags & FAULT_FLAG_WRITE) && !(vma->vm_flags & VM_COR))
 	return __do_fault(mm, vma, address, pmd, pgoff, flags, orig_pte);
 }
 
