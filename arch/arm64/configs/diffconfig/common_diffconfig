@@ -291,7 +291,7 @@ CONFIG_SCHED_HMP=y
 CONFIG_KSM_CHECK_PAGE=y
 
 # enable powermanagement for bluetooth
-CONFIG_MSM_BT_POWER=y
+# CONFIG_MSM_BT_POWER is not set
 
 # enable additional security features
 # CONFIG_SANITIZE_FREED_PAGES is not set
