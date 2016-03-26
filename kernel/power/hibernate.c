@@ -295,12 +295,6 @@ static int create_image(int platform_mode)
 	restore_processor_state();
 	if (!in_suspend) {
 		events_check_enabled = false;
-		
-#ifdef CONFIG_SANITIZE_FREED_PAGES
-		clear_free_pages();
-		printk(KERN_INFO "PM: free pages cleared after restore\n");
-#endif
-
 		platform_leave(platform_mode);
 	}
 
