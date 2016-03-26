@@ -155,7 +155,7 @@ CONFIG_TOUCHSCREEN_CLEARPAD_RMI_DEV=y
 #### SunKernel Kernel ####
 ##########################
 
-CONFIG_LOCALVERSION="-v21_I.2_2_3"
+CONFIG_LOCALVERSION="-v21_I.4_3"
 CONFIG_LOCALVERSION_AUTO=n
 
 # Disable unwanted things
@@ -294,4 +294,4 @@ CONFIG_KSM_CHECK_PAGE=y
 CONFIG_MSM_BT_POWER=y
 
 # enable additional security features
-CONFIG_SANITIZE_FREED_PAGES=y
+# CONFIG_SANITIZE_FREED_PAGES is not set
