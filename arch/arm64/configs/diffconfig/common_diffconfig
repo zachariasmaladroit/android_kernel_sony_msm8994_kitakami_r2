@@ -299,7 +299,28 @@ CONFIG_UKSM=y
 # CONFIG_SANITIZE_FREED_PAGES is not set
 
 # RCU stuff
-CONFIG_RCU_NOCB_CPU=y
+# CONFIG_RCU_NOCB_CPU is not set
 # CONFIG_RCU_NOCB_CPU_NONE is not set
 # CONFIG_RCU_NOCB_CPU_ZERO is not set
-CONFIG_RCU_NOCB_CPU_ALL=y
+# CONFIG_RCU_NOCB_CPU_ALL is not set
+
+# bcmdhd
+CONFIG_BCMDHD=m
+# CONFIG_BCMDHD_SDIO is not set
+CONFIG_BCMDHD_PCIE=y
+# CONFIG_BCM4339 is not set
+# CONFIG_BCM4354 is not set
+CONFIG_BCM4356=y
+# CONFIG_BCM4358 is not set
+CONFIG_BCMDHD_FW_PATH="/system/etc/firmware/wlan/bcmdhd/fw_bcmdhd.bin"
+CONFIG_BCMDHD_NVRAM_PATH="/system/etc/firmware/wlan/bcmdhd/bcmdhd.cal"
+CONFIG_DHD_USE_STATIC_BUF=y
+# CONFIG_DHD_USE_SCHED_SCAN is not set
+CONFIG_DHD_SET_RANDOM_MAC_VAL=0x001A11
+# CONFIG_DHD_OF_SUPPORT is not set
+# CONFIG_BRCMFMAC is not set
+# CONFIG_HOSTAP is not set
+# CONFIG_IPW2100 is not set
+# CONFIG_LIBERTAS is not set
+# CONFIG_WL_TI is not set
+# CONFIG_MWIFIEX is not set
