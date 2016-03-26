@@ -71,7 +71,6 @@
 #include <linux/signalfd.h>
 #include <linux/uprobes.h>
 #include <linux/aio.h>
-#include <linux/delay.h>
 
 #include <asm/pgtable.h>
 #include <asm/pgalloc.h>
@@ -358,8 +357,6 @@ static struct task_struct *dup_task_struct(struct task_struct *orig)
 #endif
 	tsk->splice_pipe = NULL;
 	tsk->task_frag.page = NULL;
-
-	tsk->brute_expires = 0;
 
 	account_kernel_stack(ti, 1);
 
@@ -1691,10 +1688,6 @@ long do_fork(unsigned long clone_flags,
 
 		if (clone_flags & CLONE_PARENT_SETTID)
 			put_user(nr, parent_tidptr);
-
-		if (unlikely(current->brute_expires) && time_before(get_seconds(),
-		    current->brute_expires))
-			msleep(30 * 1000);
 
 		if (clone_flags & CLONE_VFORK) {
 			p->vfork_done = &vfork;

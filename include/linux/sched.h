@@ -1550,7 +1550,6 @@ struct task_struct {
 	unsigned int	sequential_io;
 	unsigned int	sequential_io_avg;
 #endif
-	unsigned long brute_expires;
 };
 
 /* Future-safe accessor for struct task_struct's cpus_allowed. */

@@ -497,7 +497,6 @@ void do_coredump(siginfo_t *siginfo)
 	bool need_nonrelative = false;
 	bool core_dumped = false;
 	static atomic_t core_dump_count = ATOMIC_INIT(0);
-	int sig = siginfo->si_signo;
 	struct coredump_params cprm = {
 		.siginfo = siginfo,
 		.regs = signal_pt_regs(),
@@ -511,15 +510,6 @@ void do_coredump(siginfo_t *siginfo)
 	};
 
 	audit_core_dumps(siginfo->si_signo);
-
-	if (sig == SIGSEGV || sig == SIGBUS || sig == SIGKILL || sig == SIGILL) {
-		rcu_read_lock();
-		read_lock(&tasklist_lock);
-		if (current->real_parent && (current->flags & PF_FORKNOEXEC))
-			current->real_parent->brute_expires = get_seconds() + (30 * 60);
-		read_unlock(&tasklist_lock);
-		rcu_read_unlock();
-	}
 
 	binfmt = mm->binfmt;
 	if (!binfmt || !binfmt->core_dump)
