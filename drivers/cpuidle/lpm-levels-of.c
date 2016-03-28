@@ -112,11 +112,13 @@ static int create_lvl_avail_nodes(const char *name,
 		goto failed;
 	}
 
+	sysfs_attr_init(&avail->idle_enabled_attr.attr);
 	avail->idle_enabled_attr.attr.name = lpm_types[IDLE].str;
 	avail->idle_enabled_attr.attr.mode = 0644;
 	avail->idle_enabled_attr.show = lpm_enable_show;
 	avail->idle_enabled_attr.store = lpm_enable_store;
 
+	sysfs_attr_init(&avail->suspend_enabled_attr.attr);
 	avail->suspend_enabled_attr.attr.name = lpm_types[SUSPEND].str;
 	avail->suspend_enabled_attr.attr.mode = 0644;
 	avail->suspend_enabled_attr.show = lpm_enable_show;
@@ -277,7 +279,9 @@ static int parse_cluster_params(struct device_node *node, struct lpm_cluster *c)
 	};
 	struct lpm_match match_tbl[] = {
 		{"l2", set_l2_mode},
-		{"cci", set_cci_mode},
+		{"cci", set_system_mode},
+		{"l3", set_l3_mode},
+		{"cbf", set_system_mode},
 	};
 
 	key = "label";
@@ -441,6 +445,8 @@ static int parse_cluster_level(struct device_node *node,
 	}
 
 	level->notify_rpm = of_property_read_bool(node, "qcom,notify-rpm");
+	level->disable_dynamic_routing = of_property_read_bool(node,
+					"qcom,disable-dynamic-int-routing");
 	level->last_core_only = of_property_read_bool(node,
 					"qcom,last-core-only");
 
