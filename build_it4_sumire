@@ -63,13 +63,20 @@ cp ~/android/final_files/Z5_Sunkernel_Permissive_v.zip ~/android/z5-kernelbuild/
 echo "Packaging 'Enforcing' kernel"
 echo " "
 
-fi
 
-echo "Copying over ecryptfs kernel module"
-
-cp fs/ecryptfs/ecryptfs.ko ~/android/z5-kernelbuild/modules4sumire/ecryptfs.ko_Z5_Sunkernel_v-$version
+if [ -e ~/android/z5-kernels/fs/ecryptfs/ecryptfs.ko ]
+then
 
 echo " "
+echo "Copying over ecryptfs kernel module"
+echo " "
+
+cp ~/android/z5-kernels/fs/ecryptfs/ecryptfs.ko ~/android/z5-kernelbuild/modules4sumire/ecryptfs.ko_Z5_Sunkernel_v-$version
+
+echo " "
+echo "done"
+
+fi
 
 #if [ -e ../final_files/boot_E6653_E.img ]
 #then
