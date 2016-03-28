@@ -58,25 +58,32 @@ echo " "
 echo "Copying to z5-kernelbuild"
 echo " "
 
-cp ~/android/final_files/Z5_Sunkernel_Permissive_v.zip ~/android/z5-kernelbuild/Z5_Sunkernel_Permissive_v$version.zip
+cp ~/android/final_files/Z5_Sunkernel_Permissive_v.zip ~/android/z5-kernelbuild/Z5_Sunkernel_Permissive_v-$version.zip
 
 echo "Packaging 'Enforcing' kernel"
 echo " "
 
 fi
-if [ -e ../final_files/boot_E6653_E.img ]
-then
 
+echo "Copying over ecryptfs kernel module"
+
+cp fs/ecryptfs/ecryptfs.ko ~/android/z5-kernelbuild/modules4sumire/ecryptfs.ko_Z5_Sunkernel_v-$version
+
+echo " "
+
+#if [ -e ../final_files/boot_E6653_E.img ]
+#then
+#
 ### Zip boot.img
-cd ../final_files/
-mv boot_E6653_E.img boot.img
-zip -r Z5_Sunkernel_Enforcing_v.zip boot.img META-INF/
-rm -f boot.img
-
-echo " "
-echo "Copying to z5-kernelbuild"
-echo " "
-
-cp ~/android/final_files/Z5_Sunkernel_Enforcing_v.zip ~/android/z5-kernelbuild/Z5_Sunkernel_Enforcing_v$version.zip
-
-fi
+#cd ../final_files/
+#mv boot_E6653_E.img boot.img
+#zip -r Z5_Sunkernel_Enforcing_v.zip boot.img META-INF/
+#rm -f boot.img
+#
+#echo " "
+#echo "Copying to z5-kernelbuild"
+#echo " "
+#
+#cp ~/android/final_files/Z5_Sunkernel_Enforcing_v.zip ~/android/z5-kernelbuild/Z5_Sunkernel_Enforcing_v-$version.zip
+#
+#fi
