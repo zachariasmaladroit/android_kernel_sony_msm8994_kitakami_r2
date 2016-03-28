@@ -317,3 +317,6 @@ CONFIG_PROC_DEVICETREE=y
 
 # this should go along with other hotpluggin
 # CONFIG_MSM_CORE_CTL_HELPER is not set
+
+# memory fragmentation and allocation stuff
+CONFIG_ARCH_THREAD_INFO_ALLOCATOR=y
