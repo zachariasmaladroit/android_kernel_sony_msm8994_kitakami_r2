@@ -2897,6 +2897,7 @@ static int kgsl_setup_useraddr(struct kgsl_mem_entry *entry,
 	struct kgsl_map_user_mem *param = data;
 	struct dma_buf *dmabuf = NULL;
 	struct vm_area_struct *vma = NULL;
+	int ret;
 
 	if (param->offset != 0 || param->hostptr == 0
 		|| !KGSL_IS_PAGE_ALIGNED(param->hostptr)
@@ -2913,7 +2914,7 @@ static int kgsl_setup_useraddr(struct kgsl_mem_entry *entry,
 	if (vma && vma->vm_file) {
 		int fd;
 
-		int ret = check_vma_flags(vma, entry->memdesc.flags);
+		ret = check_vma_flags(vma, entry->memdesc.flags);
 		if (ret) {
 			up_read(&current->mm->mmap_sem);
 			return ret;
@@ -2937,7 +2938,7 @@ static int kgsl_setup_useraddr(struct kgsl_mem_entry *entry,
 	up_read(&current->mm->mmap_sem);
 
 	if (!IS_ERR_OR_NULL(dmabuf)) {
-		int ret = kgsl_setup_dma_buf(entry, pagetable, device, dmabuf);
+		ret = kgsl_setup_dma_buf(entry, pagetable, device, dmabuf);
 		if (ret)
 			dma_buf_put(dmabuf);
 		else {
