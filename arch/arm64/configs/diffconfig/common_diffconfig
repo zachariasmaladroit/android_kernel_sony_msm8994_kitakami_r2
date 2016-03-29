@@ -155,7 +155,7 @@ CONFIG_TOUCHSCREEN_CLEARPAD_RMI_DEV=y
 #### SunKernel Kernel ####
 ##########################
 
-CONFIG_LOCALVERSION="-v22_II_1.5"
+CONFIG_LOCALVERSION="-v22_II_1.6"
 CONFIG_LOCALVERSION_AUTO=n
 
 # Disable unwanted things
