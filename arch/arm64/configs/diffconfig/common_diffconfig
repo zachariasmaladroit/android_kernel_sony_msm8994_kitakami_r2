@@ -320,3 +320,6 @@ CONFIG_PROC_DEVICETREE=y
 
 # memory fragmentation and allocation stuff
 CONFIG_ARCH_THREAD_INFO_ALLOCATOR=y
+
+# enable powersuspend
+CONFIG_POWERSUSPEND=y
