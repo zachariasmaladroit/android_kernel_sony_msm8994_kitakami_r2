@@ -143,6 +143,12 @@ config CPU_FREQ_DEFAULT_GOV_ALUCARD
 	select CPU_FREQ_GOV_ALUCARD
 	help
 
+config CPU_FREQ_DEFAULT_GOV_SMARTMAX
+	bool "smartmax"
+	select CPU_FREQ_GOV_SMARTMAX
+	help
+	  Use the CPUFreq governor 'optimax' as defaul
+
 endchoice
 
 config CPU_FREQ_GOV_PERFORMANCE
@@ -271,6 +277,10 @@ config CPU_FREQ_GOV_ALUCARD
 	tristate "'alucard' cpufreq governor"
 	depends on CPU_FREQ
 	select CPU_FREQ_GOV_COMMON
+
+config CPU_FREQ_GOV_SMARTMAX
+	tristate "'smartmax' cpufreq policy governor"
+	select CPU_FREQ_TABLE 
 
 config CPU_BOOST
 	tristate "Event base short term CPU freq boost"
