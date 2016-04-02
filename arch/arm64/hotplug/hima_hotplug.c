@@ -19,42 +19,36 @@
 #include <linux/input.h>
 #include <linux/kobject.h>
 
-#ifdef CONFIG_STATE_NOTIFIER
+#ifdef CONFIG_STATE_NOTIFIER2
 #include <linux/state_notifier.h>
 #endif
 
 #include <linux/cpufreq.h>
 
 #define HIMA_HOTPLUG		       "hima_hotplug"
-#define HIMA_HOTPLUG_MAJOR_VERSION     4
-#define HIMA_HOTPLUG_MINOR_VERSION     0
+#define HIMA_HOTPLUG_MAJOR_VERSION     	5
+#define HIMA_HOTPLUG_MINOR_VERSION     	0
 
-#define DEF_SAMPLING_MS                120
-#define RESUME_SAMPLING_MS             30
-#define START_DELAY_MS                 5000
+#define DEF_SAMPLING_MS                	120
+#define RESUME_SAMPLING_MS             	30
+#define START_DELAY_MS                 	10000
 
-#define DEFAULT_MIN_CPUS_ONLINE        2
-#define DEFAULT_MAX_CPUS_ONLINE        8
-#define DEFAULT_MIN_UP_TIME            2500
+#define DEFAULT_MIN_CPUS_ONLINE        	2
+#define DEFAULT_MAX_CPUS_ONLINE        	8
+#define DEFAULT_MIN_UP_TIME            	1500
 
-#define DEFAULT_NR_FSHIFT              3
-#define CAPACITY_RESERVE               50
+#define DEFAULT_NR_FSHIFT              	4
 
-#if defined(CONFIG_ARCH_MSM8994)
-#define THREAD_CAPACITY                (450 - CAPACITY_RESERVE)
-#else
-#define THREAD_CAPACITY		       (250 - CAPACITY_RESERVE)
-#endif
-
-#define CPU_NR_THRESHOLD	       ((THREAD_CAPACITY << 1) - (THREAD_CAPACITY >> 1))
-
-#define MULT_FACTOR                    10
-#define DIV_FACTOR                     100000
+/* Tuned for MSM8994 */
+#define THREAD_CAPACITY			400
+#define CPU_NR_THRESHOLD		((THREAD_CAPACITY << 1) - (THREAD_CAPACITY >> 1))
 
 static struct delayed_work hima_hotplug_work;
 static struct work_struct up_down_work;
 static struct workqueue_struct *hima_hotplug_wq;
+#ifdef CONFIG_STATE_NOTIFIER2
 static struct notifier_block notif;
+#endif
 
 struct ip_cpu_info {
 	unsigned long cpu_nr_running;
@@ -62,38 +56,23 @@ struct ip_cpu_info {
 };
 static DEFINE_PER_CPU(struct ip_cpu_info, ip_info);
 
-/* HotPlug Driver controls */
+/* Driver Controls */
 static atomic_t hima_hotplug_active = ATOMIC_INIT(1);
 static unsigned int min_cpus_online = DEFAULT_MIN_CPUS_ONLINE;
 static unsigned int max_cpus_online = DEFAULT_MAX_CPUS_ONLINE;
 static unsigned int min_cpu_up_time = DEFAULT_MIN_UP_TIME;
 
-static unsigned int current_profile_no = 0;
-static unsigned int cpu_nr_run_threshold = CPU_NR_THRESHOLD;
-static bool screen_on = 1;
-
-/* HotPlug Driver Tuning */
+/* Driver Tuning */
 static unsigned int def_sampling_ms = DEF_SAMPLING_MS;
 static unsigned int nr_fshift = DEFAULT_NR_FSHIFT;
 
-static unsigned int nr_run_thresholds_balanced[] = {
-	(THREAD_CAPACITY * 100 * MULT_FACTOR * 2) / DIV_FACTOR,
-	(THREAD_CAPACITY * 300 * MULT_FACTOR * 2) / DIV_FACTOR,
-	(THREAD_CAPACITY * 500 * MULT_FACTOR * 2) / DIV_FACTOR,
-	(THREAD_CAPACITY * 850 * MULT_FACTOR * 2) / DIV_FACTOR,
-	(THREAD_CAPACITY * 1100 * MULT_FACTOR * 2) / DIV_FACTOR,
-	(THREAD_CAPACITY * 1300 * MULT_FACTOR * 2) / DIV_FACTOR,
-        (THREAD_CAPACITY * 1560 * MULT_FACTOR * 2) / DIV_FACTOR,
-        (THREAD_CAPACITY * 1800 * MULT_FACTOR * 2) / DIV_FACTOR,
-	UINT_MAX
-};
+/* Profile Controls*/
+static unsigned int current_profile_no = 0;
+static unsigned int cpu_nr_run_threshold = CPU_NR_THRESHOLD;
 
-static unsigned int nr_run_thresholds_eco[] = {
-        (THREAD_CAPACITY * 50 * MULT_FACTOR * 2) / DIV_FACTOR,
-        (THREAD_CAPACITY * 275 * MULT_FACTOR * 2) / DIV_FACTOR,
-        (THREAD_CAPACITY * 550 * MULT_FACTOR * 2) / DIV_FACTOR,
-	(THREAD_CAPACITY * 800 * MULT_FACTOR * 2) / DIV_FACTOR,
-        UINT_MAX
+/* Profile Tuning */
+static unsigned int nr_run_thresholds_balanced[] = {
+	10, 14, 18, 22, 24, 28, UINT_MAX
 };
 
 static unsigned int nr_run_thresholds_disable[] = {
@@ -102,7 +81,6 @@ static unsigned int nr_run_thresholds_disable[] = {
 
 static unsigned int *nr_run_profiles[] = {
 	nr_run_thresholds_balanced,
-	nr_run_thresholds_eco,
 	nr_run_thresholds_disable
 };
 
@@ -113,12 +91,7 @@ static unsigned int calculate_thread_stats(void)
 	unsigned int threshold_size;
 	unsigned int *current_profile = nr_run_profiles[current_profile_no];
 
-        nr_fshift = 4;
-
-	if(current_profile_no == 0)
-		threshold_size = ARRAY_SIZE(nr_run_thresholds_balanced);
-	else if(current_profile_no == 1)
-		threshold_size = ARRAY_SIZE(nr_run_thresholds_eco);
+	threshold_size = ARRAY_SIZE(nr_run_thresholds_balanced);
 
 	for (nr_run = 1; nr_run < threshold_size; nr_run++) {
 		unsigned int nr_threshold;
@@ -128,7 +101,8 @@ static unsigned int calculate_thread_stats(void)
 			break;
 	}
 
-	return nr_run;
+	/* Keep 1 little and 1 big core on */
+	return (nr_run + 1) < max_cpus_online ? (nr_run + 1) : max_cpus_online;
 }
 
 static void update_per_cpu_stat(void)
@@ -157,14 +131,6 @@ static void __ref cpu_up_down_work(struct work_struct *work)
 
 	online_cpus = num_online_cpus();
 
-	/* Make sure we don't have less or
-	 * more cpus online than we want.
-	 */
-	if (target < min_cpus_online)
-		target = min_cpus_online;
-	else if (target > max_cpus_online)
-		target = max_cpus_online;
-
 	/* Break early if we are on target */
 	if(target == online_cpus)
 		return;
@@ -173,19 +139,19 @@ static void __ref cpu_up_down_work(struct work_struct *work)
 		for_each_online_cpu(cpu) {
 			l_ip_info = &per_cpu(ip_info, cpu);
 
-			if (cpu == 0 || (cpu == 4 && screen_on )||
-				((ktime_to_ms(ktime_get()) - l_ip_info->cpu_up_time) < min_cpu_up_time))
+			if (cpu == 0 || cpu == 4 || ((ktime_to_ms(ktime_get()) - l_ip_info->cpu_up_time) < min_cpu_up_time))
 				continue;
 			l_nr_threshold = cpu_nr_run_threshold << 1 / (num_online_cpus());
-				if (l_ip_info->cpu_nr_running < l_nr_threshold)
+			if (l_ip_info->cpu_nr_running < l_nr_threshold)
 				cpu_down(cpu);
+
 			if (num_online_cpus() <= target)
 				break;
 		}
 	} else {
 		update_per_cpu_stat();
 		for_each_cpu_not(cpu, cpu_online_mask) {
-			if(cpu == 0)
+			if(cpu == 0 || cpu == 4)
 				continue;
 			cpu_up(cpu);
 			l_ip_info = &per_cpu(ip_info, cpu);
@@ -205,6 +171,8 @@ static void hima_hotplug_work_fn(struct work_struct *work)
 					msecs_to_jiffies(def_sampling_ms));
 }
 
+
+#ifdef CONFIG_STATE_NOTIFIER2
 static void __ref hima_hotplug_suspend(void)
 {
 	max_cpus_online = 3;
@@ -223,7 +191,6 @@ static void __ref hima_hotplug_resume(void)
 		cpu_up(cpu);
 }
 
-#ifdef CONFIG_STATE_NOTIFIER
 static int state_notifier_callback(struct notifier_block *this,
 				unsigned long event, void *data)
 {
@@ -257,7 +224,7 @@ static int __ref hima_hotplug_start(void)
 		goto err_out;
 	}
 
-#ifdef CONFIG_STATE_NOTIFIER
+#ifdef CONFIG_STATE_NOTIFIER2
 	notif.notifier_call = state_notifier_callback;
 	if (state_register_client(&notif)) {
 		pr_err("%s: Failed to register State notifier callback\n",
@@ -279,8 +246,10 @@ static int __ref hima_hotplug_start(void)
 
 	return ret;
 
+#ifdef CONFIG_STATE_NOTIFIER2
 err_dev:
 	destroy_workqueue(hima_hotplug_wq);
+#endif
 err_out:
 	atomic_set(&hima_hotplug_active, 0);
 	return ret;
@@ -291,7 +260,7 @@ static void hima_hotplug_stop(void)
 	flush_workqueue(hima_hotplug_wq);
 	cancel_work_sync(&up_down_work);
 	cancel_delayed_work_sync(&hima_hotplug_work);
-#ifdef CONFIG_STATE_NOTIFIER
+#ifdef CONFIG_STATE_NOTIFIER2
 	state_unregister_client(&notif);
 #endif
 	destroy_workqueue(hima_hotplug_wq);
@@ -470,10 +439,9 @@ static void __exit hima_hotplug_exit(void)
 	sysfs_remove_group(kernel_kobj, &hima_hotplug_attr_group);
 }
 
-late_initcall(hima_hotplug_init);
+arch_initcall(hima_hotplug_init);
 module_exit(hima_hotplug_exit);
 
-MODULE_AUTHOR("Paul Reioux <reioux@gmail.com>");
 MODULE_AUTHOR("Chad Cormier Roussel <chadcormierroussel@gmail.com>");
 MODULE_DESCRIPTION("An intelligent cpu hotplug driver for "
 	"Low Latency Frequency Transition capable processors");
