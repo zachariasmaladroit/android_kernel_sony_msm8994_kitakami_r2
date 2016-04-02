@@ -66,7 +66,8 @@ then
 		echo "Copying over ecryptfs kernel module"
 		echo " "
 
-		cp ~/android/z5-kernels/fs/ecryptfs/ecryptfs.ko ~/android/z5-kernelbuild/modules4sumire_dsds/ecryptfs.ko_Z5-dsds_Sunkernel_v$version
+#		cp ~/android/z5-kernels/fs/ecryptfs/ecryptfs.ko ~/android/z5-kernelbuild/modules4sumire_dsds/ecryptfs.ko_Z5-dsds_Sunkernel_v$version
+		zip ~/android/z5-kernelbuild/modules4sumire_dsds/ecryptfs.ko_Z5-dsds_Sunkernel_v$version.zip ~/android/z5-kernels/fs/ecryptfs/ecryptfs.ko
 
 		echo " "
 		echo "done"
