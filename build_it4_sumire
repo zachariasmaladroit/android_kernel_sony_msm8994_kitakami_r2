@@ -13,9 +13,9 @@ export CROSS_COMPILE=aarch64-linux-android-
 make aosp_kitakami_sumire_defconfig
 make -j 8
 
-#echo "checking for compiled kernel..."
-#if [ -f arch/arm64/boot/Image.gz-dtb ]
-#then
+echo "checking for compiled kernel..."
+if [ -f arch/arm64/boot/Image.gz-dtb ]
+then
 
 echo "generating device tree..."
 make dtbs
