@@ -181,6 +181,7 @@ void cpuidle_install_idle_handler(void)
 		/* Make sure all changes finished before we switch to new idle */
 		smp_wmb();
 		initialized = 1;
+		kick_all_cpus_sync();
 	}
 }
 
@@ -295,14 +296,11 @@ int cpuidle_enable_device(struct cpuidle_device *dev)
 	if (!drv || !cpuidle_curr_governor)
 		return -EIO;
 
+	if (!dev->registered)
+		return -EINVAL;
+
 	if (!dev->state_count)
 		dev->state_count = drv->state_count;
-
-	if (dev->registered == 0) {
-		ret = __cpuidle_register_device(dev);
-		if (ret)
-			return ret;
-	}
 
 	poll_idle_init(drv);
 
@@ -418,13 +416,17 @@ int cpuidle_register_device(struct cpuidle_device *dev)
 		return ret;
 	}
 
-	cpuidle_enable_device(dev);
+	ret = cpuidle_enable_device(dev);
+	if (ret) {
+		mutex_unlock(&cpuidle_lock);
+		return ret;
+	}
+
 	cpuidle_install_idle_handler();
 
 	mutex_unlock(&cpuidle_lock);
 
 	return 0;
-
 }
 
 EXPORT_SYMBOL_GPL(cpuidle_register_device);
