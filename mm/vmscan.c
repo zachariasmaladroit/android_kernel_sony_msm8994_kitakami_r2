@@ -1820,7 +1820,7 @@ static void shrink_active_list(unsigned long nr_to_scan,
 	 * Count referenced pages from currently used mappings as rotated,
 	 * even though only some of them are actually re-activated.  This
 	 * helps balance scan pressure between file and anonymous pages in
-	 * get_scan_ratio.
+	 * get_scan_count.
 	 */
 	reclaim_stat->recent_rotated[file] += nr_rotated;
 
@@ -1933,6 +1933,38 @@ enum scan_balance {
 	SCAN_FILE,
 };
 
+bool enough_file_pages(struct zone *zone)
+{
+	bool ret = true;
+	unsigned long zonefile;
+	unsigned long zonefree;
+
+	zonefree = zone_page_state(zone, NR_FREE_PAGES);
+	zonefile = zone_page_state(zone, NR_ACTIVE_FILE) +
+		   zone_page_state(zone, NR_INACTIVE_FILE);
+
+	if (unlikely(zonefile + zonefree <= high_wmark_pages(zone)))
+		ret = false;
+
+	return ret;
+}
+
+bool enough_file_pages(struct zone *zone)
+{
+	bool ret = true;
+	unsigned long zonefile;
+	unsigned long zonefree;
+
+	zonefree = zone_page_state(zone, NR_FREE_PAGES);
+	zonefile = zone_page_state(zone, NR_ACTIVE_FILE) +
+		   zone_page_state(zone, NR_INACTIVE_FILE);
+
+	if (unlikely(zonefile + zonefree <= high_wmark_pages(zone)))
+		ret = false;
+
+	return ret;
+}
+
 /*
  * Determine how aggressively the anon and file LRU lists should be
  * scanned.  The relative value of each set of LRU lists is determined
@@ -1951,7 +1983,7 @@ static void get_scan_count(struct lruvec *lruvec, struct scan_control *sc,
 	struct zone *zone = lruvec_zone(lruvec);
 	unsigned long anon_prio, file_prio;
 	enum scan_balance scan_balance;
-	unsigned long anon, file, free;
+	unsigned long anon, file;
 	bool force_scan = false;
 	unsigned long ap, fp;
 	enum lru_list lru;
@@ -1999,23 +2031,15 @@ static void get_scan_count(struct lruvec *lruvec, struct scan_control *sc,
 		goto out;
 	}
 
-	anon  = get_lru_size(lruvec, LRU_ACTIVE_ANON) +
-		get_lru_size(lruvec, LRU_INACTIVE_ANON);
-	file  = get_lru_size(lruvec, LRU_ACTIVE_FILE) +
-		get_lru_size(lruvec, LRU_INACTIVE_FILE);
-
 	/*
 	 * If it's foreseeable that reclaiming the file cache won't be
 	 * enough to get the zone back into a desirable shape, we have
 	 * to swap.  Better start now and leave the - probably heavily
 	 * thrashing - remaining file pages alone.
 	 */
-	if (global_reclaim(sc)) {
-		free = zone_page_state(zone, NR_FREE_PAGES);
-		if (unlikely(file + free <= high_wmark_pages(zone))) {
-			scan_balance = SCAN_ANON;
-			goto out;
-		}
+	if (global_reclaim(sc) && !enough_file_pages(zone)) {
+		scan_balance = SCAN_ANON;
+		goto out;
 	}
 
 	/*
@@ -2048,6 +2072,12 @@ static void get_scan_count(struct lruvec *lruvec, struct scan_control *sc,
 	 *
 	 * anon in [0], file in [1]
 	 */
+
+	anon  = get_lru_size(lruvec, LRU_ACTIVE_ANON) +
+		get_lru_size(lruvec, LRU_INACTIVE_ANON);
+	file  = get_lru_size(lruvec, LRU_ACTIVE_FILE) +
+		get_lru_size(lruvec, LRU_INACTIVE_FILE);
+
 	spin_lock_irq(&zone->lru_lock);
 	if (unlikely(reclaim_stat->recent_scanned[0] > anon / 4)) {
 		reclaim_stat->recent_scanned[0] /= 2;
@@ -2098,6 +2128,17 @@ out:
 			scan = div64_u64(scan * fraction[file], denominator);
 			break;
 		case SCAN_FILE:
+				/*
+				 * If there isn't enough page cache to prevent
+				 * cache thrashing, OOM is better than long time
+				 * unresponsible system.
+				 */
+				if (global_reclaim(sc) && file &&
+						!enough_file_pages(zone)) {
+					size = 0;
+					scan = 0;
+					break;
+				}
 		case SCAN_ANON:
 			/* Scan one type exclusively */
 			if ((scan_balance == SCAN_FILE) != file)
@@ -3230,7 +3271,7 @@ static unsigned long balance_pgdat(pg_data_t *pgdat, int order,
 		 */
 		if (waitqueue_active(&pgdat->pfmemalloc_wait) &&
 				pfmemalloc_watermark_ok(pgdat))
-			wake_up(&pgdat->pfmemalloc_wait);
+			wake_up_all(&pgdat->pfmemalloc_wait);
 
 		/*
 		 * Fragmentation may mean that the system cannot be rebalanced
