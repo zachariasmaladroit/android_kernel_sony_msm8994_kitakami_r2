@@ -2919,7 +2919,8 @@ err_no_pinctrl:
 clk_err:
 	i2c_msm_rsrcs_mem_teardown(ctrl);
 mem_err:
-	dev_err(ctrl->dev, "error probe() failed with err:%d\n", ret);
+	if (ret != -EPROBE_DEFER)
+		dev_err(ctrl->dev, "error probe() failed with err:%d\n", ret);
 	devm_kfree(&pdev->dev, ctrl);
 	return ret;
 }
