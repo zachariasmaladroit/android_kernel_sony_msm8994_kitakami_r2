@@ -1,12 +1,12 @@
-### GCC 4.9.x
-### I'm using UBERTC https://bitbucket.org/UBERTC/aarch64-linux-android-4.9-kernel
+### GCC 5.3.x
+### I'm using UBERTC https://bitbucket.org/UBERTC/aarch64-linux-android-5.3-kernel
 
 export USE_CCACHE=1
 
 export CACHE_DIR=~/.ccache
 
 export ARCH=arm64
-export PATH=~/android/z5_build-environment/UBERTC_aarch64-linux-android-4.9-kernel/bin/:$PATH
+export PATH=~/android/z5_build-environment/UBERTC-aarch64-linux-android-5.3-kernel-1df22f493d7c/bin/:$PATH
 export CROSS_COMPILE=aarch64-linux-android-
 
 #export KBUILD_DIFFCONFIG=sumire_diffconfig
@@ -51,7 +51,7 @@ make dtbs
 		echo "Copying to z5-kernelbuild"
 		echo " "
 
-		cp ~/android/final_files/Z5_Sunkernel_Permissive_v.zip ~/android/z5-kernelbuild/Z5_Sunkernel_Permissive_v$version.zip
+		cp ~/android/final_files/Z5_Sunkernel_Permissive_v.zip ~/android/z5-kernelbuild/Z5_Sunkernel_Permissive_v-$version.zip
 
 		echo "Packaging 'Enforcing' kernel"
 		echo " "
@@ -66,8 +66,8 @@ make dtbs
 		echo "Copying over ecryptfs kernel module"
 		echo " "
 
-#		cp ~/android/z5-kernels/fs/ecryptfs/ecryptfs.ko ~/android/z5-kernelbuild/modules4sumire/ecryptfs.ko_Z5_Sunkernel_v$version
-		zip ~/android/z5-kernelbuild/modules4sumire/ecryptfs.ko_Z5_Sunkernel_v$version.zip ~/android/z5-kernels/fs/ecryptfs/ecryptfs.ko
+#		cp ~/android/z5-kernels/fs/ecryptfs/ecryptfs.ko ~/android/z5-kernelbuild/modules4sumire/ecryptfs.ko_Z5_Sunkernel_v-$version
+		zip ~/android/z5-kernelbuild/modules4sumire/ecryptfs.ko_Z5_Sunkernel_v-$version.zip ~/android/z5-kernels/fs/ecryptfs/ecryptfs.ko
 
 		echo " "
 		echo "done"
@@ -87,7 +87,7 @@ make dtbs
 	#echo "Copying to z5-kernelbuild"
 	#echo " "
 	#
-	#cp ~/android/final_files/Z5_Sunkernel_Enforcing_v.zip ~/android/z5-kernelbuild/Z5_Sunkernel_Enforcing_v$version.zip
+	#cp ~/android/final_files/Z5_Sunkernel_Enforcing_v.zip ~/android/z5-kernelbuild/Z5_Sunkernel_Enforcing_v-$version.zip
 	#
 	#fi
 
