@@ -1113,12 +1113,7 @@ static int mmc_sdio_power_restore(struct mmc_host *host)
 		/* to query card if 1.8V signalling is supported */
 		host->ocr |= R4_18V_PRESENT;
 
-	ret = mmc_sdio_init_card(host, host->ocr, host->card,
-#ifdef CONFIG_MACH_SONY_SHINANO
-		0);
-#else
-		mmc_card_keep_power(host));
-#endif
+	ret = mmc_sdio_init_card(host, host->ocr, host->card, mmc_card_keep_power(host));
 	if (!ret && host->sdio_irqs)
 		mmc_signal_sdio_irq(host);
 
