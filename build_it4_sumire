@@ -11,7 +11,8 @@ export CROSS_COMPILE=aarch64-linux-android-
 
 #export KBUILD_DIFFCONFIG=sumire_diffconfig
 make aosp_kitakami_sumire_defconfig
-make -j 8
+make oldconfig
+make
 
 echo "checking for compiled kernel..."
 if [ -f arch/arm64/boot/Image.gz-dtb ]
