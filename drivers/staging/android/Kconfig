@@ -52,6 +52,14 @@ config ANDROID_LOW_MEMORY_KILLER_CONSIDER_SWAP
 	  Use freeswap as otherfile when watermark is grater than
 	  low_watermark. This helps to make use of zram swap.
 
+config ANDROID_LMK_ADJ_RBTREE
+	bool "Use RBTREE for Android Low Memory Killer"
+	depends on ANDROID_LOW_MEMORY_KILLER
+	default N
+	---help---
+	    Use oom_score_adj rbtree to select the best proecss to kill
+	    when system in low memory status.
+
 config SYNC
 	bool "Synchronization framework"
 	default n
