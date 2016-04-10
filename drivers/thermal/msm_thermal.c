@@ -2559,6 +2559,7 @@ static __ref int do_hotplug(void *data)
 				mask |= BIT(cpu);
 			mutex_unlock(&devices->hotplug_dev->clnt_lock);
 		}
+		if (mask != cpus_offlined)
 		update_offline_cores(mask);
 		mutex_unlock(&core_control_mutex);
 
@@ -3174,6 +3175,7 @@ static __ref int do_freq_mitigation(void *data)
 			;
 		INIT_COMPLETION(freq_mitigation_complete);
 
+		get_online_cpus();
 		for_each_possible_cpu(cpu) {
 			max_freq_req = (cpus[cpu].max_freq) ?
 					msm_thermal_info.freq_limit :
@@ -3243,6 +3245,7 @@ reset_threshold:
 			}
 		}
 		update_cluster_freq();
+                put_online_cpus();
 	}
 	return ret;
 }
