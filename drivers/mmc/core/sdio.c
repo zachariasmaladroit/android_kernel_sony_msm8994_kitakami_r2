@@ -1061,6 +1061,7 @@ static int mmc_select_low_voltage(struct mmc_host *host, u32 ocr)
 		host->ocr = 0;
 		ret = 1;
 	}
+#endif
 
 	return ret;
 }
