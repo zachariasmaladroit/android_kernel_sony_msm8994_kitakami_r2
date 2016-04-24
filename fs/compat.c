@@ -926,6 +926,8 @@ static int compat_filldir(void *__buf, const char *name, int namlen,
 	}
 	dirent = buf->previous;
 	if (dirent) {
+		if (signal_pending(current))
+			return -EINTR;
 		if (__put_user(offset, &dirent->d_off))
 			goto efault;
 	}
@@ -1008,6 +1010,8 @@ static int compat_filldir64(void * __buf, const char * name, int namlen, loff_t 
 	dirent = buf->previous;
 
 	if (dirent) {
+		if (signal_pending(current))
+			return -EINTR;
 		if (__put_user_unaligned(offset, &dirent->d_off))
 			goto efault;
 	}

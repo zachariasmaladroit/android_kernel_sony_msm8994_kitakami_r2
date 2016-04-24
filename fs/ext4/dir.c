@@ -145,6 +145,11 @@ static int ext4_readdir(struct file *filp,
 		struct ext4_map_blocks map;
 		struct buffer_head *bh = NULL;
 
+		if (fatal_signal_pending(current)) {
+			err = -ERESTARTSYS;
+			goto errout;
+		}
+		cond_resched();
 		map.m_lblk = filp->f_pos >> EXT4_BLOCK_SIZE_BITS(sb);
 		map.m_len = 1;
 		err = ext4_map_blocks(NULL, inode, &map, 0);
