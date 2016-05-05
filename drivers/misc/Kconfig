@@ -675,22 +675,6 @@ config AD7146
 	  If you say yes here you get support for the AD7146 chip.
 	  This is used as a proximity sensor.
 
-config SIM_DETECT
-	tristate "SIM_DETECT driver support"
-	default n
-	help
-	  Say Y here
-	  if you want to support SIM_DETECT as detection device.
-	  This driver can be used for sending notifications via
-	  switch_class when sim card is inserted or removed.
-
-config TRAY_SHARED_INTERRUPT_DETECT
-	bool "Combo tray detect with shared interrupt support"
-	default n
-	help
-	  Say Y here if you want to support detection of UIM and
-	  SD card with shared interrupt.
-
 source "drivers/misc/c2port/Kconfig"
 source "drivers/misc/eeprom/Kconfig"
 source "drivers/misc/cb710/Kconfig"
