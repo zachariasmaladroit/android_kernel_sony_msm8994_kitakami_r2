@@ -1071,6 +1071,8 @@ static long calc_cfs_shares(struct cfs_rq *cfs_rq, struct task_group *tg)
 {
 	long tg_weight, load, shares;
 
+	if (!sched_feat(SMP_FAIR_GROUPS))
+		return tg->shares;
 	tg_weight = calc_tg_weight(tg, cfs_rq);
 	load = cfs_rq->load.weight;
 
@@ -1119,10 +1121,10 @@ static void update_cfs_shares(struct cfs_rq *cfs_rq)
 	se = tg->se[cpu_of(rq_of(cfs_rq))];
 	if (!se || throttled_hierarchy(cfs_rq))
 		return;
-#ifndef CONFIG_SMP
-	if (likely(se->load.weight == tg->shares))
-		return;
-#endif
+	if (!IS_ENABLED(CONFIG_SMP) || !sched_feat(SMP_FAIR_GROUPS)) {
+		if (likely(se->load.weight == tg->shares))
+			return;
+	}
 	shares = calc_cfs_shares(cfs_rq, tg);
 
 	reweight_entity(cfs_rq_of(se), se, shares);
