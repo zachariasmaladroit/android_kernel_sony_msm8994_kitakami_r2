@@ -239,10 +239,12 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 	  else if [ -x /bin/bash ]; then echo /bin/bash; \
 	  else echo sh; fi ; fi)
 
+SUNRISE = -ftree-loop-distribution -fgraphite-identity -fsched-pressure -fschedule-insns -fno-tree-reassoc -ftracer -fweb -fsched2-use-superblocks -fivopts -fpredictive-commoning -fgcse-after-reload -ftree-loop-im -funswitch-loops -ftree-loop-ivcanon -fvariable-expansion-in-unroller -fsplit-ivs-in-unroller -fgcse -fgcse-las -fgcse-sm -fmodulo-sched-allow-regmoves -freschedule-modulo-scheduled-loops -fmodulo-sched -fvect-cost-model -ftree-partial-pre -fdirectives-only
+
 HOSTCC       = ccache gcc
 HOSTCXX      = ccache g++
-HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89
-HOSTCXXFLAGS = -O2
+HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -pipe -DNDEBUG -std=gnu89 $(SUNRISE)
+HOSTCXXFLAGS = -O2 -pipe -DNDEBUG $(SUNRISE)
 
 # Decide whether to build built-in, modular, or both.
 # Normally, just do built-in.
