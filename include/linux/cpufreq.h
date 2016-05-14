@@ -101,7 +101,6 @@ struct cpufreq_policy {
 	 */
 	struct rw_semaphore	rwsem;
 
-
 	/*
 	 * Fast switch flags:
 	 * - fast_switch_possible should be set by the driver if it can
@@ -126,6 +125,7 @@ struct cpufreq_policy {
 	/* For cpufreq driver's internal use */
 	void			*driver_data;
 
+	unsigned int util;
 };
 
 /* Only for ACPI */
