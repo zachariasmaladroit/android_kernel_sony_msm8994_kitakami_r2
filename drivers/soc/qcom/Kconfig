@@ -676,6 +676,14 @@ config AMSS_ERR_LOG
 	  dump. Data in last_amss log is not available once it is read.
 	  If unsure, say N
 
+config MSM_HOTPLUG
+	bool "MSM hotplug driver"
+	depends on HOTPLUG_CPU
+	default y
+	help
+	  The MSM hotplug driver controls on-/offlining of additional cores based
+	  on current cpu load.
+
 source "drivers/soc/qcom/memshare/Kconfig"
 
 endif # ARCH_MSM

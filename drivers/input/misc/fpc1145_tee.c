@@ -46,6 +46,11 @@
 #include <linux/display_state.h>
 #include <linux/wakelock.h>
 
+#ifdef CONFIG_MSM_HOTPLUG
+#include <linux/msm_hotplug.h>
+#include <linux/workqueue.h>
+#endif
+
 /* Unused key value to avoid interfering with active keys */
 #define KEY_FINGERPRINT 0x2ee
 
@@ -57,6 +62,10 @@
 #define PWR_ON_STEP_RANGE2 900
 #define NUM_PARAMS_REG_ENABLE_SET 2
 #define FPC_TTW_HOLD_TIME 1000
+
+#ifdef CONFIG_MSM_HOTPLUG
+extern void msm_hotplug_resume_timeout(void);
+#endif
 
 static const char * const pctl_names[] = {
 	"fpc1145_spi_active",
@@ -645,6 +654,14 @@ exit:
 	return ret;
 }
 
+#ifdef CONFIG_MSM_HOTPLUG
+static void msm_hotplug_resume_call(struct work_struct *msm_hotplug_resume_call_work)
+{
+	msm_hotplug_resume_timeout();
+}
+static DECLARE_WORK(msm_hotplug_resume_call_work, msm_hotplug_resume_call);
+#endif
+
 static irqreturn_t fpc1145_irq_handler(int irq, void *handle)
 {
 	struct fpc1145_data *fpc1145 = handle;
@@ -654,6 +671,12 @@ static irqreturn_t fpc1145_irq_handler(int irq, void *handle)
 	smp_rmb();
 	if (fpc1145->wakeup_enabled ) {
 		wake_lock_timeout(&fpc1145->ttw_wl, msecs_to_jiffies(FPC_TTW_HOLD_TIME));
+#ifdef CONFIG_MSM_HOTPLUG
+		msm_hotplug_fingerprint_called = true;
+
+		if (msm_enabled && msm_hotplug_scr_suspended)
+			schedule_work(&msm_hotplug_resume_call_work);
+#endif
 	}
 	sysfs_notify(&fpc1145->dev->kobj, NULL, dev_attr_irq.attr.name);
 
