@@ -200,9 +200,6 @@ do {					\
 	mutex_unlock(&this->lock);	\
 } while (0)
 
-#ifdef CONFIG_THERMAL_MONITOR
-extern void msm_thermal_suspend(bool suspend);
-#endif
 
 enum clearpad_state_e {
 	SYN_STATE_INIT,
@@ -4278,11 +4275,6 @@ static void clearpad_suspend(struct device *dev)
 	struct clearpad_t *this = dev_get_drvdata(dev);
 	bool go_suspend;
 
-#ifdef CONFIG_THERMAL_MONITOR
-	// Must be doen before msm_hotplug_suspend()
-	msm_thermal_suspend(true);
-#endif
-
 	go_suspend = (this->task != SYN_TASK_NO_SUSPEND);
 	if (go_suspend)
 		this->active |= SYN_STANDBY;
@@ -4297,10 +4289,6 @@ static void clearpad_resume(struct device *dev)
 {
 	struct clearpad_t *this = dev_get_drvdata(dev);
 	bool go_resume;
-
-#ifdef CONFIG_THERMAL_MONITOR
-	msm_thermal_suspend(false);
-#endif
 
 	go_resume = !!(this->active & (SYN_STANDBY | SYN_STANDBY_AFTER_TASK));
 	if (go_resume)
