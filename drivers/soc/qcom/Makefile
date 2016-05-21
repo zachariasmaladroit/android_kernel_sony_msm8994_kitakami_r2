@@ -90,6 +90,7 @@ obj-$(CONFIG_QCOM_EARLY_RANDOM)	+= early_random.o
 obj-$(CONFIG_MSM_PACMAN)        += msm_pacman.o
 #obj-$(CONFIG_RAMDUMP_TAGS) += board-rdtags.o
 obj-$(CONFIG_SONY_SSM) += sony_ssm.o
+<<<<<<< HEAD
 #CFLAGS_board-rdtags.o  := \
 #	-D"INFO_PRODUCT=\"$(if $(TARGET_PRODUCT),$(TARGET_PRODUCT),unknown)\"" \
 #	-D"INFO_VARIANT= \
@@ -99,3 +100,5 @@ obj-$(CONFIG_SONY_SSM) += sony_ssm.o
 #obj-$(CONFIG_ARCH_MSM8994) += board-ramdump.o
 #obj-$(CONFIG_AMSS_ERR_LOG) += last_amsslog.o
 #obj-$(CONFIG_ARCH_MSM8994) += console_setup.o
+
+obj-$(CONFIG_STATE_NOTIFIER)		+= state_notifier.o
