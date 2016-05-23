@@ -27,15 +27,15 @@
 
 #define HIMA_HOTPLUG		       "hima_hotplug"
 #define HIMA_HOTPLUG_MAJOR_VERSION     	5
-#define HIMA_HOTPLUG_MINOR_VERSION     	0
+#define HIMA_HOTPLUG_MINOR_VERSION     	1
 
-#define DEF_SAMPLING_MS                	120
+#define DEF_SAMPLING_MS                	200
 #define RESUME_SAMPLING_MS             	30
 #define START_DELAY_MS                 	10000
 
 #define DEFAULT_MIN_CPUS_ONLINE        	2
-#define DEFAULT_MAX_CPUS_ONLINE        	8
-#define DEFAULT_MIN_UP_TIME            	1500
+#define DEFAULT_MAX_CPUS_ONLINE        	6
+#define DEFAULT_MIN_UP_TIME            	1000
 
 #define DEFAULT_NR_FSHIFT              	4
 
@@ -72,7 +72,7 @@ static unsigned int cpu_nr_run_threshold = CPU_NR_THRESHOLD;
 
 /* Profile Tuning */
 static unsigned int nr_run_thresholds_balanced[] = {
-	10, 14, 18, 22, 24, 28, UINT_MAX
+	0, 0, 30, 58, 79, 93, UINT_MAX
 };
 
 static unsigned int nr_run_thresholds_disable[] = {
@@ -102,7 +102,7 @@ static unsigned int calculate_thread_stats(void)
 	}
 
 	/* Keep 1 little and 1 big core on */
-	return (nr_run + 1) < max_cpus_online ? (nr_run + 1) : max_cpus_online;
+	return (nr_run > max_cpus_online) ? max_cpus_online : nr_run;
 }
 
 static void update_per_cpu_stat(void)
@@ -139,7 +139,8 @@ static void __ref cpu_up_down_work(struct work_struct *work)
 		for_each_online_cpu(cpu) {
 			l_ip_info = &per_cpu(ip_info, cpu);
 
-			if (cpu == 0 || cpu == 4 || ((ktime_to_ms(ktime_get()) - l_ip_info->cpu_up_time) < min_cpu_up_time))
+			if (cpu == 0 || cpu == 4 ||
+				((ktime_to_ms(ktime_get()) - l_ip_info->cpu_up_time) < min_cpu_up_time))
 				continue;
 			l_nr_threshold = cpu_nr_run_threshold << 1 / (num_online_cpus());
 			if (l_ip_info->cpu_nr_running < l_nr_threshold)
