@@ -243,8 +243,8 @@ SUNRISE = -ftree-loop-distribution -fgraphite-identity -fsched-pressure -fschedu
 
 HOSTCC       = ccache gcc
 HOSTCXX      = ccache g++
-HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -pipe -DNDEBUG -std=gnu89 $(SUNRISE)
-HOSTCXXFLAGS = -O2 -pipe -DNDEBUG $(SUNRISE)
+HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -pipe -DNDEBUG -std=gnu89 $(SUNRISE) -fno-align-functions -fno-align-loops
+HOSTCXXFLAGS = -O2 -pipe -DNDEBUG $(SUNRISE) -fno-align-functions -fno-align-loops
 
 # Decide whether to build built-in, modular, or both.
 # Normally, just do built-in.
