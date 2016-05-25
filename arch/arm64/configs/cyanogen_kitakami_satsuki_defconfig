@@ -1,9 +1,3 @@
-# Kexec Hardboot Patches
-CONFIG_KEXEC=y
-# CONFIG_ATAGS_PROC is not set
-CONFIG_KEXEC_HARDBOOT=y
-CONFIG_PROC_DEVICETREE=y #this one is turned on by default
-
 CONFIG_SWAP=y
 CONFIG_AUDIT=y
 CONFIG_NO_HZ=y
