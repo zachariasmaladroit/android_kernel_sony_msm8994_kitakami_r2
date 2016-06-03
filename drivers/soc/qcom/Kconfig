@@ -679,7 +679,7 @@ config AMSS_ERR_LOG
 config MSM_HOTPLUG
 	bool "MSM hotplug driver"
 	depends on HOTPLUG_CPU
-	default y
+	default n
 	help
 	  The MSM hotplug driver controls on-/offlining of additional cores based
 	  on current cpu load.
