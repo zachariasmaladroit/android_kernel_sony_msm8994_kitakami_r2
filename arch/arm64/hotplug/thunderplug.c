@@ -31,7 +31,7 @@
 #define DRIVER_VERSION                5
 #define DRIVER_SUBVER                 0
 
-#define DEFAULT_CPU_LOAD_THRESHOLD   (35)
+#define DEFAULT_CPU_LOAD_THRESHOLD   (55)
 #define MIN_CPU_LOAD_THRESHOLD       (10)
 
 #define HOTPLUG_ENABLED              (1)
