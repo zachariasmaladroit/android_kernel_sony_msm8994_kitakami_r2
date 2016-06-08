@@ -31,14 +31,14 @@
 #define DRIVER_VERSION                5
 #define DRIVER_SUBVER                 0
 
-#define DEFAULT_CPU_LOAD_THRESHOLD   (65)
+#define DEFAULT_CPU_LOAD_THRESHOLD   (35)
 #define MIN_CPU_LOAD_THRESHOLD       (10)
 
-#define HOTPLUG_ENABLED              (0)
-#define DEFAULT_HOTPLUG_STYLE         HOTPLUG_SCHED
+#define HOTPLUG_ENABLED              (1)
+#define DEFAULT_HOTPLUG_STYLE         HOTPLUG_PERCORE
 #define DEFAULT_SCHED_MODE            BALANCED
 
-#define DEF_SAMPLING_MS	             (500)
+#define DEF_SAMPLING_MS	             (600)
 #define MIN_SAMLING_MS               (50)
 #define MIN_CPU_UP_TIME              (750)
 #define TOUCH_BOOST_ENABLED          (0)
