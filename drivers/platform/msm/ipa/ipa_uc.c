@@ -242,7 +242,7 @@ int ipa_uc_state_check(void)
 		return -EFAULT;
 	}
 
-	if (!atomic_read(&ipa_ctx->uc_ctx.uc_loaded)) {
+	if (!ipa_ctx->uc_ctx.uc_loaded) {
 		IPAERR("uC is not loaded\n");
 		return -EFAULT;
 	}
@@ -255,6 +255,17 @@ int ipa_uc_state_check(void)
 	return 0;
 }
 EXPORT_SYMBOL(ipa_uc_state_check);
+
+/**
+ * ipa_uc_loaded_check() - Check the uC has been loaded
+ *
+ * Return value: 1 if the uC is loaded, 0 otherwise
+ */
+int ipa_uc_loaded_check(void)
+{
+	return ipa_ctx->uc_ctx.uc_loaded;
+}
+EXPORT_SYMBOL(ipa_uc_loaded_check);
 
 static void ipa_uc_event_handler(enum ipa_irq_type interrupt,
 				 void *private_data,
@@ -385,7 +396,7 @@ static void ipa_uc_response_hdlr(enum ipa_irq_type interrupt,
 	/* General handling */
 	if (ipa_ctx->uc_ctx.uc_sram_mmio->responseOp ==
 			IPA_HW_2_CPU_RESPONSE_INIT_COMPLETED) {
-		atomic_set(&ipa_ctx->uc_ctx.uc_loaded, 1);
+		ipa_ctx->uc_ctx.uc_loaded = true;
 		IPAERR("IPA uC loaded\n");
 		/*
 		 * The proxy vote is held until uC is loaded to ensure that
