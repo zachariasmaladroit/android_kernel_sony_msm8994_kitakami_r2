@@ -6,7 +6,7 @@ export USE_CCACHE=1
 export CACHE_DIR=~/.ccache
 
 export ARCH=arm64
-export PATH=~/android/z5_build-environment/UBERTC_aarch64-linux-android-4.9-kernel/bin/:$PATH
+export PATH=~/android/z5_build-environment/UBERTC-aarch64-linux-android-4.9-kernel-3f2327eeb9b3/bin/:$PATH
 export CROSS_COMPILE=aarch64-linux-android-
 
 export KBUILD_DIFFCONFIG=sumire_diffconfig
@@ -52,7 +52,7 @@ then
 		echo "Copying to z5-kernelbuild"
 		echo " "
 
-		cp ~/android/final_files/Z5_Sunkernel_Permissive_v.zip ~/android/z5-kernelbuild/Z5_Sunkernel_Permissive_v$version.zip
+		cp /WD30EFRX/android/final_files/Z5_Sunkernel_Permissive_v.zip /WD30EFRX/android/z5-kernelbuild/Z5_Sunkernel_Permissive_v$version.zip
 
 		echo "Packaging 'Enforcing' kernel"
 		echo " "
@@ -60,15 +60,15 @@ then
 	fi
 
 
-	if [ -e ~/android/z5-kernels/fs/ecryptfs/ecryptfs.ko ]
+	if [ -e /WD30EFRX/android/z5-kernels/fs/ecryptfs/ecryptfs.ko ]
 	then
 
 		echo " "
 		echo "Copying over ecryptfs kernel module"
 		echo " "
 
-#		cp ~/android/z5-kernels/fs/ecryptfs/ecryptfs.ko ~/android/z5-kernelbuild/modules4sumire/ecryptfs.ko_Z5_Sunkernel_v$version
-		zip ~/android/z5-kernelbuild/modules4sumire/ecryptfs.ko_Z5_Sunkernel_v$version.zip ~/android/z5-kernels/fs/ecryptfs/ecryptfs.ko
+#		cp /WD30EFRX/android/z5-kernels/fs/ecryptfs/ecryptfs.ko /WD30EFRX/android/z5-kernelbuild/modules4sumire/ecryptfs.ko_Z5_Sunkernel_v$version
+		zip /WD30EFRX/android/z5-kernelbuild/modules4sumire/ecryptfs.ko_Z5_Sunkernel_v$version.zip /WD30EFRX/android/z5-kernels/fs/ecryptfs/ecryptfs.ko
 
 		echo " "
 		echo "done"
@@ -88,7 +88,7 @@ then
 	#echo "Copying to z5-kernelbuild"
 	#echo " "
 	#
-	#cp ~/android/final_files/Z5_Sunkernel_Enforcing_v.zip ~/android/z5-kernelbuild/Z5_Sunkernel_Enforcing_v$version.zip
+	#cp /WD30EFRX/android/final_files/Z5_Sunkernel_Enforcing_v.zip /WD30EFRX/android/z5-kernelbuild/Z5_Sunkernel_Enforcing_v$version.zip
 	#
 	#fi
 
