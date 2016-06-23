@@ -6469,6 +6469,17 @@ int can_migrate_task(struct task_struct *p, struct lb_env *env)
 		return 1;
 	}
 
+	/*
+	 * After over tipping point then aggressively to spread task
+	 * to CPUs if destination CPU is idle and source CPU has more than
+	 * one task is runnable.
+	 */
+	if (energy_aware() && env->dst_rq->rd->overutilized) {
+		if (env->dst_rq->nr_running == 0 &&
+		    env->src_rq->nr_running >= 2)
+			return 1;
+	}
+
 	schedstat_inc(p, se.statistics.nr_failed_migrations_hot);
 	return 0;
 }
