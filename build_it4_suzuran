@@ -11,7 +11,8 @@ export CROSS_COMPILE=aarch64-linux-android-
 
 #export KBUILD_DIFFCONFIG=suzuran_diffconfig
 make cyanogen_kitakami_suzuran_defconfig
-make -j 8
+#make oldconfig
+make
 
 echo "checking for compiled kernel..."
 if [ -f arch/arm64/boot/Image.gz-dtb ]
@@ -27,9 +28,9 @@ then
 	echo "okay"
 
 	### E5823
-	../final_files/mkbootimg_MM --cmdline "androidboot.hardware=suzuran user_debug=31 msm_rtb.filter=0x237 ehci-hcd.park=3 lpm_levels.sleep_disabled=0 boot_cpus=0-5 dwc3_msm.prop_chg_detect=Y coherent_pool=2M dwc3_msm.hvdcp_max_current=1500 enforcing=0" --base 0x00000000 --kernel arch/arm64/boot/Image.gz-dtb --ramdisk ../final_files/ramdiskE5823_MM.cpio.gz --ramdisk_offset 0x02000000 --pagesize 4096 -o ../final_files/boot_E5823.img --tags_offset 0x01E00000
+	../final_files/mkbootimg_MM --cmdline "console=ttyHSL0,115200,n8 androidboot.hardware=suzuran user_debug=31 msm_rtb.filter=0x237 ehci-hcd.park=3 lpm_levels.sleep_disabled=0 boot_cpus=0-5 dwc3_msm.prop_chg_detect=Y coherent_pool=2M dwc3_msm.hvdcp_max_current=1500 androidboot.selinux=permissive" --base 0x00000000 --kernel arch/arm64/boot/Image.gz-dtb --ramdisk ../final_files/ramdiskE5823_MM_cyanogenmod_6.0.1_r46_suzuran_28.06.2016_alternate.cpio.gz --ramdisk_offset 0x02000000 --pagesize 4096 -o ../final_files/boot_E5823.img --tags_offset 0x01E00000
 	### Enforcing build
-	#../final_files/mkbootimg_MM --cmdline "androidboot.hardware=suzuran user_debug=31 msm_rtb.filter=0x237 ehci-hcd.park=3 lpm_levels.sleep_disabled=0 boot_cpus=0-5 dwc3_msm.prop_chg_detect=Y coherent_pool=2M dwc3_msm.hvdcp_max_current=1500 enforcing=1" --base 0x00000000 --kernel arch/arm64/boot/Image.gz-dtb --ramdisk ../final_files/ramdiskE5823_MM.cpio.gz --ramdisk_offset 0x02000000 --pagesize 4096 -o ../final_files/boot_E5823_E.img --tags_offset 0x01E00000
+	#../final_files/mkbootimg_MM --cmdline "androidboot.hardware=suzuran user_debug=31 msm_rtb.filter=0x237 ehci-hcd.park=3 lpm_levels.sleep_disabled=0 boot_cpus=0-5 dwc3_msm.prop_chg_detect=Y coherent_pool=2M dwc3_msm.hvdcp_max_current=1500 androidboot.selinux=enforcing" --base 0x00000000 --kernel arch/arm64/boot/Image.gz-dtb --ramdisk ../final_files/ramdiskE5823_MM_cyanogenmod_6.0.1_r46_suzuran_28.06.2016_alternate.cpio.gz --ramdisk_offset 0x02000000 --pagesize 4096 -o ../final_files/boot_E5823_E.img --tags_offset 0x01E00000
 
 	### Version number
 	echo -n "Enter version number: "
