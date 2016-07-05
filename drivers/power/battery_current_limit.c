@@ -255,19 +255,19 @@ static void __ref bcl_handle_hotplug(struct work_struct *work)
 				continue;
 			ret = cpu_down(_cpu);
 			if (ret)
-				pr_err("Error %d offlining core %d\n",
+				pr_debug("Error %d offlining core %d\n",
 					ret, _cpu);
 			else
-				pr_info("Set Offline CPU:%d\n", _cpu);
+				pr_debug("Set Offline CPU:%d\n", _cpu);
 		} else {
 			if (cpu_online(_cpu))
 				continue;
 			ret = cpu_up(_cpu);
 			if (ret)
-				pr_err("Error %d onlining core %d\n",
+				pr_debug("Error %d onlining core %d\n",
 					ret, _cpu);
 			else
-				pr_info("Allow Online CPU:%d\n", _cpu);
+				pr_debug("Allow Online CPU:%d\n", _cpu);
 		}
 	}
 
@@ -362,7 +362,7 @@ static void update_cpu_freq(void)
 		if (bcl_frequency_mask & BIT(cpu)) {
 			ret = cpufreq_update_policy(cpu);
 			if (ret)
-				pr_err(
+				pr_debug(
 				"Error updating policy for CPU%d. ret:%d\n",
 				cpu, ret);
 		}
