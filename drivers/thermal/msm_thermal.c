@@ -2472,7 +2472,7 @@ static int __ref update_offline_cores(int val)
 
 	for_each_possible_cpu(cpu) {
 		if (cpus_offlined & BIT(cpu)) {
-			if (!cpu_online(cpu))
+			if (!cpu_online(cpu) || cpu == 0 || cpu == 4)
 				continue;
 			trace_thermal_pre_core_offline(cpu);
 			ret = cpu_down(cpu);
