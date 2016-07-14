@@ -12151,6 +12151,13 @@ static int wl_construct_reginfo(struct bcm_cfg80211 *cfg, s32 bw_cap)
 	}
 
 	band = array_size = n_2g = n_5g = 0;
+
+	if ((list) && (dtoh32(list->count) > htod32(WL_NUMCHANSPECS))) {
+		WL_ERR(("Invalid channel list : %d\n", dtoh32(list->count)));
+		kfree(pbuf);
+		return INVCHANSPEC;
+	}
+
 	for (i = 0; i < dtoh32(list->count); i++) {
 		index = 0;
 		update = false;
