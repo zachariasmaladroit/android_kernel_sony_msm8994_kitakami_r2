@@ -777,8 +777,11 @@ static void read_usb_type(struct smbchg_chip *chip, char **usb_type_name,
 
 static void show_chg_done(void)
 {
-	qpnp_led_rgb_set(COLOR_GREEN, 255);
-	qpnp_led_rgb_set(COLOR_BLUE, 255);
+	// avoid overriding notification led by checking blink
+	if(!qpnp_led_rgb_blinking_get()) {
+		qpnp_led_rgb_set(COLOR_GREEN, 255);
+		qpnp_led_rgb_set(COLOR_BLUE, 255);
+	}
 }
 
 #define CHGR_STS			0x0E
