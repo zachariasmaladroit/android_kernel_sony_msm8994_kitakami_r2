@@ -2007,6 +2007,12 @@ void qpnp_led_rgb_set(enum rgb_color color, int brightness)
 	schedule_work(&led->work);
 }
 
+bool qpnp_led_rgb_blinking_get() {
+	return led_rgb_r->rgb_cfg->pwm_cfg->blinking
+		|| led_rgb_g->rgb_cfg->pwm_cfg->blinking
+		|| led_rgb_b->rgb_cfg->pwm_cfg->blinking;
+}
+
 static int qpnp_led_set_max_brightness(struct qpnp_led_data *led)
 {
 	switch (led->id) {

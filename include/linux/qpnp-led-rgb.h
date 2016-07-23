@@ -24,4 +24,6 @@ enum rgb_color
 
 void qpnp_led_rgb_set(enum rgb_color color, int brightness);
 
+bool qpnp_led_rgb_blinking_get(void);
+
 #endif /* __QPNP_LED_RGB_H__ */
