@@ -1167,6 +1167,7 @@ static int check_version(Elf_Shdr *sechdrs,
 {
 	unsigned int i, num_versions;
 	struct modversion_info *versions;
+        versindex = 0;
 
 	if(!strncmp("wlan", mod->name, 4))
 		return 0;
