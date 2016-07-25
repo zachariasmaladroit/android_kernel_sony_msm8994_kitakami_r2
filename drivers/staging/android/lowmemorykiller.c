@@ -318,12 +318,6 @@ static void lowmem_wakeup_kswapd(struct shrink_control *sc, int minfree)
 }
 #endif
 
-#ifdef CONFIG_ANDROID_LMK_ADJ_RBTREE
-static struct task_struct *pick_next_from_adj_tree(struct task_struct *task);
-static struct task_struct *pick_first_task(void);
-static struct task_struct *pick_last_task(void);
-#endif
-
 static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 {
 	struct task_struct *tsk;
@@ -342,15 +336,6 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 	int other_free;
 	int other_file;
 	unsigned long nr_to_scan = sc->nr_to_scan;
-
-	rcu_read_lock();
-	tsk = current->group_leader;
-	if ((tsk->flags & PF_EXITING) && test_task_flag(tsk, TIF_MEMDIE)) {
-		set_tsk_thread_flag(current, TIF_MEMDIE);
-		rcu_read_unlock();
-		return 0;
-	}
-	rcu_read_unlock();
 
 	if (nr_to_scan > 0) {
 		if (mutex_lock_interruptible(&scan_mutex) < 0) {
@@ -411,13 +396,7 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 	selected_oom_score_adj = min_score_adj;
 
 	rcu_read_lock();
-#ifdef CONFIG_ANDROID_LMK_ADJ_RBTREE
-	for (tsk = pick_first_task();
-		tsk != pick_last_task();
-		tsk = pick_next_from_adj_tree(tsk)) {
-#else
 	for_each_process(tsk) {
-#endif
 		struct task_struct *p;
 		short oom_score_adj;
 
@@ -436,11 +415,7 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 			if (test_task_flag(tsk, TIF_MEMDIE)) {
 				rcu_read_unlock();
 				/* give the system time to free up the memory */
-				if (!same_thread_group(current, tsk))
-					msleep_interruptible(20);
-				else
-					set_tsk_thread_flag(current,
-								TIF_MEMDIE);
+				msleep_interruptible(20);
 				mutex_unlock(&scan_mutex);
 				trace_lmk_remain_scan(rem, nr_to_scan,
 						      sc->gfp_mask);
@@ -455,17 +430,6 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 		oom_score_adj = p->signal->oom_score_adj;
 		if (oom_score_adj < min_score_adj) {
 			task_unlock(p);
-#ifdef CONFIG_ANDROID_LMK_ADJ_RBTREE
-			break;
-#else
-			continue;
-#endif
-		}
-		if (fatal_signal_pending(p) ||
-				((p->flags & PF_EXITING) &&
-					test_tsk_thread_flag(p, TIF_MEMDIE))) {
-			lowmem_print(2, "skip slow dying process %d\n", p->pid);
-			task_unlock(p);
 			continue;
 		}
 		tasksize = get_mm_rss(p->mm);
@@ -474,11 +438,7 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 			continue;
 		if (selected) {
 			if (oom_score_adj < selected_oom_score_adj)
-#ifdef CONFIG_ANDROID_LMK_ADJ_RBTREE
-				break;
-#else
 				continue;
-#endif
 			if (oom_score_adj == selected_oom_score_adj &&
 			    tasksize <= selected_tasksize)
 				continue;
@@ -645,100 +605,6 @@ static const struct kparam_array __param_arr_adj = {
 	.elem = lowmem_adj,
 };
 #endif
-
-#ifdef CONFIG_ANDROID_LMK_ADJ_RBTREE
-DEFINE_SPINLOCK(lmk_lock);
-struct rb_root tasks_scoreadj = RB_ROOT;
-/*
- * Makesure to invoke the function with holding sighand->siglock
- */
-void add_2_adj_tree(struct task_struct *task)
-{
-	struct rb_node **link;
-	struct rb_node *parent = NULL;
-	struct signal_struct *sig_entry;
-	s64 key = task->signal->oom_score_adj;
-
-	/*
-	 * Find the right place in the rbtree:
-	 */
-	spin_lock(&lmk_lock);
-	link =  &tasks_scoreadj.rb_node;
-	while (*link) {
-		parent = *link;
-		sig_entry = rb_entry(parent, struct signal_struct, adj_node);
-
-		if (key < sig_entry->oom_score_adj)
-			link = &parent->rb_right;
-		else
-			link = &parent->rb_left;
-	}
-
-	rb_link_node(&task->signal->adj_node, parent, link);
-	rb_insert_color(&task->signal->adj_node, &tasks_scoreadj);
-	spin_unlock(&lmk_lock);
-}
-
-/*
- * Makesure to invoke the function with holding sighand->siglock
- */
-void delete_from_adj_tree(struct task_struct *task)
-{
-	if (!RB_EMPTY_NODE(&task->signal->adj_node)) {
-		rb_erase(&task->signal->adj_node, &tasks_scoreadj);
-		RB_CLEAR_NODE(&task->signal->adj_node);
-	}
-	spin_unlock(&lmk_lock);
-}
-
-static struct task_struct *pick_next_from_adj_tree(struct task_struct *task)
-{
-	struct rb_node *next;
-	struct signal_struct *next_tsk_sig;
-
-	spin_lock(&lmk_lock);
-	next = rb_next(&task->signal->adj_node);
-	spin_unlock(&lmk_lock);
-
-	if (!next)
-		return NULL;
-
-	next_tsk_sig = rb_entry(next, struct signal_struct, adj_node);
-	return next_tsk_sig->curr_target->group_leader;
-}
-
-static struct task_struct *pick_first_task(void)
-{
-	struct rb_node *left;
-	struct signal_struct *first_tsk_sig;
-
-	spin_lock(&lmk_lock);
-	left = rb_first(&tasks_scoreadj);
-	spin_unlock(&lmk_lock);
-
-	if (!left)
-		return NULL;
-
-	first_tsk_sig = rb_entry(left, struct signal_struct, adj_node);
-	return first_tsk_sig->curr_target->group_leader;
-}
-static struct task_struct *pick_last_task(void)
-{
-	struct rb_node *right;
-        struct signal_struct *last_tsk_sig;
-
-	spin_lock(&lmk_lock);
-	right = rb_last(&tasks_scoreadj);
-	spin_unlock(&lmk_lock);
-
-	if (!right)
-		return NULL;
-
-	last_tsk_sig = rb_entry(right, struct signal_struct, adj_node);
-	return last_tsk_sig->curr_target->group_leader;
-}
-#endif
-
 
 module_param_named(cost, lowmem_shrinker.seeks, int, S_IRUGO | S_IWUSR);
 #ifdef CONFIG_ANDROID_LOW_MEMORY_KILLER_AUTODETECT_OOM_ADJ_VALUES
