@@ -91,3 +91,13 @@ extra_certificates
 signing_key.priv
 signing_key.x509
 x509.genkey
+buildscript_sumire_dsds
+ubertc6_buildscript_sumire_dsds
+.config.common
+.config.def
+arch/arm/boot/dts/msm8994-v2.0-kitakami_sumire_dsds.dtb
+arch/arm/boot/dts/msm8994-v2.1-kitakami_sumire_dsds.dtb
+arch/arm/boot/dts/qcom/msm8994-v2.0-kitakami_sumire_dsds.dtb
+arch/arm/boot/dts/qcom/msm8994-v2.1-kitakami_sumire_dsds.dtb
+arch/arm64/boot/Image.gz-dtb
+
