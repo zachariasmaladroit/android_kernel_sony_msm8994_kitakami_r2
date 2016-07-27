@@ -101,3 +101,5 @@ arch/arm/boot/dts/qcom/msm8994-v2.0-kitakami_sumire_dsds.dtb
 arch/arm/boot/dts/qcom/msm8994-v2.1-kitakami_sumire_dsds.dtb
 arch/arm64/boot/Image.gz-dtb
 
+# kernel build-scripts, these should be known by now
+build_it4_*
