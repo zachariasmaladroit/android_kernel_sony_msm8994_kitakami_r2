@@ -344,9 +344,9 @@ CHECK		= sparse
 
 CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
 		  -Wbitwise -Wno-return-void $(CF)
-CFLAGS_MODULE   = -ftree-parallelize-loops=3 -pthread -fopenmp
+CFLAGS_MODULE   =
 AFLAGS_MODULE   =
-LDFLAGS_MODULE  = -ftree-parallelize-loops=3 -pthread -fopenmp
+LDFLAGS_MODULE  =
 CFLAGS_KERNEL	= -mcpu=cortex-a57.cortex-a53 -mtune=cortex-a57.cortex-a53
 AFLAGS_KERNEL	=
 CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
