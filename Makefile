@@ -743,8 +743,11 @@ KBUILD_CFLAGS += $(call cc-option, -no-pie)
 KBUILD_AFLAGS += $(call cc-option, -fno-pie)
 KBUILD_CPPFLAGS += $(call cc-option, -fno-pie)
 
+# Disable maybe-uninitialized warnings
+KBUILD_CFLAGS	+= $(call cc-disable-warning,maybe-uninitialized,)
+
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
-KBUILD_CFLAGS	+= -Os $(call cc-disable-warning,maybe-uninitialized,)
+KBUILD_CFLAGS	+= -Os
 else
 KBUILD_CFLAGS	+= -O2 $(call cc-disable-warning,maybe-uninitialized,)
 endif
