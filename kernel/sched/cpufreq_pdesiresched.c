@@ -16,11 +16,7 @@
 
 #include "sched.h"
 
-#define THROTTLE_NSEC_UP		40000000 	/* 40ms default */
-
-#define THROTTLE_NSEC_DOWN		50000000 	/* 62,5ms default */
-
-#define THROTTLE_NSEC_SLEEP		12500000 	/* 12.5ms default to enter idle faster*/
+#define THROTTLE_NSEC		40000000 	/* 40ms default */
 
 static DEFINE_PER_CPU(unsigned long, pcpu_capacity);
 static DEFINE_PER_CPU(struct cpufreq_policy *, pcpu_policy);
@@ -42,13 +38,12 @@ static DEFINE_PER_CPU(int, governor_started);
  */
 struct gov_data {
 	ktime_t throttle;
-	unsigned int throttle_nsec_up;
-	unsigned int throttle_nsec_down;
-	unsigned int throttle_nsec_sleep;
+	unsigned int throttle_nsec;
 	struct cpufreq_policy *policy;
 	unsigned int freq;
 	bool change_pending;
 	struct list_head gov_list;
+	int max;
 };
 
  /* worker thread for dvfs transition that may block/sleep */
@@ -60,8 +55,6 @@ static struct mutex gov_list_lock;
 static struct irq_work irq_work;
 
 static int sched_priority = 50; 
-
-static unsigned int screen_off_max_freq = 1248000;
 
 static unsigned int previous_freq = 0;
 
@@ -99,23 +92,12 @@ static void cpufreq_sched_try_driver_target(struct cpufreq_policy *policy, unsig
 	if (!gd)
 		return;
 	
-	if (!display_online && freq > screen_off_max_freq) 
-		__cpufreq_driver_target(policy, screen_off_max_freq, CPUFREQ_RELATION_L);
-	else if (display_online && freq > previous_freq) 
+	if (display_online && freq > previous_freq) 
 		__cpufreq_driver_target(policy, freq, CPUFREQ_RELATION_H);
 	else 
 		__cpufreq_driver_target(policy, freq, CPUFREQ_RELATION_L);
 	
-	
-	if (display_online)
-		if (previous_freq > freq) 
-			throttle_time = gd->throttle_nsec_down;
-		else
-			throttle_time = gd->throttle_nsec_up;
-	else 
-		throttle_time = gd-> throttle_nsec_sleep;
-	
-	gd->throttle = ktime_add_ns(ktime_get(), throttle_time);
+	gd->throttle = ktime_add_ns(ktime_get(), gd->throttle_nsec);
 	
 	previous_freq = freq;
 	
@@ -245,7 +227,7 @@ void cpufreq_sched_set_cap(int cpu, unsigned long capacity)
 		goto out;
 
 	/* Convert the new maximum capacity request into a cpu frequency */
-	freq_new = (capacity * policy->max) / capacity_orig_of(cpu);
+	freq_new = capacity * policy->max >> SCHED_CAPACITY_SHIFT;
 
 	if (freq_new > policy->max)
 		freq_new = policy->max;
@@ -358,26 +340,12 @@ static int cpufreq_sched_policy_init(struct cpufreq_policy *policy)
 	 * Don't ask for freq changes at an higher rate than what
 	 * the driver advertises as transition latency.
 	 */
-	gd->throttle_nsec_up = policy->cpuinfo.transition_latency ?
+	gd->throttle_nsec = policy->cpuinfo.transition_latency ?
 			    policy->cpuinfo.transition_latency : 
-			    THROTTLE_NSEC_UP;
-			    
-	gd->throttle_nsec_down = policy->cpuinfo.transition_latency ?
-			    policy->cpuinfo.transition_latency :
-			    THROTTLE_NSEC_DOWN;
-			    
-	gd->throttle_nsec_sleep = policy->cpuinfo.transition_latency ?
-			    policy->cpuinfo.transition_latency :
-			    THROTTLE_NSEC_SLEEP;
+			    THROTTLE_NSEC;
 	
-	pr_debug("%s: throttle up threshold = %u [ns]\n",
-		  __func__, gd->throttle_nsec_up);
-
-	pr_debug("%s: throttle down threshold = %u [ns]\n",
-		  __func__, gd->throttle_nsec_down);
-		  
-	pr_debug("%s: throttle sleep threshold = %u [ns]\n",
-		  __func__, gd->throttle_nsec_sleep);
+	pr_info("%s: throttle threshold = %u [ns]\n",
+		  __func__, gd->throttle_nsec);
 	
 	policy->governor_data = gd;
 	gd->policy = policy;
@@ -424,8 +392,7 @@ static int cpufreq_sched_policy_exit(struct cpufreq_policy *policy)
 
 static int cpufreq_sched_setup(struct cpufreq_policy *policy, unsigned int event)
 {
-	unsigned int clamp_freq;
- 	struct gov_data *gd = policy->governor_data;
+ 	struct gov_data *gd;
 	
 	switch (event) {
 		case CPUFREQ_GOV_START:
@@ -442,10 +409,20 @@ static int cpufreq_sched_setup(struct cpufreq_policy *policy, unsigned int event
 				policy->cpu, policy->min, policy->max,
 				policy->cur);
 			
-			clamp_freq = clamp(gd->freq, policy->min, policy->max);
-			
-			if (policy->cur != clamp_freq)	
-				__cpufreq_driver_target(policy, clamp_freq, CPUFREQ_RELATION_L);
+			/*
+ 			 * Need to keep track of highest max frequency for
+ 			 * capacity calculations
+ 			 */
+ 			gd = policy->governor_data;
+ 			if (gd->max < policy->max)
+ 				gd->max = policy->max;
+ 			
+ 			if (policy->max < policy->cur)
+ 				__cpufreq_driver_target(policy, policy->max, CPUFREQ_RELATION_H);
+ 			else if (policy->min > policy->cur)
+ 				__cpufreq_driver_target(policy, policy->min, CPUFREQ_RELATION_L);
+ 			else
+ 				__cpufreq_driver_target(policy, policy->cur, CPUFREQ_RELATION_L);
 			
 			mutex_unlock(&gov_list_lock);
 			break;
@@ -454,57 +431,21 @@ static int cpufreq_sched_setup(struct cpufreq_policy *policy, unsigned int event
 }
 
 /* Tunables */
-static ssize_t show_throttle_ns_up(struct gov_data *gd, char *buf)
+static ssize_t show_throttle_ns(struct gov_data *gd, char *buf)
 {
-	return sprintf(buf, "%u\n", gd->throttle_nsec_up);
+	return sprintf(buf, "%u\n", gd->throttle_nsec);
 }
 
-static ssize_t store_throttle_ns_up(struct gov_data *gd,
+static ssize_t store_throttle_ns(struct gov_data *gd,
 		const char *buf, size_t count)
 {
 	int ret;
 	long unsigned int val;
-
+ 
 	ret = kstrtoul(buf, 0, &val);
 	if (ret < 0)
 		return ret;
-	gd->throttle_nsec_up = val;
-	return count;
-}
-
-static ssize_t show_throttle_ns_down(struct gov_data *gd, char *buf)
-{
-	return sprintf(buf, "%u\n", gd->throttle_nsec_down);
-}
-
-static ssize_t store_throttle_ns_down(struct gov_data *gd,
-		const char *buf, size_t count)
-{
-	int ret;
-	long unsigned int val;
-
-	ret = kstrtoul(buf, 0, &val);
-	if (ret < 0)
-		return ret;
-	gd->throttle_nsec_down = val;
-	return count;
-}
-
-static ssize_t show_throttle_ns_sleep(struct gov_data *gd, char *buf)
-{
-	return sprintf(buf, "%u\n", gd->throttle_nsec_sleep);
-}
-
-static ssize_t store_throttle_ns_sleep(struct gov_data *gd,
-		const char *buf, size_t count)
-{
-	int ret;
-	long unsigned int val;
-
-	ret = kstrtoul(buf, 0, &val);
-	if (ret < 0)
-		return ret;
-	gd->throttle_nsec_sleep = val;
+	gd->throttle_nsec = val;
 	return count;
 }
 
@@ -523,24 +464,6 @@ static ssize_t store_sched_priority(struct gov_data *gd,
 	if (ret < 0)
 		return ret;
 	sched_priority = val;
-	return count;
-}
-
-static ssize_t show_screen_off_max_freq(struct gov_data *gd, char *buf)
-{
-	return sprintf(buf, "%u\n", screen_off_max_freq);
-}
-
-static ssize_t store_screen_off_max_freq(struct gov_data *gd,
-		const char *buf, size_t count)
-{
-	int ret;
-	long unsigned int val;
-
-	ret = kstrtoul(buf, 0, &val);
-	if (ret < 0)
-		return ret;
-	screen_off_max_freq = val;
 	return count;
 }
  
@@ -575,19 +498,13 @@ static ssize_t store_##file_name##_gov_pol				\
 	store_gov_pol_sys(file_name); \
 	gov_pol_attr_rw(file_name)
 
-tunable_handlers(throttle_ns_up);
-tunable_handlers(throttle_ns_down);
-tunable_handlers(throttle_ns_sleep);
+tunable_handlers(throttle_ns);
 tunable_handlers(sched_priority);
-tunable_handlers(screen_off_max_freq);
 
 /* Per policy governor instance */
 static struct attribute *sched_attributes_gov_pol[] = {
-	&throttle_ns_up_gov_pol.attr,
-	&throttle_ns_down_gov_pol.attr,
-	&throttle_ns_sleep_gov_pol.attr,
+	&throttle_ns_gov_pol.attr,
 	&sched_priority_gov_pol.attr,
-	&screen_off_max_freq_gov_pol.attr,
 	NULL,
 };
 
