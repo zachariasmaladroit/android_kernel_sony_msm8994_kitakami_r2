@@ -139,7 +139,7 @@ static struct task_struct *notify_thread;
 #define DEF_MULTI_EXIT_CYCLE	4
 #define LAST_LD_CHECK_TOL	(2 * USEC_PER_MSEC)
 
-#define CLUSTER_0_FREQ_CAP	1344000
+#define CLUSTER_0_FREQ_CAP	1632000
 #define CLUSTER_1_FREQ_CAP	1536000
 
 /**************************sysfs start********************************/
