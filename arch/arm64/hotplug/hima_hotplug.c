@@ -19,34 +19,34 @@
 #include <linux/input.h>
 #include <linux/kobject.h>
 
-#ifdef CONFIG_STATE_NOTIFIER
+#ifdef CONFIG_STATE_NOTIFIER2
 #include <linux/state_notifier.h>
 #endif
 
 #include <linux/cpufreq.h>
 
 #define HIMA_HOTPLUG		       "hima_hotplug"
-#define HIMA_HOTPLUG_MAJOR_VERSION     	7
-#define HIMA_HOTPLUG_MINOR_VERSION     	0
+#define HIMA_HOTPLUG_MAJOR_VERSION     	5
+#define HIMA_HOTPLUG_MINOR_VERSION     	1
 
-#define DEF_SAMPLING_MS                	150
+#define DEF_SAMPLING_MS                	200
 #define RESUME_SAMPLING_MS             	30
 #define START_DELAY_MS                 	10000
 
-#define DEFAULT_MIN_CPUS_ONLINE        	4
-#define DEFAULT_MAX_CPUS_ONLINE        	8
-#define DEFAULT_MIN_UP_TIME            	2000
+#define DEFAULT_MIN_CPUS_ONLINE        	2
+#define DEFAULT_MAX_CPUS_ONLINE        	6
+#define DEFAULT_MIN_UP_TIME            	1000
 
 #define DEFAULT_NR_FSHIFT              	4
 
 /* Tuned for MSM8994 */
-#define THREAD_CAPACITY			350
+#define THREAD_CAPACITY			400
 #define CPU_NR_THRESHOLD		((THREAD_CAPACITY << 1) - (THREAD_CAPACITY >> 1))
 
 static struct delayed_work hima_hotplug_work;
 static struct work_struct up_down_work;
 static struct workqueue_struct *hima_hotplug_wq;
-#ifdef CONFIG_STATE_NOTIFIER
+#ifdef CONFIG_STATE_NOTIFIER2
 static struct notifier_block notif;
 #endif
 
@@ -72,7 +72,7 @@ static unsigned int cpu_nr_run_threshold = CPU_NR_THRESHOLD;
 
 /* Profile Tuning */
 static unsigned int nr_run_thresholds_balanced[] = {
-	93, 109, 125, 167, UINT_MAX
+	0, 0, 30, 58, 79, 93, UINT_MAX
 };
 
 static unsigned int nr_run_thresholds_disable[] = {
@@ -93,15 +93,16 @@ static unsigned int calculate_thread_stats(void)
 
 	threshold_size = ARRAY_SIZE(nr_run_thresholds_balanced);
 
-	for (nr_run = min_cpus_online; nr_run < threshold_size; nr_run++) {
+	for (nr_run = 1; nr_run < threshold_size; nr_run++) {
 		unsigned int nr_threshold;
 		nr_threshold = current_profile[nr_run];
 
-		if ((avg_nr_run <= (nr_threshold << (FSHIFT - nr_fshift))) || nr_run >= max_cpus_online)
+		if (avg_nr_run <= (nr_threshold << (FSHIFT - nr_fshift)))
 			break;
 	}
 
-	return nr_run;
+	/* Keep 1 little and 1 big core on */
+	return (nr_run > max_cpus_online) ? max_cpus_online : nr_run;
 }
 
 static void update_per_cpu_stat(void)
@@ -138,7 +139,7 @@ static void __ref cpu_up_down_work(struct work_struct *work)
 		for_each_online_cpu(cpu) {
 			l_ip_info = &per_cpu(ip_info, cpu);
 
-			if (cpu <= 3 ||
+			if (cpu == 0 || cpu == 4 ||
 				((ktime_to_ms(ktime_get()) - l_ip_info->cpu_up_time) < min_cpu_up_time))
 				continue;
 			l_nr_threshold = cpu_nr_run_threshold << 1 / (num_online_cpus());
@@ -151,7 +152,7 @@ static void __ref cpu_up_down_work(struct work_struct *work)
 	} else {
 		update_per_cpu_stat();
 		for_each_cpu_not(cpu, cpu_online_mask) {
-			if(cpu <= 3)
+			if(cpu == 0 || cpu == 4)
 				continue;
 			cpu_up(cpu);
 			l_ip_info = &per_cpu(ip_info, cpu);
@@ -172,14 +173,19 @@ static void hima_hotplug_work_fn(struct work_struct *work)
 }
 
 
-#ifdef CONFIG_STATE_NOTIFIER
+#ifdef CONFIG_STATE_NOTIFIER2
 static void __ref hima_hotplug_suspend(void)
 {
+	max_cpus_online = 3;
+	screen_on = 0;
 }
 
 static void __ref hima_hotplug_resume(void)
 {
-	int cpu = 0;
+	static int cpu = 0;
+
+	max_cpus_online = 8;
+	screen_on = 1;
 
 	/* Bring all cores on for fast resume */
 	for_each_cpu_not(cpu, cpu_online_mask)
@@ -219,7 +225,7 @@ static int __ref hima_hotplug_start(void)
 		goto err_out;
 	}
 
-#ifdef CONFIG_STATE_NOTIFIER
+#ifdef CONFIG_STATE_NOTIFIER2
 	notif.notifier_call = state_notifier_callback;
 	if (state_register_client(&notif)) {
 		pr_err("%s: Failed to register State notifier callback\n",
@@ -241,7 +247,7 @@ static int __ref hima_hotplug_start(void)
 
 	return ret;
 
-#ifdef CONFIG_STATE_NOTIFIER
+#ifdef CONFIG_STATE_NOTIFIER2
 err_dev:
 	destroy_workqueue(hima_hotplug_wq);
 #endif
@@ -255,7 +261,7 @@ static void hima_hotplug_stop(void)
 	flush_workqueue(hima_hotplug_wq);
 	cancel_work_sync(&up_down_work);
 	cancel_delayed_work_sync(&hima_hotplug_work);
-#ifdef CONFIG_STATE_NOTIFIER
+#ifdef CONFIG_STATE_NOTIFIER2
 	state_unregister_client(&notif);
 #endif
 	destroy_workqueue(hima_hotplug_wq);
