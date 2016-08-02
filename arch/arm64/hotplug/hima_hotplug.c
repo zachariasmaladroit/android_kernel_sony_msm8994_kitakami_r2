@@ -19,7 +19,7 @@
 #include <linux/input.h>
 #include <linux/kobject.h>
 
-#ifdef CONFIG_STATE_NOTIFIER
+#ifdef CONFIG_STATE_NOTIFIER2
 #include <linux/state_notifier.h>
 #endif
 
@@ -46,7 +46,7 @@
 static struct delayed_work hima_hotplug_work;
 static struct work_struct up_down_work;
 static struct workqueue_struct *hima_hotplug_wq;
-#ifdef CONFIG_STATE_NOTIFIER
+#ifdef CONFIG_STATE_NOTIFIER2
 static struct notifier_block notif;
 #endif
 
@@ -172,7 +172,7 @@ static void hima_hotplug_work_fn(struct work_struct *work)
 }
 
 
-#ifdef CONFIG_STATE_NOTIFIER
+#ifdef CONFIG_STATE_NOTIFIER2
 static void __ref hima_hotplug_suspend(void)
 {
 }
@@ -219,7 +219,7 @@ static int __ref hima_hotplug_start(void)
 		goto err_out;
 	}
 
-#ifdef CONFIG_STATE_NOTIFIER
+#ifdef CONFIG_STATE_NOTIFIER2
 	notif.notifier_call = state_notifier_callback;
 	if (state_register_client(&notif)) {
 		pr_err("%s: Failed to register State notifier callback\n",
@@ -241,7 +241,7 @@ static int __ref hima_hotplug_start(void)
 
 	return ret;
 
-#ifdef CONFIG_STATE_NOTIFIER
+#ifdef CONFIG_STATE_NOTIFIER2
 err_dev:
 	destroy_workqueue(hima_hotplug_wq);
 #endif
@@ -255,7 +255,7 @@ static void hima_hotplug_stop(void)
 	flush_workqueue(hima_hotplug_wq);
 	cancel_work_sync(&up_down_work);
 	cancel_delayed_work_sync(&hima_hotplug_work);
-#ifdef CONFIG_STATE_NOTIFIER
+#ifdef CONFIG_STATE_NOTIFIER2
 	state_unregister_client(&notif);
 #endif
 	destroy_workqueue(hima_hotplug_wq);
