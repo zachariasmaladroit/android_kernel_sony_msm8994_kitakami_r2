@@ -27,15 +27,15 @@
 
 #define HIMA_HOTPLUG		       "hima_hotplug"
 #define HIMA_HOTPLUG_MAJOR_VERSION     	7
-#define HIMA_HOTPLUG_MINOR_VERSION     	1
+#define HIMA_HOTPLUG_MINOR_VERSION     	0
 
 #define DEF_SAMPLING_MS                	200
 #define RESUME_SAMPLING_MS             	30
 #define START_DELAY_MS                 	10000
 
 #define DEFAULT_MIN_CPUS_ONLINE        	4
-#define DEFAULT_MAX_CPUS_ONLINE        	6
-#define DEFAULT_MIN_UP_TIME            	1500
+#define DEFAULT_MAX_CPUS_ONLINE        	8
+#define DEFAULT_MIN_UP_TIME            	2000
 
 #define DEFAULT_NR_FSHIFT              	4
 
