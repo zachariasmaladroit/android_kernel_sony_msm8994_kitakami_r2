@@ -29,18 +29,18 @@
 #define HIMA_HOTPLUG_MAJOR_VERSION     	7
 #define HIMA_HOTPLUG_MINOR_VERSION     	1
 
-#define DEF_SAMPLING_MS                	150
+#define DEF_SAMPLING_MS                	200
 #define RESUME_SAMPLING_MS             	30
 #define START_DELAY_MS                 	10000
 
 #define DEFAULT_MIN_CPUS_ONLINE        	4
 #define DEFAULT_MAX_CPUS_ONLINE        	6
-#define DEFAULT_MIN_UP_TIME            	2000
+#define DEFAULT_MIN_UP_TIME            	1500
 
 #define DEFAULT_NR_FSHIFT              	4
 
 /* Tuned for MSM8994 */
-#define THREAD_CAPACITY			350
+#define THREAD_CAPACITY			400
 #define CPU_NR_THRESHOLD		((THREAD_CAPACITY << 1) - (THREAD_CAPACITY >> 1))
 
 static struct delayed_work hima_hotplug_work;
