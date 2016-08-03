@@ -152,7 +152,7 @@ CONFIG_TOUCHSCREEN_CLEARPAD_RMI_DEV=y
 #### SunKernel ####
 ##########################
 
-CONFIG_LOCALVERSION="-224_I.1_III_2_24_quiet"
+CONFIG_LOCALVERSION="-253_I_IV.1_2_26_quiet"
 CONFIG_LOCALVERSION_AUTO=n
 
 # Disable unwanted things
