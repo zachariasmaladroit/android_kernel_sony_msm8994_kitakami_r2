@@ -192,7 +192,7 @@ static int boost_adjust_notify(struct notifier_block *nb, unsigned long val,
 	min = min(min, policy->max);
 
 	if (cpu == 4 && min > 0 && cnt_nr_running == 0)
-                        break;
+		return NOTIFY_OK;
 
 	pr_debug("CPU%u policy min before boost: %u kHz\n",
 		 cpu, policy->min);
