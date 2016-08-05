@@ -243,8 +243,8 @@ SUNRISE2 = -ftree-loop-distribution -fgraphite-identity -ftree-loop-linear -floo
 
 HOSTCC       = ccache gcc
 HOSTCXX      = ccache g++
-HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -Os -fomit-frame-pointer -pipe -DNDEBUG -std=gnu89 $(SUNRISE2)
-HOSTCXXFLAGS = -Os -pipe -DNDEBUG $(SUNRISE2)
+HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -pipe -DNDEBUG -std=gnu89 $(SUNRISE2)
+HOSTCXXFLAGS = -O2 -pipe -DNDEBUG $(SUNRISE2)
 
 # Decide whether to build built-in, modular, or both.
 # Normally, just do built-in.
@@ -577,7 +577,7 @@ all: vmlinux
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
 KBUILD_CFLAGS	+= -Os $(call cc-disable-warning,maybe-uninitialized,)
 else
-KBUILD_CFLAGS	+= -Os
+KBUILD_CFLAGS	+= -O2
 endif
 
 include $(srctree)/arch/$(SRCARCH)/Makefile
