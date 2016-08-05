@@ -239,12 +239,12 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 	  else if [ -x /bin/bash ]; then echo /bin/bash; \
 	  else echo sh; fi ; fi)
 
-SUNRISE2 = -ftree-loop-distribution -fgraphite-identity -ftree-loop-linear -floop-strip-mine -floop-block -floop-nest-optimize -ftree-loop-im -funswitch-loops -fschedule-insns -fno-tree-reassoc -fira-loop-pressure -fira-hoist-pressure -freschedule-modulo-scheduled-loops -fmodulo-sched -ftree-pre -ftree-partial-pre -fsingle-precision-constant -funsafe-math-optimizations -fdirectives-only
+SUNRISE4 = -ftree-loop-distribution -fgraphite-identity -ftree-loop-linear -floop-strip-mine -floop-block -ftree-loop-im -funswitch-loops -fschedule-insns -fno-tree-reassoc -freschedule-modulo-scheduled-loops -fmodulo-sched -ftree-pre -ftree-partial-pre -fdirectives-only
 
 HOSTCC       = ccache gcc
 HOSTCXX      = ccache g++
-HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -pipe -DNDEBUG -std=gnu89 $(SUNRISE2)
-HOSTCXXFLAGS = -O2 -pipe -DNDEBUG $(SUNRISE2)
+HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -pipe -DNDEBUG -std=gnu89 $(SUNRISE4)
+HOSTCXXFLAGS = -O2 -pipe -DNDEBUG $(SUNRISE4)
 
 # Decide whether to build built-in, modular, or both.
 # Normally, just do built-in.
