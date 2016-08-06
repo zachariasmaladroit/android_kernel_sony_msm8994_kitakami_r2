@@ -15,11 +15,6 @@
  * Author: Mike Chan (mike@android.com)
  *
  */
-/*
- * NOTE: This file has been modified by Sony Mobile Communications Inc.
- * Modifications are Copyright (c) 2015 Sony Mobile Communications Inc,
- * and licensed under the license of the file.
- */
 
 #include <linux/cpu.h>
 #include <linux/cpumask.h>
@@ -40,6 +35,8 @@
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/cpufreq_interactive.h>
+
+extern bool mdss_screen_on;
 
 struct cpufreq_interactive_policyinfo {
 	struct timer_list policy_timer;
@@ -85,7 +82,7 @@ static int migration_register_count;
 static struct mutex sched_lock;
 
 /* Target load.  Lower values result in higher CPU speeds. */
-#define DEFAULT_TARGET_LOAD 80
+#define DEFAULT_TARGET_LOAD 85
 static unsigned int default_target_loads[] = {DEFAULT_TARGET_LOAD};
 
 #define DEFAULT_TIMER_RATE (20 * USEC_PER_MSEC)
@@ -93,12 +90,15 @@ static unsigned int default_target_loads[] = {DEFAULT_TARGET_LOAD};
 static unsigned int default_above_hispeed_delay[] = {
 	DEFAULT_ABOVE_HISPEED_DELAY };
 
+#define DEFAULT_SCREEN_OFF_MAX 1555200
+static unsigned long screen_off_max = DEFAULT_SCREEN_OFF_MAX;
+
 struct cpufreq_interactive_tunables {
 	int usage_count;
 	/* Hi speed to bump to from lo speed when load burst (default max) */
 	unsigned int hispeed_freq;
 	/* Go to hi speed when CPU load at or above this value. */
-#define DEFAULT_GO_HISPEED_LOAD 80
+#define DEFAULT_GO_HISPEED_LOAD 90
 	unsigned long go_hispeed_load;
 	/* Target load. Lower values result in higher CPU speeds. */
 	spinlock_t target_loads_lock;
@@ -412,9 +412,7 @@ static u64 update_load(int cpu)
 	return now;
 }
 
-static int max_local_load = 100;
-module_param(max_local_load, int, 0644);
-
+#define MAX_LOCAL_LOAD 100
 static void cpufreq_interactive_timer(unsigned long data)
 {
 	u64 now;
@@ -496,7 +494,7 @@ static void cpufreq_interactive_timer(unsigned long data)
 
 	if (cpu_load >= tunables->go_hispeed_load || tunables->boosted) {
 		if (ppol->policy->cur < tunables->hispeed_freq &&
-		    cpu_load <= max_local_load) {
+		    cpu_load <= MAX_LOCAL_LOAD) {
 			new_freq = tunables->hispeed_freq;
 		} else {
 			new_freq = choose_freq(ppol, loadadjfreq);
@@ -511,7 +509,7 @@ static void cpufreq_interactive_timer(unsigned long data)
 			new_freq = tunables->hispeed_freq;
 	}
 
-	if (cpu_load <= max_local_load &&
+	if (cpu_load <= MAX_LOCAL_LOAD &&
 	    ppol->policy->cur >= tunables->hispeed_freq &&
 	    new_freq > ppol->policy->cur &&
 	    now - ppol->hispeed_validate_time <
@@ -630,6 +628,7 @@ static int cpufreq_interactive_speedchange_task(void *data)
 		spin_unlock_irqrestore(&speedchange_cpumask_lock, flags);
 
 		for_each_cpu(cpu, &tmp_mask) {
+			unsigned int max_freq = 0;
 			ppol = per_cpu(polinfo, cpu);
 			if (!down_read_trylock(&ppol->enable_sem))
 				continue;
@@ -638,12 +637,17 @@ static int cpufreq_interactive_speedchange_task(void *data)
 				continue;
 			}
 
+			max_freq = ppol->target_freq;
+			if (unlikely(!mdss_screen_on))
+				if (ppol->target_freq > screen_off_max) 
+					max_freq = screen_off_max;
+
 			if (ppol->target_freq != ppol->policy->cur)
 				__cpufreq_driver_target(ppol->policy,
-							ppol->target_freq,
+							max_freq,
 							CPUFREQ_RELATION_H);
 			trace_cpufreq_interactive_setspeed(cpu,
-						     ppol->target_freq,
+						     max_freq,
 						     ppol->policy->cur);
 			up_read(&ppol->enable_sem);
 		}
@@ -1100,6 +1104,25 @@ static ssize_t store_boostpulse_duration(struct cpufreq_interactive_tunables
 	return count;
 }
 
+static ssize_t show_screen_off_maxfreq(struct cpufreq_interactive_tunables *tunables,
+                char *buf)
+{
+	return sprintf(buf, "%lu\n", screen_off_max);
+}
+
+static ssize_t store_screen_off_maxfreq(struct cpufreq_interactive_tunables *tunables,
+                const char *buf, size_t count)
+{
+	int ret;
+	unsigned long val;
+
+	ret = strict_strtoul(buf, 0, &val);
+	if (ret < 0) return ret;
+	if (val < 384000) screen_off_max = DEFAULT_SCREEN_OFF_MAX;
+	else screen_off_max = val;
+	return count;
+}
+
 static ssize_t show_io_is_busy(struct cpufreq_interactive_tunables *tunables,
 		char *buf)
 {
@@ -1326,6 +1349,7 @@ show_store_gov_pol_sys(use_sched_load);
 show_store_gov_pol_sys(use_migration_notif);
 show_store_gov_pol_sys(max_freq_hysteresis);
 show_store_gov_pol_sys(align_windows);
+show_store_gov_pol_sys(screen_off_maxfreq);
 
 #define gov_sys_attr_rw(_name)						\
 static struct global_attr _name##_gov_sys =				\
@@ -1353,6 +1377,7 @@ gov_sys_pol_attr_rw(use_sched_load);
 gov_sys_pol_attr_rw(use_migration_notif);
 gov_sys_pol_attr_rw(max_freq_hysteresis);
 gov_sys_pol_attr_rw(align_windows);
+gov_sys_pol_attr_rw(screen_off_maxfreq);
 
 static struct global_attr boostpulse_gov_sys =
 	__ATTR(boostpulse, 0200, NULL, store_boostpulse_gov_sys);
@@ -1377,6 +1402,7 @@ static struct attribute *interactive_attributes_gov_sys[] = {
 	&use_migration_notif_gov_sys.attr,
 	&max_freq_hysteresis_gov_sys.attr,
 	&align_windows_gov_sys.attr,
+	&screen_off_maxfreq_gov_sys.attr,
 	NULL,
 };
 
@@ -1402,6 +1428,7 @@ static struct attribute *interactive_attributes_gov_pol[] = {
 	&use_migration_notif_gov_pol.attr,
 	&max_freq_hysteresis_gov_pol.attr,
 	&align_windows_gov_pol.attr,
+	&screen_off_maxfreq_gov_pol.attr,
 	NULL,
 };
 
@@ -1687,6 +1714,8 @@ struct cpufreq_governor cpufreq_gov_interactive = {
 static int __init cpufreq_interactive_init(void)
 {
 	struct sched_param param = { .sched_priority = MAX_RT_PRIO-1 };
+
+	mdss_screen_on = true;
 
 	spin_lock_init(&speedchange_cpumask_lock);
 	mutex_init(&gov_lock);
