@@ -239,7 +239,7 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 	  else if [ -x /bin/bash ]; then echo /bin/bash; \
 	  else echo sh; fi ; fi)
 
-SUNRISE99 = -fschedule-insns -fno-tree-reassoc -freschedule-modulo-scheduled-loops -fmodulo-sched -ftree-pre -ftree-partial-pre -fdirectives-only
+SUNRISE99 = -fschedule-insns -fno-tree-reassoc -freschedule-modulo-scheduled-loops -fmodulo-sched -fmodulo-sched-allow-regmoves -ftree-pre -ftree-partial-pre -funswitch-loops -fpredictive-commoning -fgcse-after-reload -fno-aggressive-loop-optimizations -fdirectives-only
 
 HOSTCC       = ccache gcc
 HOSTCXX      = ccache g++
