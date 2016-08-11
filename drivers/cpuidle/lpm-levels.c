@@ -932,6 +932,7 @@ static const struct platform_suspend_ops lpm_suspend_ops = {
 	.valid = suspend_valid_only_mem,
 	.prepare_late = lpm_suspend_prepare,
 	.end = lpm_suspend_end,
+	.suspend_again = quickwakeup_suspend_again,
 };
 
 static int lpm_probe(struct platform_device *pdev)
