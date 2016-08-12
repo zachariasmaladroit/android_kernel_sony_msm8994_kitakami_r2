@@ -20,8 +20,3 @@ CONFIG_KEXEC=y
 # CONFIG_ATAGS_PROC is not set
 CONFIG_KEXEC_HARDBOOT=y
 CONFIG_PROC_DEVICETREE=y #this one is turned on by default
-
-CONFIG_BCMDHD=y
-CONFIG_BCM4356=y
-CONFIG_BCMDHD_FW_PATH="/system/etc/firmware/wlan/bcmdhd/fw_bcmdhd.bin"
-CONFIG_BCMDHD_NVRAM_PATH="/system/etc/firmware/wlan/bcmdhd/bcmdhd.cal"
