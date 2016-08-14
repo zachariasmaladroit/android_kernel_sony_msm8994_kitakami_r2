@@ -354,7 +354,7 @@ static struct smp_hotplug_thread cpuboost_threads = {
 	.unpark		= cpuboost_unpark,
 };
 
-static __attribute__ ((aligned(4096))) int noinline boost_migration_notify(struct notifier_block *nb,
+static int boost_migration_notify(struct notifier_block *nb,
 				unsigned long unused, void *arg)
 {
 	struct migration_notify_data *mnd = arg;
