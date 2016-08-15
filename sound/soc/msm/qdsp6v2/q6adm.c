@@ -451,13 +451,6 @@ int srs_trumedia_open(int port_id, int copp_idx, __s32 srs_tech_id,
 		pr_err("%s: Invalid port_id %#x\n", __func__, port_id);
 		return -EINVAL;
 	}
-
-	if (atomic_read(&this_adm.copp.id[port_idx][copp_idx]) == RESET_COPP_ID) {
-		pr_err("%s: COPP is resetting. Do not send TruMedia params to Q6\n",
-			__func__);
-		return -EINVAL;
-	}
-
 	switch (srs_tech_id) {
 	case SRS_ID_GLOBAL: {
 		struct srs_trumedia_params_GLOBAL *glb_params = NULL;
