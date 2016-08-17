@@ -241,6 +241,7 @@ static void flush_smp_call_function_queue(bool warn_cpu_offline)
 
 		csd = list_entry(list.next, struct call_single_data, list);
 		list_del(&csd->list);
+
 		/*
 		 * 'csd' can be invalid after this call if flags == 0
 		 * (when called through generic_exec_single()),
