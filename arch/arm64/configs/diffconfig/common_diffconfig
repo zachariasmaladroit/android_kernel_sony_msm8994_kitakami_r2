@@ -337,3 +337,12 @@ CONFIG_CPU_QUIET_DEFAULT_GOV_RQBALANCE=y
 CONFIG_CPU_QUIET_MSM=y
 # CONFIG_CPU_BOOST is not set
 # CONFIG_MSM_PERFORMANCE_HOTPLUG_ON is not set
+
+# Kexec Hardboot Patches
+# CONFIG_KEXEC is not set
+# CONFIG_ATAGS_PROC is not set
+# CONFIG_KEXEC_HARDBOOT is not set
+#
+# requirement for getting Kexec Hardboot to work
+# and it is turned on by default
+CONFIG_PROC_DEVICETREE=y
