@@ -9,7 +9,6 @@
 #include <linux/kbd_kern.h>
 #include <linux/vt.h>
 #include <linux/module.h>
-#include <linux/slab.h>
 #include "power.h"
 
 #define SUSPEND_CONSOLE	(MAX_NR_CONSOLES-1)
