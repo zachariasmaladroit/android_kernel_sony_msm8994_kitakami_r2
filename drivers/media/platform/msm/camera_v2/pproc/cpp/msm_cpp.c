@@ -658,7 +658,7 @@ static void msm_cpp_poll(void __iomem *cpp_base, u32 val)
 {
 	uint32_t tmp, retry = 0;
 	do {
-		usleep_range(1000, 2000);
+		usleep_range(1000, 1500);
 		tmp = msm_cpp_read(cpp_base);
 		if (tmp != 0xDEADBEEF)
 			CPP_LOW("poll: 0%x\n", tmp);
