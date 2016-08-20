@@ -1033,7 +1033,7 @@ static int cpp_init_hardware(struct cpp_device *cpp_dev)
 	and this was the smallest number which works. This
 	sleep is needed to leave enough time for Microcontroller
 	to resets all its registers.*/
-	usleep_range(5000, 6000);
+	usleep_range(1000, 1200);
 
 	rc = clk_reset(cpp_dev->cpp_clk[msm_micro_iface_idx],
 		CLK_RESET_DEASSERT);
