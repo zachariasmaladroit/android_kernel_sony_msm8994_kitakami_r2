@@ -183,6 +183,9 @@ static int boost_adjust_notify(struct notifier_block *nb, unsigned long val,
 	if (!b_min && !ib_min)
 		return NOTIFY_OK;
 
+	if (cpu >= 4)
+		return NOTIFY_OK;
+
 	min = max(b_min, ib_min);
 	min = min(min, policy->max);
 
@@ -221,7 +224,8 @@ static void update_policy_online(void)
 	get_online_cpus();
 	for_each_online_cpu(i) {
 		pr_debug("Updating policy for CPU%d\n", i);
-		cpufreq_update_policy(i);
+		if (i <= 3)
+			cpufreq_update_policy(i);
 	}
 	put_online_cpus();
 }
