@@ -359,8 +359,3 @@ CONFIG_MSM_PERFORMANCE_HOTPLUG_ON=y
 # and it is turned on by default
 CONFIG_PROC_DEVICETREE=y
 CONFIG_OF_MDIO=y
-
-# remove SysV IPC from kernel
-# CONFIG_SYSVIPC is not set
-# CONFIG_SYSVIPC_SYSCTL is not set
-# CONFIG_IPC_NS is not set
