@@ -3375,4 +3375,27 @@ static inline unsigned long rlimit_max(unsigned int limit)
 	return task_rlimit_max(current, limit);
 }
 
+
+struct cpu_cycle_counter_cb {
+	u64 (*get_cpu_cycle_counter)(int cpu);
+	u32 (*get_cpu_cycles_max_per_us)(int cpu);
+};
+int register_cpu_cycle_counter_cb(struct cpu_cycle_counter_cb *cb);
+
+#define SCHED_CPUFREQ_RT        (1U << 0)
+#define SCHED_CPUFREQ_DL        (1U << 1)
+#define SCHED_CPUFREQ_IOWAIT    (1U << 2)
+
+#ifdef CONFIG_CPU_FREQ
+struct update_util_data {
+	void (*func)(struct update_util_data *data, u64 time, unsigned int flags);
+};
+
+void cpufreq_add_update_util_hook(int cpu, struct update_util_data *data,
+                       void (*func)(struct update_util_data *data, u64 time,
+                                    unsigned int flags));
+void cpufreq_remove_update_util_hook(int cpu);
+#endif /* CONFIG_CPU_FREQ */
+
+
 #endif
