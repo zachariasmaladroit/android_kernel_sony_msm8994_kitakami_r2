@@ -149,6 +149,11 @@ config CPU_FREQ_DEFAULT_GOV_SMARTMAX
 	help
 	  Use the CPUFreq governor 'optimax' as defaul
 
+config CPU_FREQ_DEFAULT_GOV_NIGHTMARE
+	bool "nightmare"
+	select CPU_FREQ_GOV_NIGHTMARE
+	help
+
 endchoice
 
 config CPU_FREQ_GOV_PERFORMANCE
@@ -281,6 +286,11 @@ config CPU_FREQ_GOV_ALUCARD
 config CPU_FREQ_GOV_SMARTMAX
 	tristate "'smartmax' cpufreq policy governor"
 	select CPU_FREQ_TABLE 
+
+config CPU_FREQ_GOV_NIGHTMARE
+	tristate "'nightmare' cpufreq governor"
+	depends on CPU_FREQ
+	select CPU_FREQ_GOV_COMMON
 
 config CPU_BOOST
 	tristate "Event base short term CPU freq boost"
