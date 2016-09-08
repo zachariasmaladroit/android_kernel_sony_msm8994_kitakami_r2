@@ -34,11 +34,6 @@ module_param(wlan_wake, bool, 0644);
 static bool enable_ipa_ws = true;
 module_param(enable_ipa_ws, bool, 0644);
 
-static bool enable_wlan_wow_wl_ws = true;
-module_param(enable_wlan_wow_wl_ws, bool, 0644);
-static bool enable_wlan_ipa_ws = true;
-module_param(enable_wlan_ipa_ws, bool, 0644);
-
 /*
  * If set, the suspend/hibernate code will abort transitions to a sleep state
  * if wakeup events are registered during or immediately before the transition.
@@ -465,12 +460,6 @@ static void wakeup_source_activate(struct wakeup_source *ws)
 
 	if (!enable_ipa_ws && !strcmp(ws->name, "IPA_WS"))
 		return;
-
-	if (!enable_wlan_wow_wl_ws && !strcmp(ws->name, "wlan_wow_wl"))
-                return;
-
-	if (!enable_wlan_ipa_ws && !strcmp(ws->name, "wlan_ipa"))
-                return;
 
 	if (WARN(wakeup_source_not_registered(ws),
 			"unregistered wakeup source\n"))
