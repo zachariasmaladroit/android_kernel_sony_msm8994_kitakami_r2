@@ -18,8 +18,6 @@
 #include <trace/events/power.h>
 #include <linux/moduleparam.h>
 
-#include "power.h"
-
 static bool enable_si_ws = true;
 module_param(enable_si_ws, bool, 0644);
 static bool enable_msm_hsic_ws = true;
@@ -31,8 +29,7 @@ module_param(wlan_ctrl_wake, bool, 0644);
 static bool wlan_wake = true;
 module_param(wlan_wake, bool, 0644);
 
-static bool enable_ipa_ws = true;
-module_param(enable_ipa_ws, bool, 0644);
+#include "power.h"
 
 /*
  * If set, the suspend/hibernate code will abort transitions to a sleep state
@@ -457,9 +454,6 @@ static void wakeup_source_activate(struct wakeup_source *ws)
 
 	if (!wlan_wake && !strcmp(ws->name, "wlan_wake"))
                 return;
-
-	if (!enable_ipa_ws && !strcmp(ws->name, "IPA_WS"))
-		return;
 
 	if (WARN(wakeup_source_not_registered(ws),
 			"unregistered wakeup source\n"))
