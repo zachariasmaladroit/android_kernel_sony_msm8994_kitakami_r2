@@ -45,7 +45,7 @@ then
 		### Zip boot.img
 		cd ../final_files/
 		mv boot_E6533.img boot.img
-		zip -r Z4_Z3Plus_Sunkernel_Permissive_v.zip boot.img META-INF/
+		zip -r Z4_Z3Plus_Sunkernel_Permissive_v.zip boot.img clean.sh META-INF/
 		rm -f boot.img
 
 		echo " "
@@ -81,7 +81,7 @@ then
 	### Zip boot.img
 	#cd ../final_files/
 	#mv boot_E6533_E.img boot.img
-	#zip -r Z4_Z3Plus_Sunkernel_Enforcing_v.zip boot.img META-INF/
+	#zip -r Z4_Z3Plus_Sunkernel_Enforcing_v.zip boot.img clean.sh META-INF/
 	#rm -f boot.img
 	#
 	#echo " "
