@@ -232,10 +232,14 @@ static inline unsigned int work_static(struct work_struct *work) { return 0; }
 #endif
 
 #define INIT_WORK(_work, _func)						\
-	__INIT_WORK((_work), (_func), 0)
+	do {								\
+		__INIT_WORK((_work), (_func), 0);			\
+	} while (0)
 
 #define INIT_WORK_ONSTACK(_work, _func)					\
-	__INIT_WORK((_work), (_func), 1)
+	do {								\
+		__INIT_WORK((_work), (_func), 1);			\
+	} while (0)
 
 #define __INIT_DELAYED_WORK(_work, _func, _tflags)			\
 	do {								\
