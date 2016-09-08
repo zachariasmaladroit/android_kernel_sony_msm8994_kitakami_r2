@@ -56,8 +56,9 @@ enum {
 	WORK_NR_COLORS		= (1 << WORK_STRUCT_COLOR_BITS) - 1,
 	WORK_NO_COLOR		= WORK_NR_COLORS,
 
-	/* not bound to any CPU, prefer the local CPU */
+	/* special cpu IDs */
 	WORK_CPU_UNBOUND	= NR_CPUS,
+	WORK_CPU_END		= NR_CPUS + 1,
 
 	/*
 	 * Reserve 7 bits off of pwq pointer w/ debugobjects turned off.
