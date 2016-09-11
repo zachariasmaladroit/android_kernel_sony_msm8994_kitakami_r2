@@ -71,6 +71,9 @@
 #define QPNP_HAP_VMAX_SHIFT		1
 #define QPNP_HAP_VMAX_MIN_MV		116
 #define QPNP_HAP_VMAX_MAX_MV		3596
+#define QPNP_HAP_VMAX_STRONG_MV		3596
+#define QPNP_HAP_VMAX_LIGHT_MV		500
+#define QPNP_HAP_STRONG_THRESHOLD	330
 #define QPNP_HAP_ILIM_MASK		0xFE
 #define QPNP_HAP_ILIM_MIN_MV		400
 #define QPNP_HAP_ILIM_MAX_MV		800
@@ -244,6 +247,9 @@ struct qpnp_pwm_info {
  *  @ lra_high_z - high z option line
  *  @ timeout_ms - max timeout in ms
  *  @ vmax_mv - max voltage in mv
+ *  @ timeout_strong_threshold - minimum duration of a strong pulse in ms
+ *  @ vmax_strong_mv - voltage used for a strong pulse in mv
+ *  @ vmax_light_mv - voltage used for a light pulse in mv
  *  @ ilim_ma - limiting current in ma
  *  @ sc_deb_cycles - short circuit debounce cycles
  *  @ int_pwm_freq_khz - internal pwm frequency in khz
@@ -291,6 +297,9 @@ struct qpnp_hap {
 	enum qpnp_hap_high_z lra_high_z;
 	u32 timeout_ms;
 	u32 vmax_mv;
+	u32 timeout_strong_threshold;
+	u32 vmax_strong_mv;
+	u32 vmax_light_mv;
 	u32 ilim_ma;
 	u32 sc_deb_cycles;
 	u32 int_pwm_freq_khz;
@@ -944,6 +953,108 @@ static ssize_t qpnp_hap_wf_s7_store(struct device *dev,
 	return qpnp_hap_wf_samp_store(dev, buf, count, 7);
 }
 
+/* sysfs show for timeout_strong_threshold update */
+static ssize_t qpnp_hap_timeout_strong_threshold_show(struct device *dev,
+		struct device_attribute *attr, char *buf)
+{
+	struct timed_output_dev *timed_dev = dev_get_drvdata(dev);
+	struct qpnp_hap *hap = container_of(timed_dev, struct qpnp_hap,
+					 timed_dev);
+
+	return snprintf(buf, PAGE_SIZE, "%d\n", hap->timeout_strong_threshold);
+}
+
+/* sysfs store for timeout_strong_threshold */
+static ssize_t qpnp_hap_timeout_strong_threshold_store(struct device *dev,
+		struct device_attribute *attr, const char *buf, size_t count)
+{
+	struct timed_output_dev *timed_dev = dev_get_drvdata(dev);
+	struct qpnp_hap *hap = container_of(timed_dev, struct qpnp_hap,
+					 timed_dev);
+	u32 val;
+	ssize_t ret;
+
+	ret = kstrtou32(buf, 10, &val);
+	if (ret)
+		return ret;
+
+	mutex_lock(&hap->wf_lock);
+	hap->timeout_strong_threshold = val;
+	mutex_unlock(&hap->wf_lock);
+
+	return count;
+}
+
+/* sysfs show for vmax_strong_mv update */
+static ssize_t qpnp_hap_vmax_strong_mv_show(struct device *dev,
+		struct device_attribute *attr, char *buf)
+{
+	struct timed_output_dev *timed_dev = dev_get_drvdata(dev);
+	struct qpnp_hap *hap = container_of(timed_dev, struct qpnp_hap,
+					 timed_dev);
+
+	return snprintf(buf, PAGE_SIZE, "%d\n", hap->vmax_strong_mv);
+}
+
+/* sysfs store for vmax_strong_mv */
+static ssize_t qpnp_hap_vmax_strong_mv_store(struct device *dev,
+		struct device_attribute *attr, const char *buf, size_t count)
+{
+	struct timed_output_dev *timed_dev = dev_get_drvdata(dev);
+	struct qpnp_hap *hap = container_of(timed_dev, struct qpnp_hap,
+					 timed_dev);
+	u32 val;
+	ssize_t ret;
+
+	ret = kstrtou32(buf, 10, &val);
+	if (ret)
+		return ret;
+
+	if ((val < QPNP_HAP_VMAX_MIN_MV) || (val > QPNP_HAP_VMAX_MAX_MV))
+		return -EINVAL;
+
+	mutex_lock(&hap->wf_lock);
+	hap->vmax_strong_mv = val;
+	mutex_unlock(&hap->wf_lock);
+
+	return count;
+}
+
+/* sysfs show for vmax_light_mv update */
+static ssize_t qpnp_hap_vmax_light_mv_show(struct device *dev,
+		struct device_attribute *attr, char *buf)
+{
+	struct timed_output_dev *timed_dev = dev_get_drvdata(dev);
+	struct qpnp_hap *hap = container_of(timed_dev, struct qpnp_hap,
+					 timed_dev);
+
+	return snprintf(buf, PAGE_SIZE, "%d\n", hap->vmax_light_mv);
+}
+
+/* sysfs store for vmax_light_mv */
+static ssize_t qpnp_hap_vmax_light_mv_store(struct device *dev,
+		struct device_attribute *attr, const char *buf, size_t count)
+{
+	struct timed_output_dev *timed_dev = dev_get_drvdata(dev);
+	struct qpnp_hap *hap = container_of(timed_dev, struct qpnp_hap,
+					 timed_dev);
+	u32 val;
+	ssize_t ret;
+
+	ret = kstrtou32(buf, 10, &val);
+	if (ret)
+		return ret;
+
+	if ((val < QPNP_HAP_VMAX_MIN_MV) || (val > QPNP_HAP_VMAX_MAX_MV))
+		return -EINVAL;
+
+	mutex_lock(&hap->wf_lock);
+	hap->vmax_light_mv = val;
+	mutex_unlock(&hap->wf_lock);
+
+	return count;
+}
+
 /* sysfs show for wave form update */
 static ssize_t qpnp_hap_wf_update_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
@@ -1294,6 +1405,15 @@ static struct device_attribute qpnp_hap_attrs[] = {
 	__ATTR(min_max_test, (S_IRUGO | S_IWUSR | S_IWGRP),
 			qpnp_hap_min_max_test_data_show,
 			qpnp_hap_min_max_test_data_store),
+	__ATTR(timeout_strong_threshold, (S_IRUGO | S_IWUSR | S_IWGRP),
+			qpnp_hap_timeout_strong_threshold_show,
+			qpnp_hap_timeout_strong_threshold_store),
+	__ATTR(vmax_strong_mv, (S_IRUGO | S_IWUSR | S_IWGRP),
+			qpnp_hap_vmax_strong_mv_show,
+			qpnp_hap_vmax_strong_mv_store),
+	__ATTR(vmax_light_mv, (S_IRUGO | S_IWUSR | S_IWGRP),
+			qpnp_hap_vmax_light_mv_show,
+			qpnp_hap_vmax_light_mv_store),
 };
 
 static void calculate_lra_code(struct qpnp_hap *hap)
@@ -1513,12 +1633,18 @@ static void qpnp_hap_td_enable(struct timed_output_dev *dev, int value)
 		}
 		hap->state = 0;
 	} else {
-		value = (value > hap->timeout_ms ?
-				 hap->timeout_ms : value);
-		hap->state = 1;
-		hrtimer_start(&hap->hap_timer,
-			      ktime_set(value / 1000, (value % 1000) * 1000000),
-			      HRTIMER_MODE_REL);
+
+		u32 new_vmax_mv;
+		VIB_DBG_LOG("enable=%d.\n", value);
+
+		/* Reduce intensity if outside call/message duration */
+		new_vmax_mv = (value >= hap->timeout_strong_threshold) ?
+				hap->vmax_strong_mv : hap->vmax_light_mv;
+		if (new_vmax_mv != hap->vmax_mv) {
+			hap->vmax_mv = new_vmax_mv;
+			qpnp_hap_vmax_config(hap);
+		}
+
 	}
 	mutex_unlock(&hap->lock);
 	schedule_work(&hap->work);
@@ -2000,6 +2126,27 @@ static int qpnp_hap_parse_dt(struct qpnp_hap *hap)
 	} else if (rc != -EINVAL) {
 		dev_err(&spmi->dev, "Unable to read vmax\n");
 		return rc;
+	}
+
+	hap->timeout_strong_threshold = QPNP_HAP_STRONG_THRESHOLD;
+	rc = of_property_read_u32(spmi->dev.of_node,
+			"qcom,timeout-strong-threshold", &temp);
+	if (!rc) {
+		hap->timeout_strong_threshold = temp;
+	}
+
+	hap->vmax_strong_mv = QPNP_HAP_VMAX_STRONG_MV;
+	rc = of_property_read_u32(spmi->dev.of_node,
+			"qcom,vmax-strong-mv", &temp);
+	if (!rc) {
+		hap->vmax_strong_mv = temp;
+	}
+
+	hap->vmax_light_mv = QPNP_HAP_VMAX_LIGHT_MV;
+	rc = of_property_read_u32(spmi->dev.of_node,
+			"qcom,vmax-light-mv", &temp);
+	if (!rc) {
+		hap->vmax_light_mv = temp;
 	}
 
 	hap->ilim_ma = QPNP_HAP_ILIM_MIN_MV;
