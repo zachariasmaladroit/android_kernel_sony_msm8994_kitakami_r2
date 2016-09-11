@@ -375,3 +375,7 @@ CONFIG_PROC_DEVICETREE=y
 CONFIG_OF_MDIO=y
 
 # CONFIG_ARCH_MSM8994_V1_TLBI_WA is not set
+
+# Taking care of security fixes & independence from prebuilt-modules
+CONFIG_ECRYPT_FS=y
+CONFIG_ECRYPT_FS_MESSAGING=y
