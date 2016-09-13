@@ -525,6 +525,7 @@ static int tz_handler(struct devfreq *devfreq, unsigned int event, void *data)
 		/* Reset the suspend_start when gpu resumes */
 		suspend_start = 0;
 		spin_unlock(&suspend_lock);
+		break;
 
 	case DEVFREQ_GOV_INTERVAL:
 		/* ignored, this governor doesn't use polling */
