@@ -1428,6 +1428,13 @@ CONFIG_WIL6210=y
 CONFIG_WIL6210_ISR_COR=y
 CONFIG_WIL6210_TRACING=y
 CONFIG_WIL6210_PLATFORM_MSM=y
+CONFIG_BCMDHD=y
+# CONFIG_BCM4354 is not set
+CONFIG_BCM4356=y
+CONFIG_BCMDHD_FW_PATH="/system/etc/firmware/wlan/bcmdhd/fw_bcmdhd.bin"
+CONFIG_BCMDHD_NVRAM_PATH="/system/etc/firmware/wlan/bcmdhd/bcmdhd.cal"
+# CONFIG_DHD_USE_STATIC_BUF is not set
+# CONFIG_DHD_USE_SCHED_SCAN is not set
 # CONFIG_BRCMFMAC is not set
 # CONFIG_HOSTAP is not set
 # CONFIG_IPW2100 is not set
