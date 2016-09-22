@@ -17,6 +17,7 @@
 #define RESTART_NORMAL 0x0
 #define RESTART_DLOAD  0x1
 
+void do_msm_restart(enum reboot_mode reboot_mode, const char *cmd);
 void msm_set_restart_mode(int mode);
 extern int pmic_reset_irq;
 
