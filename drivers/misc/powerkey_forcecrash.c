@@ -20,20 +20,20 @@
 #include <linux/slab.h>
 #include <linux/jiffies.h>
 #include <linux/timer.h>
-#include <linux/wakelock.h>
+#include <linux/fs.h>
+#include <linux/reboot.h>
+#include <soc/qcom/restart.h>
 
-#define FORCE_CRASH_TIMEOUT 10
+#define FORCE_CRASH_TIMEOUT 5
 static struct timer_list forcecrash_timer;
 
-#define PKEY_FORCECRASH_DEV_NAME "powerkey_forcecrash"
-static struct wake_lock powerkey_lock;
-
-static int forcecrash_on;
+static int forcecrash_on = 1;
 module_param(forcecrash_on, int, S_IRUGO | S_IWUSR);
 
 static void forcecrash_timeout(unsigned long data)
 {
-	panic("Force crash triggered!!!\n");
+	emergency_sync();
+	do_msm_restart(REBOOT_HARD, "bootloader");
 }
 
 static void forcecrash_timer_setup(bool key_pressed)
@@ -45,11 +45,9 @@ static void forcecrash_timer_setup(bool key_pressed)
 		pr_debug("Power key pressed..\n");
 		mod_timer(&forcecrash_timer,
 				jiffies + FORCE_CRASH_TIMEOUT * HZ);
-		wake_lock(&powerkey_lock);
 	} else {
 		pr_debug("released.\n");
 		del_timer(&forcecrash_timer);
-		wake_unlock(&powerkey_lock);
 	}
 }
 
@@ -148,15 +146,12 @@ static int __init powerkey_forcecrash_init(void)
 {
 	init_timer(&forcecrash_timer);
 	forcecrash_timer.function = forcecrash_timeout;
-	wake_lock_init(&powerkey_lock, WAKE_LOCK_SUSPEND,
-			PKEY_FORCECRASH_DEV_NAME);
 	return input_register_handler(&powerkey_input_handler);
 }
 
 static void __exit powerkey_forcecrash_exit(void)
 {
 	del_timer(&forcecrash_timer);
-	wake_lock_destroy(&powerkey_lock);
 	input_unregister_handler(&powerkey_input_handler);
 }
 
