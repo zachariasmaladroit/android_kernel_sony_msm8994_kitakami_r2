@@ -296,7 +296,7 @@ static void deassert_ps_hold(void)
 	__raw_writel(0, msm_ps_hold);
 }
 
-static void do_msm_restart(enum reboot_mode reboot_mode, const char *cmd)
+void do_msm_restart(enum reboot_mode reboot_mode, const char *cmd)
 {
 	int ret;
 	struct scm_desc desc = {
