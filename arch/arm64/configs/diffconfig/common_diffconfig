@@ -379,9 +379,3 @@ CONFIG_OF_MDIO=y
 # Taking care of security fixes & independence from prebuilt-modules
 CONFIG_ECRYPT_FS=y
 CONFIG_ECRYPT_FS_MESSAGING=y
-
-# Broadcom V4L2 ANT/BT/FM device drivers
-CONFIG_BT_PROTOCOL_DRIVER=y
-CONFIG_LINE_DISCIPLINE_DRIVER=y
-CONFIG_V4L2_ANT_DRIVER=y
-CONFIG_V4L2_FM_DRIVER=y
