@@ -38,7 +38,6 @@
 
 #include "clock.h"
 #include "vdd-level-8994.h"
-#include "clock-cpu-8994.h"
 
 #define A53OFFSET (56)
 
@@ -1643,8 +1642,8 @@ static void init_v2_data(void)
 	a53_clk.hw_low_power_ctrl = true;
 }
 
-int a57speedbin;
-int a53speedbin;
+static int a57speedbin;
+static int a53speedbin;
 struct platform_device *cpu_clock_8994_dev;
 
 /* Low power mux code begins here */
