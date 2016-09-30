@@ -239,12 +239,13 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 	  else if [ -x /bin/bash ]; then echo /bin/bash; \
 	  else echo sh; fi ; fi)
 
-SUNRISE6 = -ftree-loop-distribution -fgraphite-identity -ftree-loop-linear -floop-strip-mine -floop-block -ftree-loop-im -funswitch-loops -fschedule-insns -fno-tree-reassoc -freschedule-modulo-scheduled-loops -fmodulo-sched -fmodulo-sched-allow-regmoves -ftree-pre -ftree-partial-pre -fsingle-precision-constant -fpredictive-commoning -fgcse-after-reload -fdirectives-only
+#SUNRISE6 = -freschedule-modulo-scheduled-loops -fmodulo-sched -fmodulo-sched-allow-regmoves -fsingle-precision-constant -fgcse-after-reload
+GRAPHITE = -fgraphite-identity -floop-parallelize-all -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block -floop-flatten -floop-nest-optimize
 
-HOSTCC       = ccache gcc
-HOSTCXX      = ccache g++
-HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -Os -fomit-frame-pointer
-HOSTCXXFLAGS = -Os -pipe
+HOSTCC       = gcc
+HOSTCXX      = g++
+HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer
+HOSTCXXFLAGS = -O2
 
 # Decide whether to build built-in, modular, or both.
 # Normally, just do built-in.
@@ -371,14 +372,16 @@ LINUXINCLUDE    := \
 
 KBUILD_CPPFLAGS := -D__KERNEL__
 
-KBUILD_CFLAGS   := $(SUNRISE6) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-strict-aliasing -fno-common \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
 		   -fno-delete-null-pointer-checks \
+		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
+		   -fivopts -funswitch-loops -fpredictive-commoning -fgcse-after-reload \
+		   -fbranch-target-load-optimize -fsingle-precision-constant \
 		   -march=armv8-a+crc \
-		   -mtune=cortex-a53 \
-		   -std=gnu89
+		   -mtune=cortex-a53
 
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
