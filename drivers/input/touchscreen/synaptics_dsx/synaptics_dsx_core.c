@@ -652,12 +652,6 @@ static ssize_t synaptics_secure_touch_show(struct device *dev,
 }
 #endif
 
-#ifdef CONFIG_SWEEP2SLEEP
-struct kobject *android_touch_kobj;
-#else
-static struct kobject *android_touch_kobj;
-#endif
-
 static ssize_t synaptics_rmi4_full_pm_cycle_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
