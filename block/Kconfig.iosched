@@ -23,15 +23,6 @@ config IOSCHED_TEST
 	  according to the test case and declare PASS/FAIL according to the
 	  requests completion error code.
 
-config IOSCHED_DEADLINE
-	tristate "Deadline I/O scheduler"
-	default y
-	---help---
-	  The deadline I/O scheduler is simple and compact. It will provide
-	  CSCAN service with FIFO expiration of requests, switching to
-	  a new point in the service tree and doing a batch of IO from there
-	  in case of expiry.
-
 config IOSCHED_ROW
 	tristate "ROW I/O scheduler"
 	default y
@@ -42,6 +33,16 @@ config IOSCHED_ROW
 	  manner when the dispatch quantum for each queue is calculated
 	  according to queue priority.
 	  Most suitable for mobile devices.
+	  
+config IOSCHED_FIOPS
+ 	tristate "IOPS based I/O scheduler"
+ 	default y
+ 	---help---
+ 	  This is an IOPS based I/O scheduler. It will try to distribute
+           IOPS equally among all processes in the system. It's mainly for
+           Flash based storage.
+ 
+ 
 
 config IOSCHED_CFQ
 	tristate "CFQ I/O scheduler"
@@ -68,8 +69,8 @@ choice
 	  Select the I/O scheduler which will be used by default for all
 	  block devices.
 
-	config DEFAULT_DEADLINE
-		bool "Deadline" if IOSCHED_DEADLINE=y
+	config DEFAULT_FIOPS
+ 		bool "FIOPS" if IOSCHED_FIOPS=y
 
 	config DEFAULT_ROW
 		bool "ROW" if IOSCHED_ROW=y
@@ -91,10 +92,10 @@ endchoice
 
 config DEFAULT_IOSCHED
 	string
-	default "deadline" if DEFAULT_DEADLINE
 	default "row" if DEFAULT_ROW
 	default "cfq" if DEFAULT_CFQ
 	default "noop" if DEFAULT_NOOP
+	default "fiops" if DEFAULT_FIOPS
 
 endmenu
 
