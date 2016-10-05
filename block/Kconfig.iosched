@@ -98,7 +98,7 @@ config IOSCHED_ZEN
 
 config IOSCHED_VR
 	tristate "V(R) I/O scheduler"
-	default n
+	default y
 	---help---
 	  Requests are chosen according to SSTF with a penalty of rev_penalty
 	  for switching head direction.
