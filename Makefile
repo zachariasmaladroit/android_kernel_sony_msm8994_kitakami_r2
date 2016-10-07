@@ -240,12 +240,12 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 	  else echo sh; fi ; fi)
 
 #SUNRISE6 = -freschedule-modulo-scheduled-loops -fmodulo-sched -fmodulo-sched-allow-regmoves -fsingle-precision-constant -fgcse-after-reload
-GRAPHITE = -fgraphite-identity -floop-parallelize-all -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block -floop-flatten -floop-nest-optimize
+GRAPHITE = -fgraphite-identity -floop-parallelize-all -floop-interchange -floop-strip-mine -floop-block -floop-nest-optimize
 
 HOSTCC       = ccache gcc
 HOSTCXX      = ccache g++
-HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer
-HOSTCXXFLAGS = -O2
+HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -pipe -fomit-frame-pointer
+HOSTCXXFLAGS = -O2 -pipe
 
 # Decide whether to build built-in, modular, or both.
 # Normally, just do built-in.
@@ -377,11 +377,15 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
 		   -fno-delete-null-pointer-checks \
-		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
-		   -fivopts -funswitch-loops -fpredictive-commoning -fgcse-after-reload \
+		   -fmodulo-sched -fmodulo-sched-allow-regmoves -freschedule-modulo-scheduled-loops \
+		   -funswitch-loops -ftree-loop-im -fpredictive-commoning -fgcse -fgcse-las -fgcse-lm -fgcse-sm -fgcse-after-reload \
+		   -fsched-pressure -fschedule-insns -fno-tree-reassoc \
+		   -fno-var-tracking-assignments \
 		   -fbranch-target-load-optimize -fsingle-precision-constant \
+		   -fno-aggressive-loop-optimizations \
+		   -ftree-parallelize-loops=2 -pthread -fopenmp \
 		   -march=armv8-a+crc \
-		   -mtune=cortex-a53
+		   -mtune=cortex-a57.cortex-a53
 
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
