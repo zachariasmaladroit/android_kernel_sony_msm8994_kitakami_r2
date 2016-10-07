@@ -273,12 +273,10 @@ static void update_cpu_freq(void)
 	cpufreq_req.freq.max_freq = UINT_MAX;
 	cpufreq_req.freq.min_freq = CPUFREQ_MIN_NO_MITIGATION;
 
-/* Does this actually nullify the KTM interface mitigation ? */
 #ifdef CONFIG_MSM_BCL_SOMC_CTL
-	if ((bcl_ibat_state == BCL_HIGH_THRESHOLD
-		&& bcl_soc_state == BCL_LOW_THRESHOLD)
-		|| bcl_vph_state == BCL_LOW_THRESHOLD) {
-/* KTM interface mitigation */
+	if (bcl_vph_state == BCL_LOW_THRESHOLD
+		|| (bcl_ibat_state == BCL_HIGH_THRESHOLD
+		&& battery_soc_val <= soc_low_threshold)) {
 #else
 	if (bcl_vph_state == BCL_LOW_THRESHOLD
 		|| bcl_ibat_state == BCL_HIGH_THRESHOLD
