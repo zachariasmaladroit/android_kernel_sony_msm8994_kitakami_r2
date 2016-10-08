@@ -240,7 +240,7 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 	  else echo sh; fi ; fi)
 
 #SUNRISE6 = -freschedule-modulo-scheduled-loops -fmodulo-sched -fmodulo-sched-allow-regmoves -fsingle-precision-constant -fgcse-after-reload
-GRAPHITE = -fgraphite-identity -floop-parallelize-all -floop-interchange -floop-strip-mine -floop-block -floop-nest-optimize
+GRAPHITE = -fgraphite-identity -floop-parallelize-all -ftree-parallelize-loops=4 -floop-interchange -floop-strip-mine -floop-block -floop-nest-optimize
 
 HOSTCC       = ccache gcc
 HOSTCXX      = ccache g++
@@ -380,6 +380,7 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -fmodulo-sched -fmodulo-sched-allow-regmoves -freschedule-modulo-scheduled-loops \
 		   -funswitch-loops -ftree-loop-im -fpredictive-commoning -fgcse -fgcse-las -fgcse-lm -fgcse-sm -fgcse-after-reload \
 		   -fsched-pressure -fschedule-insns -fno-tree-reassoc \
+		   -fno-tree-pre -fno-strict-aliasing \
 		   -fno-var-tracking-assignments \
 		   -fbranch-target-load-optimize -fsingle-precision-constant \
 		   -fno-aggressive-loop-optimizations \
@@ -585,7 +586,7 @@ all: vmlinux
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
 KBUILD_CFLAGS	+= -Os $(call cc-disable-warning,maybe-uninitialized,)
 else
-KBUILD_CFLAGS	+= -Os
+KBUILD_CFLAGS	+= -O2
 endif
 
 include $(srctree)/arch/$(SRCARCH)/Makefile
