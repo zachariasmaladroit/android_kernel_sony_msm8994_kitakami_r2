@@ -241,12 +241,13 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 
 #SUNRISE6 = -freschedule-modulo-scheduled-loops -fmodulo-sched -fmodulo-sched-allow-regmoves -fsingle-precision-constant -fgcse-after-reload
 GRAPHITE = -fgraphite-identity -floop-interchange -floop-strip-mine -floop-block -floop-nest-optimize
-# -floop-parallelize-all -ftree-parallelize-loops=4
+# -floop-parallelize-all -ftree-parallelize-loops=3
 
 HOSTCC       = ccache gcc
 HOSTCXX      = ccache g++
 HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -pipe -fomit-frame-pointer
 HOSTCXXFLAGS = -O2 -pipe
+# -DNDEBUG -fgcse-las $(GRAPHITE)
 
 # Decide whether to build built-in, modular, or both.
 # Normally, just do built-in.
@@ -352,6 +353,8 @@ LDFLAGS_MODULE  =
 CFLAGS_KERNEL	=
 AFLAGS_KERNEL	=
 CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
+# -march=cortex-a57.cortex-a53 -mtune=cortex-a57.cortex-a53
+# -ftree-parallelize-loops=3 -pthread -fopenmp
 
 
 # Use USERINCLUDE when you must reference the UAPI directories only.
@@ -387,8 +390,8 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -frename-registers -fweb \
 		   -fno-aggressive-loop-optimizations \
 		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic
-		   -march=armv8-a+crc \
-		   -mtune=cortex-a53
+		   -march=cortex-a57.cortex-a53 \
+		   -mtune=cortex-a57.cortex-a53
 
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
