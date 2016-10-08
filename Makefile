@@ -383,9 +383,8 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -fno-var-tracking-assignments \
 		   -fbranch-target-load-optimize -fsingle-precision-constant \
 		   -fno-aggressive-loop-optimizations \
-		   -ftree-parallelize-loops=2 -pthread -fopenmp \
 		   -march=armv8-a+crc \
-		   -mtune=cortex-a57.cortex-a53
+		   -mtune=cortex-a53
 
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
