@@ -383,6 +383,7 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -fno-tree-pre -fno-strict-aliasing \
 		   -fno-var-tracking-assignments \
 		   -fbranch-target-load-optimize -fsingle-precision-constant \
+		   -frename-registers -fweb \
 		   -fno-aggressive-loop-optimizations \
 		   -march=armv8-a+crc \
 		   -mtune=cortex-a53
