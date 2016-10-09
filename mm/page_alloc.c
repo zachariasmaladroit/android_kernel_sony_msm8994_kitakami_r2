@@ -1198,21 +1198,9 @@ __rmqueue_fallback(struct zone *zone, int order, int start_migratetype)
 					struct page, lru);
 			area->nr_free--;
 
-			if (!is_migrate_cma(migratetype)) {
 				try_to_steal_freepages(zone, page,
 						       start_migratetype,
 						       migratetype, order);
-						       
-// new stuff
-			} else {
-				/*
-				 * When borrowing from MIGRATE_CMA, we need to
-				 * release the excess buddy pages to CMA
-				 * itself, and we do not try to steal extra
-				 * free pages.
-				 */
-				buddy_type = migratetype;
-			}
 
 			/* Remove the page from the freelists */
 			list_del(&page->lru);
