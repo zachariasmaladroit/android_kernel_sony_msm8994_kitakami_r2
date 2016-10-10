@@ -1295,7 +1295,7 @@ int q6asm_audio_client_buf_alloc(unsigned int dir,
 	size_t len;
 
 	if (!(ac) || !(bufsz) || ((dir != IN) && (dir != OUT))) {
-		pr_err("%s: ac %p bufsz %d dir %d\n", __func__, ac, bufsz,
+		pr_err("%s: ac %pK bufsz %d dir %d\n", __func__, ac, bufsz,
 			dir);
 		return -EINVAL;
 	}
