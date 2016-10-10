@@ -923,7 +923,7 @@
 };
 
 &pmi8994_charger {
-	qcom,fastchg-current-ma = <1500>;
+	qcom,fastchg-current-ma = <1800>;
 	somc,fastchg-warm-current-ma = <700>;
 	somc,fastchg-cool-current-ma = <700>;
 	qcom,iterm-ma = <150>;
