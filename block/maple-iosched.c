@@ -21,14 +21,6 @@
 
 #define MAPLE_IOSCHED_PATCHLEVEL	(7)
 
-bool display_on = true;
-
-bool is_display_on(void)
-{
-        return display_on;
-}
-
-
 enum { ASYNC, SYNC };
 
 /* Tunables */
@@ -86,8 +78,7 @@ maple_add_request(struct request_queue *q, struct request *rq)
 	struct maple_data *mdata = maple_get_data(q);
 	const int sync = rq_is_sync(rq);
 	const int dir = rq_data_dir(rq);
-//	const bool display_on;
-//	display_on = is_display_on();
+	const bool display_on = is_display_on();
 
 	/*
 	 * Add request to the proper fifo list and set its
@@ -214,8 +205,7 @@ maple_dispatch_requests(struct request_queue *q, int force)
 	struct maple_data *mdata = maple_get_data(q);
 	struct request *rq = NULL;
 	int data_dir = READ;
-//	const bool display_on;
-//	display_on = is_display_on();
+	const bool display_on = is_display_on();
 
 	/*
 	 * Retrieve any expired request after a batch of
