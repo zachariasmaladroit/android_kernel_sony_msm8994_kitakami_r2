@@ -56,13 +56,6 @@
 #define PWR_ON_STEP_RANGE2 900
 #define NUM_PARAMS_REG_ENABLE_SET 2
 
-bool display_on;
-
-bool is_display_on(void)
-{
-        return display_on;
-}
-
 static const char * const pctl_names[] = {
 	"fpc1145_spi_active",
 	"fpc1145_reset_reset",
