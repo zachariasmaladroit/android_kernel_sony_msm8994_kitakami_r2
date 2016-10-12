@@ -440,8 +440,7 @@ static void __cpufreq_interactive_timer(unsigned long data, bool is_notif)
 	struct cpufreq_govinfo govinfo;
 	bool skip_hispeed_logic, skip_min_sample_time;
 	bool policy_max_fast_restore = false;
-	bool display_on;
-	display_on = is_display_on();
+	bool display_on = is_display_on();
 	unsigned int this_hispeed_freq;
 
 	if (!down_read_trylock(&ppol->enable_sem))
