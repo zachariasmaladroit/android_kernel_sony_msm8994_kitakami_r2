@@ -32,6 +32,8 @@
 extern struct snd_soc_codec *fauxsound_codec_ptr;
 extern int wcd9xxx_hw_revision;
 
+extern int high_perf_mode;
+
 static int snd_ctrl_locked = 2;
 static int snd_rec_ctrl_locked = 0;
 
@@ -293,6 +295,26 @@ static ssize_t headphone_gain_store(struct kobject *kobj,
 	return count;
 }
 
+static ssize_t hph_perf_show(struct device *dev,
+                struct device_attribute *attr, char *buf)
+{
+        size_t count = 0;
+
+        count += sprintf(buf, "%d\n", high_perf_mode);
+
+        return count;
+}
+
+static ssize_t hph_perf_store(struct device *dev,
+                struct device_attribute *attr, const char *buf, size_t count)
+{
+        if (buf[0] >= '0' && buf[0] <= '1' && buf[1] == '\n')
+                if (high_perf_mode != buf[0] - '0')
+                        high_perf_mode = buf[0] - '0';
+
+        return count;
+}
+
 static unsigned int selected_reg = 0xdeadbeef;
 
 static ssize_t sound_reg_select_store(struct kobject *kobj,
@@ -368,12 +390,19 @@ static struct kobj_attribute headphone_gain_attribute =
 		headphone_gain_show,
 		headphone_gain_store);
 
+static struct kobj_attribute high_performance_mode_attribute =
+        __ATTR(highperf_enabled,
+                0666,
+                hph_perf_show,
+                hph_perf_store);
+
 static struct attribute *sound_control_attrs[] =
 	{
 		&cam_mic_gain_attribute.attr,
 		&mic_gain_attribute.attr,
 		&speaker_gain_attribute.attr,
 		&headphone_gain_attribute.attr,
+		&high_performance_mode_attribute.attr,
 		&sound_reg_sel_attribute.attr,
 		&sound_reg_read_attribute.attr,
 		&sound_reg_write_attribute.attr,
