@@ -3,7 +3,7 @@
 #
 
 # Each configuration option enables a list of files.
-CFLAGS_KERNEL := -fno-unsafe-math-optimizations -fno-strict-aliasing
+CFLAGS_KERNEL := -fno-graphite -fno-graphite-identity -fno-loop-flatten -fno-tree-loop-linear -fno-loop-interchange -fno-loop-strip-mine -fno-loop-block -fno-loop-nest-optimize -fno-loop-parallelize-all -ftree-parallelize-loops=0 -fno-unsafe-math-optimizations -fno-strict-aliasing
 
 obj-$(CONFIG_INPUT)		+= input-core.o
 input-core-y := input.o input-compat.o input-mt.o ff-core.o
