@@ -520,7 +520,7 @@ config SWP_EMULATE
 
 config HZ
 	int
-	default 100
+	default 250
 
 config ARCH_HAS_HOLES_MEMORYMODEL
 	def_bool y if SPARSEMEM
