@@ -389,7 +389,7 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -fbranch-target-load-optimize -fsingle-precision-constant \
 		   -frename-registers -fweb \
 		   -fno-aggressive-loop-optimizations \
-		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic
+		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
 		   -march=cortex-a57.cortex-a53 \
 		   -mtune=cortex-a57.cortex-a53
 
