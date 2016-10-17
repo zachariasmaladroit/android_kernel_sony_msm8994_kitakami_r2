@@ -245,8 +245,8 @@ GRAPHITE = -fgraphite-identity -floop-interchange -floop-strip-mine -floop-block
 
 HOSTCC       = ccache gcc
 HOSTCXX      = ccache g++
-HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -pipe -fomit-frame-pointer
-HOSTCXXFLAGS = -O2 -pipe
+HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -Os -pipe -fomit-frame-pointer
+HOSTCXXFLAGS = -Os -pipe
 # -DNDEBUG -fgcse-las $(GRAPHITE)
 
 # Decide whether to build built-in, modular, or both.
