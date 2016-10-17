@@ -353,7 +353,7 @@ LDFLAGS_MODULE  =
 CFLAGS_KERNEL	=
 AFLAGS_KERNEL	=
 CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
-# -march=cortex-a57.cortex-a53 -mtune=cortex-a57.cortex-a53
+# -march=armv8-a+crc -mtune=cortex-a57.cortex-a53
 # -ftree-parallelize-loops=3 -pthread -fopenmp
 
 
@@ -390,7 +390,7 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -frename-registers -fweb \
 		   -fno-aggressive-loop-optimizations \
 		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
-		   -march=cortex-a57.cortex-a53 \
+		   -march=armv8-a+crc \
 		   -mtune=cortex-a57.cortex-a53
 
 KBUILD_AFLAGS_KERNEL :=
