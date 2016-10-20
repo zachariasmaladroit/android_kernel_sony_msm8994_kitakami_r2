@@ -19,6 +19,9 @@
 
 #include "power.h"
 
+static bool enable_ipa_ws = true;
+module_param(enable_ipa_ws, bool, 0644);
+
 /*
  * If set, the suspend/hibernate code will abort transitions to a sleep state
  * if wakeup events are registered during or immediately before the transition.
@@ -427,6 +430,9 @@ static bool wakeup_source_not_registered(struct wakeup_source *ws)
 static void wakeup_source_activate(struct wakeup_source *ws)
 {
 	unsigned int cec;
+
+	if (!enable_ipa_ws && !strcmp(ws->name, "IPA_WS"))
+		return;
 
 	if (WARN(wakeup_source_not_registered(ws),
 			"unregistered wakeup source\n"))
