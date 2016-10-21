@@ -432,10 +432,9 @@ static void wakeup_source_activate(struct wakeup_source *ws)
 {
 	unsigned int cec;
 
-	if (!enable_ipa_ws && !strcmp(ws->name, "IPA_WS")) {
+	if (!enable_ipa_ws && !strcmp(ws->name, "IPA_WS"))
 	pr_info("wakeup source IPA_WS activate skipped\n");
 		return;
-	}
 
 	if (WARN(wakeup_source_not_registered(ws),
 			"unregistered wakeup source\n"))
