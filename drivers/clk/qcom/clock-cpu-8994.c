@@ -191,13 +191,13 @@ static struct pll_clk a57_pll0 = {
 		.test_ctl_lo_val = 0x00010000,
 	},
 	.min_rate = 1209600000,
-	.max_rate = 1996800000,
+	.max_rate = 2400000000,
 	.base = &vbases[C1_PLL_BASE],
 	.c = {
 		.parent = &xo_ao.c,
 		.dbg_name = "a57_pll0",
 		.ops = &clk_ops_variable_rate_pll,
-		VDD_DIG_FMAX_MAP2(LOW, 1593600000, NOMINAL, 1996800000),
+		VDD_DIG_FMAX_MAP2(LOW, 1593600000, NOMINAL, 2400000000),
 		CLK_INIT(a57_pll0.c),
 	},
 };
@@ -229,13 +229,13 @@ static struct pll_clk a57_pll1 = {
 	/* Necessary since we'll be setting a rate before handoff on V1 */
 	.src_rate = 19200000,
 	.min_rate = 1209600000,
-	.max_rate = 1996800000,
+	.max_rate = 2400000000,
 	.base = &vbases[C1_PLL_BASE],
 	.c = {
 		.parent = &xo_ao.c,
 		.dbg_name = "a57_pll1",
 		.ops = &clk_ops_variable_rate_pll,
-		VDD_DIG_FMAX_MAP2(LOW, 1593600000, NOMINAL, 1996800000),
+		VDD_DIG_FMAX_MAP2(LOW, 1593600000, NOMINAL, 2400000000),
 		CLK_INIT(a57_pll1.c),
 	},
 };
@@ -265,7 +265,7 @@ static struct pll_clk a53_pll0 = {
 		.test_ctl_lo_val = 0x00010000,
 	},
 	.min_rate = 1209600000,
-	.max_rate = 1996800000,
+	.max_rate = 2073600000,
 	.base = &vbases[C0_PLL_BASE],
 	.c = {
 		.parent = &xo_ao.c,
@@ -303,7 +303,7 @@ static struct pll_clk a53_pll1 = {
 	/* Necessary since we'll be setting a rate before handoff on V1 */
 	.src_rate = 19200000,
 	.min_rate = 1209600000,
-	.max_rate = 1996800000,
+	.max_rate = 2073600000,
 	.base = &vbases[C0_PLL_BASE],
 	.c = {
 		.parent = &xo_ao.c,
@@ -2140,6 +2140,44 @@ static struct platform_driver cpu_clock_8994_driver = {
 	},
 };
 
+
+ssize_t vc_get_vdd(char *buf)
+{
+	struct opp *opppoop;
+        struct clk *c5;
+        int i, len = 0, levels;
+
+        c5 = &a53_clk.c;
+        levels = c5->vdd_class->num_levels;
+
+	rcu_read_lock();
+        if (buf) {
+                for(i=1; i < levels; i++) {
+			opppoop = dev_pm_opp_find_freq_exact(get_cpu_device(0),
+				c5->fmax[i], true);
+                        len += sprintf(buf + len, "%umhz: %d mV\n",
+                                (unsigned int)c5->fmax[i]/1000000,
+                                (int)dev_pm_opp_get_voltage(opppoop)/1000 );
+                }
+        }
+
+        c5 = &a57_clk.c;
+        levels = c5->vdd_class->num_levels;
+
+        if (buf) {
+                for(i=1; i < levels; i++) {
+			opppoop = dev_pm_opp_find_freq_exact(get_cpu_device(4),
+				c5->fmax[i], true);
+                        len += sprintf(buf + len, "%umhz: %d mV\n",
+                                (unsigned int)c5->fmax[i]/1000000,
+                                (int)dev_pm_opp_get_voltage(opppoop)/1000 );
+                }
+        }
+	rcu_read_unlock();
+
+        return len;
+}
+
 /* CPU devices are not currently available in arch_initcall */
 static int __init cpu_clock_8994_init_opp(void)
 {
@@ -2335,3 +2373,4 @@ early_initcall(cpu_clock_8994_init_a57);
 
 MODULE_DESCRIPTION("CPU clock driver for 8994");
 MODULE_LICENSE("GPL v2");
+
