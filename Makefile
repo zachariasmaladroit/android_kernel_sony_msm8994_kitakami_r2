@@ -376,20 +376,21 @@ LINUXINCLUDE    := \
 
 KBUILD_CPPFLAGS := -D__KERNEL__
 
-KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+# $(GRAPHITE)
 		   -fno-strict-aliasing -fno-common \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
 		   -fno-delete-null-pointer-checks \
-		   -fmodulo-sched -fmodulo-sched-allow-regmoves -freschedule-modulo-scheduled-loops \
-		   -funswitch-loops -ftree-loop-im -fpredictive-commoning -fgcse -fgcse-las -fgcse-lm -fgcse-sm -fgcse-after-reload \
+#		   -fmodulo-sched -fmodulo-sched-allow-regmoves -freschedule-modulo-scheduled-loops \
+#		   -funswitch-loops -ftree-loop-im -fpredictive-commoning -fgcse -fgcse-las -fgcse-lm -fgcse-sm -fgcse-after-reload \
 		   -fsched-pressure -fschedule-insns -fno-tree-reassoc \
 		   -fno-tree-pre -fno-strict-aliasing \
 		   -fno-var-tracking-assignments \
-		   -fbranch-target-load-optimize -fsingle-precision-constant \
-		   -frename-registers -fweb \
+#		   -fbranch-target-load-optimize -fsingle-precision-constant \
+#		   -frename-registers -fweb \
 		   -fno-aggressive-loop-optimizations \
-		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
+#		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
 		   -march=armv8-a+crc \
 		   -mtune=cortex-a57.cortex-a53
 
