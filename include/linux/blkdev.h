@@ -36,7 +36,9 @@ struct bsg_job;
 struct blkcg_gq;
 
 #define BLKDEV_MIN_RQ	4
-#define BLKDEV_MAX_RQ	128	/* Default maximum */
+
+/* Optimized for UFS*/
+#define BLKDEV_MAX_RQ	256	/* Default maximum */
 
 /*
  * Maximum number of blkcg policies allowed to be registered concurrently.
