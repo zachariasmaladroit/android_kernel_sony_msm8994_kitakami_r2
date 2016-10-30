@@ -391,8 +391,8 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 #		   -frename-registers -fweb \
 #		   -fno-aggressive-loop-optimizations \
 #		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
-		   -march=armv8-a+crc \
-		   -mtune=cortex-a57.cortex-a53
+		   -march=armv8-a \
+		   -mtune=cortex-a53
 
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
