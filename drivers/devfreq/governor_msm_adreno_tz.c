@@ -25,10 +25,6 @@
 #include <soc/qcom/scm.h>
 #include "governor.h"
 
-#ifdef CONFIG_ADRENO_IDLER
-#include "adreno_idler.h"
-#endif
-
 static DEFINE_SPINLOCK(tz_lock);
 static DEFINE_SPINLOCK(sample_lock);
 static DEFINE_SPINLOCK(suspend_lock);
@@ -299,12 +295,6 @@ static int tz_get_target_freq(struct devfreq *devfreq, unsigned long *freq,
 		return result;
 	}
 
-	/* Prevent overflow */
-	if (stats.busy_time >= (1 << 24) || stats.total_time >= (1 << 24)) {
-		stats.busy_time >>= 7;
-		stats.total_time >>= 7;
-	}
-
 	*freq = stats.current_frequency;
 
 	/*
@@ -315,14 +305,6 @@ static int tz_get_target_freq(struct devfreq *devfreq, unsigned long *freq,
 		*freq = devfreq->profile->freq_table[devfreq->profile->max_state - 1];
 		return 0;
 	}
-
-#ifdef CONFIG_ADRENO_IDLER
-	if (adreno_idler_active &&
-			adreno_idler(stats, devfreq, freq)) {
-		/* adreno_idler has asked to bail out now */
-		return 0;
-	}
-#endif
 
 	priv->bin.total_time += stats.total_time;
 	priv->bin.busy_time += stats.busy_time;
