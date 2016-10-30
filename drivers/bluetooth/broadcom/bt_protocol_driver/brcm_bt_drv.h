@@ -76,9 +76,9 @@ struct brcm_bt_dev {
     spinlock_t rx_q_lock;                /* Rx queue lock */
 
     struct sk_buff_head tx_q;            /* TX queue */
-#ifdef TASKLET_SUPPORT
+#if TASKLET_SUPPORT
     struct tasklet_struct tx_task;       /* TX Tasklet */
-#else
+#else if WORKER_QUEUE
     struct workqueue_struct *tx_wq;     /* Fm drv workqueue */
     struct work_struct tx_workqueue;    /* Tx work queue */
 #endif
@@ -111,9 +111,9 @@ static void brcm_bt_st_registration_completion_cb(void *priv_data,
     char data);
 
 static long brcm_bt_st_receive(void *priv_data, struct sk_buff *skb);
-#ifdef TASKLET_SUPPORT
+#if TASKLET_SUPPORT
 static void __send_tasklet(unsigned long arg);
-#else
+#else if WORKER_QUEUE
 static void bt_send_data_ldisc(struct work_struct *work);
 #endif
 

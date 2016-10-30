@@ -41,7 +41,7 @@ int fm_rx_set_audio_mode(struct fmdrv_ops *, unsigned char);
 int fm_rx_set_region(struct fmdrv_ops*, unsigned char);
 int fm_rx_set_scan_step(struct fmdrv_ops *, unsigned char);
 int fm_rx_config_audio_path(struct fmdrv_ops *, unsigned char);
-int fm_rx_config_deemphasis(struct fmdrv_ops *, unsigned long);
+int fm_rx_config_deemphasis(struct fmdrv_ops *, unsigned char);
 int fm_rx_set_rssi_threshold(struct fmdrv_ops*, short);
 int fm_rx_set_snr_threshold(struct fmdrv_ops*,  short);
 int fm_rx_set_af_switch(struct fmdrv_ops *, u8);

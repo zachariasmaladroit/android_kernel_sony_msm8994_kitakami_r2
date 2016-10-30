@@ -104,7 +104,6 @@
 #define I2C_MASK_RDS_FIFO_WLINE_BIT    (0x0100 << 1)    /* RDS tuples are currently available at
                                                         a level >= waterline */
 #define I2C_MASK_BB_MATCH_BIT          (0x0100 << 3)    /* PI code match found */
-#define I2C_MASK_SYNC_LOST_BIT         (0x0100 << 4)    /* RDS synchronization was lost */
 #define I2C_MASK_PI_MATCH_BIT          (0x0100 << 5)    /* PI code match found */
 
 /* FM_REG_RDS_DATA 0x80 reading */
@@ -179,7 +178,6 @@ struct fm_rx {
     unsigned char curr_mute_mode;   /* Current mute mode */
     unsigned short curr_volume;     /* Current volume level */
     char  curr_snr_threshold;       /* Current SNR threshold level */
-    unsigned char curr_rssi_threshold;  /* Current RSSI threshold value */
     unsigned char curr_sch_mode;    /* current search mode */
     unsigned char curr_noise_floor; /* current noise floor estimation */
     unsigned char rds_mode;         /* RDS operation mode (RDS/RDBS) */
@@ -218,10 +216,10 @@ struct fmdrv_ops {
 
     long flag;                         /*  FM driver state machine info */
     struct sk_buff_head rx_q;          /* RX queue */
-#ifdef TASKLET_SUPPORT
+#if TASKLET_SUPPORT
     struct tasklet_struct rx_task;  /* RX Tasklet */
     struct tasklet_struct tx_task;  /* TX Tasklet */
-#else
+#else if WORKER_QUEUE
     struct workqueue_struct *tx_wq;     /* Fm workqueue */
     struct work_struct tx_workqueue;    /* Tx work queue */
     struct workqueue_struct *rx_wq;     /* Fm workqueue */
@@ -246,7 +244,6 @@ struct fmdrv_ops {
     struct fm_rx rx;                         /* FM receiver info */
     struct fm_device_info device_info; /* FM Device info */
 };
-
 #define GET_PI_CODE     1
 #define GET_TP_CODE     2
 #define GET_PTY_CODE    3
@@ -256,5 +253,4 @@ struct fmdrv_ops {
 #define GET_RT_MSG      7
 #define GET_CT_DATA     8
 #define GET_TMC_CHANNEL 9
-
 #endif

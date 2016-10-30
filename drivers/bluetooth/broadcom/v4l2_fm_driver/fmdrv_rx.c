@@ -44,8 +44,6 @@
 /* set this module parameter to enable debug info */
 extern int fm_dbg_param;
 
-extern struct region_info region_configs[];
-
 #if V4L2_FM_DEBUG
 #define V4L2_FM_DRV_DBG(flag, fmt, arg...) \
         do { \
@@ -113,6 +111,8 @@ int fm_rx_set_af_switch(struct fmdrv_ops *fmdev, u8 af_mode)
  */
 int fm_rx_set_rssi_threshold(struct fmdrv_ops *fmdev, short rssi_lvl_toset)
 {
+    u16 payload;
+    int ret;
     V4L2_FM_DRV_DBG(V4L2_DBG_TX, " fm_rx_set_rssi_threshold to set is %d",\
         rssi_lvl_toset);
 
@@ -121,10 +121,20 @@ int fm_rx_set_rssi_threshold(struct fmdrv_ops *fmdev, short rssi_lvl_toset)
         V4L2_FM_DRV_ERR("Invalid RSSI threshold level\n");
         return -EINVAL;
     }
+    payload = (u16) rssi_lvl_toset;
+    ret = fmc_send_cmd(fmdev, FM_REG_RSSI, &payload, sizeof(payload),
+            REG_WR, &fmdev->maintask_completion, NULL,NULL);
 
-    fmdev->rx.curr_rssi_threshold = rssi_lvl_toset;
+    if (ret < 0){
+        V4L2_FM_DRV_ERR("Couldnot set RSSI level \n");
+        return ret;
+    }
+
+    fmdev->rx.curr_rssi= rssi_lvl_toset;
+
     return 0;
 }
+
 
 /*
  * Sets the signal strength level that once reached
@@ -246,7 +256,7 @@ int init_start_search(struct fmdrv_ops *fmdev, unsigned short start_freq,
             __func__, payload);
 
         /* Set FM Search control params to controller */
-        payload = fmdev->rx.curr_rssi_threshold | (fmdev->rx.curr_sch_mode &
+        payload = DEF_V4L2_FM_SIGNAL_STRENGTH | (fmdev->rx.curr_sch_mode &
                                                           FM_SCAN_DIRECT_MASK);
         ret = fmc_send_cmd(fmdev, FM_REG_SCH_CTL0, &payload, 1, REG_WR,
                 &fmdev->maintask_completion, NULL, NULL);
@@ -523,13 +533,14 @@ int fm_rx_get_frequency(struct fmdrv_ops *fmdev, unsigned int *curr_freq)
 *   * Based on interrupt received, read the current tuned freq
 *     and validate the search.
 *   * If search frequency out of bound and no wrap_around needed,
-*    end the search and return error code -EAGAIN
+*    end the search and return error code -EINVAL
 *   * If not, start the search again and check for interrupt.
 *   * If no interrupt is received by 20 sec, timeout the seek operation
 */
 int fm_rx_seek_station(struct fmdrv_ops *fmdev, unsigned char direction_upward,
                             unsigned char wrap_around)
 {
+    unsigned char payload;
     int ret = 0, freq;
     unsigned short tmp_freq, start_freq;
     unsigned long timeleft;
@@ -537,6 +548,8 @@ int fm_rx_seek_station(struct fmdrv_ops *fmdev, unsigned char direction_upward,
     fmdev->rx.seek_direction = (direction_upward)?FM_SCAN_UP:FM_SCAN_DOWN;
     fmdev->rx.curr_sch_mode = ((FM_TUNER_NORMAL_SCAN_MODE & 0x01) |
                                                 (fmdev->rx.seek_direction & 0x80));
+    if( !wrap_around )
+        wrap_around = 1;
     fmdev->rx.seek_wrap = wrap_around;
 
     V4L2_FM_DRV_DBG(V4L2_DBG_TX, "(fmdrv) seek_direction:0x%x "\
@@ -604,7 +617,7 @@ int fm_rx_seek_station(struct fmdrv_ops *fmdev, unsigned char direction_upward,
     if(!ret)
     {
         V4L2_FM_DRV_ERR("(fmdrv) Error during Seek. Try again!");
-        return -EAGAIN;
+        return -EINVAL;
     }
     else if(ret && fmdev->rx.curr_search_state == FM_STATE_SEEKING)
     {
@@ -747,7 +760,7 @@ int fm_rx_get_volume(struct fmdrv_ops *fmdev, unsigned short *curr_vol)
     return ret;
 }
 
-/* Sets band (0-Europe; 1-Japan; 2-North America; 3-Russia, 4-China) */
+/* Sets band (0-US; 1-Europe; 2-Japan) */
 int fm_rx_set_region(struct fmdrv_ops *fmdev,
             unsigned char region_to_set)
 {
@@ -761,22 +774,19 @@ int fm_rx_set_region(struct fmdrv_ops *fmdev,
         return ret;
 
     if (region_to_set != FM_REGION_NA &&
-        region_to_set != FM_REGION_EUR &&
+            region_to_set != FM_REGION_EUR &&
         region_to_set != FM_REGION_JP &&
         region_to_set != FM_REGION_RUS &&
-        region_to_set != FM_REGION_CHN &&
-        region_to_set != FM_REGION_IT)
+        region_to_set != FM_REGION_CHN)
     {
         V4L2_FM_DRV_ERR("(fmdrv): Invalid band");
         ret = -EINVAL;
         return ret;
     }
-
     if (region_to_set == FM_REGION_JP ||
         region_to_set == FM_REGION_RUS ||
         region_to_set == FM_REGION_CHN)
     {
-        /* set the low bound and high bound */
         memcpy(&fmdev->rx.region, &region_configs[region_to_set], sizeof(struct region_info));
         boundary[0] = fmdev->rx.region.high_bound;
         boundary[1] = fmdev->rx.region.low_bound;
@@ -784,13 +794,11 @@ int fm_rx_set_region(struct fmdrv_ops *fmdev,
                     &fmdev->maintask_completion, NULL, NULL);
     }
     else {
-        /* clear low bound and high bound */
         boundary[0] = 0;
         boundary[1] = 0;
         fmc_send_cmd(fmdev, FM_SEARCH_BOUNDARY, boundary, sizeof(boundary), REG_WR,
                     &fmdev->maintask_completion, NULL, NULL);
     }
-
     if (region_to_set == FM_REGION_JP)/* set japan region */
     {
         payload |= FM_BAND_REG_EAST;
@@ -979,19 +987,17 @@ int fm_rx_get_audio_mode(struct fmdrv_ops *fmdev, unsigned char *mode)
         V4L2_FM_DRV_ERR("(fmdrv): Invalid memory");
         return -ENOMEM;
     }
-    ret = fmc_send_cmd(fmdev, FM_REG_SNR, &payload, sizeof(payload),
+    ret = fmc_send_cmd(fmdev, FM_REG_FM_CTRL, &payload, sizeof(payload),
             REG_RD, &fmdev->maintask_completion, &resp, &len);
-    V4L2_FM_DRV_DBG(V4L2_DBG_RX, "(fmdrv): resp(current snr) : %x", resp);
-
-    if(resp<=19)
-    {
-        *mode = FM_MONO_MODE;
-    }
-    else
-    {
-        *mode = FM_STEREO_MODE;
-    }
-
+    if((resp & FM_STEREO_SWITCH) && (resp & FM_STEREO_AUTO))
+        *mode = FM_SWITCH_MODE;
+    else if(!(resp & FM_STEREO_AUTO))
+            *mode = FM_MONO_MODE;
+    else if(!(resp & FM_STEREO_AUTO) && (resp & FM_STEREO_MANUAL))
+            *mode = FM_STEREO_MODE;
+    else if(!(resp & FM_STEREO_SWITCH))
+            *mode = FM_AUTO_MODE;
+    fmdev->rx.audio_mode = resp;
     return ret;
 }
 
@@ -1050,11 +1056,11 @@ int fm_rx_config_audio_path(struct fmdrv_ops *fmdev, unsigned char path)
 }
 
 /* Choose RX de-emphasis filter mode (50us/75us) */
-int fm_rx_config_deemphasis(struct fmdrv_ops *fmdev, unsigned long mode)
+int fm_rx_config_deemphasis(struct fmdrv_ops *fmdev, unsigned char mode)
 {
     int ret;
     V4L2_FM_DRV_DBG(V4L2_DBG_TX, "fm_rx_config_deemphasis is setting  mode "\
-        "as %ld",mode);
+        "as %d",mode);
 
     if (fmdev->curr_fmmode != FM_MODE_RX)
         return -EPERM;

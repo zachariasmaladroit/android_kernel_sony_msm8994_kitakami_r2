@@ -55,7 +55,6 @@
 #include "brcm_hci_uart.h"
 #include "../include/v4l2_target.h"
 #include "../include/fm.h"
-#include "../include/ant.h"
 #include "../include/v4l2_logs.h"
 
 #include <linux/dirent.h>
@@ -86,7 +85,7 @@ int ldisc_dbg_param = 0;
 #define BT_LDISC_DBG(flag, fmt, arg...)
 #endif
 
-#define BT_LDISC_ERR(fmt, arg...)  printk(KERN_ERR "(brcmldisc)ERR:%s  "fmt"\n" , \
+#define BT_LDISC_ERR(fmt, arg...)  printk(KERN_ERR "(brcmldisc):%s  "fmt"\n" , \
                                            __func__,## arg)
 
 #if V4L2_SNOOP_ENABLE
@@ -123,8 +122,10 @@ typedef struct {
 #define FW_PATCH_FILENAME_MAXLEN 80
 
 #define BD_ADDR_SIZE 18
-#define LPM_PARAM_SIZE 100
-
+//BT_S : fix wrong lpm_param issue, [START]
+//#define LPM_PARAM_SIZE 16
+#define LPM_PARAM_SIZE 48
+//BT_E : fix wrong lpm_param issue, [END]
 /* HCI HCI_V4L2 message type definitions */
 #define HCI_V4L2_TYPE_COMMAND         1
 #define HCI_V4L2_TYPE_ACL_DATA        2
@@ -140,14 +141,6 @@ typedef struct {
 #define MSG_FM_TO_HC_HCI_CMD           0x4000
 #define MSG_HC_TO_FM_HCI_EVT           0x3000
 
-/* struct to parse vendor params */
-typedef int (conf_action_t)(char *p_conf_name, char *p_conf_value);
-
-typedef struct {
-    const char *conf_entry;
-    conf_action_t *p_action;
-    long param;
-} conf_entry_t;
 
 /*******************************************************************************
 **  Local type definitions
@@ -155,7 +148,6 @@ typedef struct {
 spinlock_t  reg_lock;
 static int is_print_reg_error = 1;
 static unsigned long jiffi1, jiffi2;
-struct mutex cmd_credit;
 
 /* setting custom baudrate received from UIM */
 struct ktermios ktermios;
@@ -163,13 +155,11 @@ static unsigned char bd_addr_array[6] = {0};
 char bd_addr[BD_ADDR_SIZE] = {0,};
 char fw_name[FW_PATCH_FILENAME_MAXLEN];
 
-#if V4L2_SNOOP_ENABLE
-/* enable/disable HCI snoop logging */
-char snoop_enable[2] = {0, 0};
-#endif
+//BT_S : fix wrong lpm_param issue, [START]
+//char lpm_param[LPM_PARAM_SIZE] = {0,};
+char lpm_param[LPM_PARAM_SIZE+1] = {0,};
+//BT_E : fix wrong lpm_param issue, [START]
 
-/* module parameters */
-static char lpm_param[LPM_PARAM_SIZE];
 static long int custom_baudrate = 0;
 static int patchram_settlement_delay = 0;
 static int ControllerAddrRead = 0;
@@ -179,9 +169,11 @@ static enum sleep_type sleep = SLEEP_DEFAULT;
 #if V4L2_SNOOP_ENABLE
 /* HCI snoop and netlink socket related variables */
 /* Variables for netlink sockets for hcisnoop */
-#define NETLINK_USER 29
-
-struct sock *nl_sk_hcisnoop = NULL;
+//BT_S : [CONBT-2025] Fix snoop log issue 30(used) => 28
+//#define NETLINK_USER 30
+#define NETLINK_USER 28
+//BT_E : [CONBT-2025] Fix snoop log issue 30(used) => 28
+static struct sock *nl_sk_hcisnoop = NULL;
 static int hcisnoop_client_pid = 0;
 static struct nlmsghdr *nlh;
 static struct sk_buff *hcisnoop_skb_out;
@@ -208,7 +200,6 @@ static struct platform_device *brcm_plt_devices[MAX_BRCM_DEVICES];
  */
 static long download_patchram(struct hci_uart*);
 static struct platform_device *ldisc_get_plat_device(int id);
-static int bcmbt_ldisc_remove(struct platform_device *pdev);
 
 /********************************************************************/
 
@@ -217,92 +208,12 @@ static int bcmbt_ldisc_remove(struct platform_device *pdev);
 **  Type definitions
 *****************************************************************************/
 
-/* parsing functions */
-int parse_custom_baudrate(char *p_conf_name, char *p_conf_value)
-{
-    pr_info("%s = %s\n", p_conf_name, p_conf_value);
-    sscanf(p_conf_value, "%ld", &custom_baudrate);
-    return 0;
-}
-
-int parse_patchram_settlement_delay(char *p_conf_name, char *p_conf_value)
-{
-    pr_info("%s = %s\n", p_conf_name, p_conf_value);
-    sscanf(p_conf_value, "%d", &patchram_settlement_delay);
-    return 0;
-}
-
-int parse_LpmUseBluesleep(char *p_conf_name, char *p_conf_value)
-{
-    pr_info("%s = %s\n", p_conf_name, p_conf_value);
-    sscanf(p_conf_value, "%d", &LpmUseBluesleep);
-    if( LpmUseBluesleep )
-        sleep = SLEEP_BLUESLEEP;
-    BT_LDISC_DBG(V4L2_DBG_INIT, "%s sleep %d", __func__,sleep);
-    return 0;
-}
-
-int parse_ControllerAddrRead(char *p_conf_name, char *p_conf_value)
-{
-    pr_info("%s = %s\n", p_conf_name, p_conf_value);
-    sscanf(p_conf_value, "%d", &ControllerAddrRead);
-    return 0;
-}
-
-int parse_ldisc_snoop_enable_param(char *p_conf_name, char *p_conf_value)
-{
-    pr_info("%s = %s\n", p_conf_name, p_conf_value);
-    sscanf(p_conf_value, "%d", &ldisc_snoop_enable_param);
-    return 0;
-}
-
-int parse_lpm_param(char *p_conf_name, char *p_conf_value)
-{
-    pr_info("%s = %s strlen = %d\n", p_conf_name, p_conf_value, strlen(p_conf_value));
-    memset(lpm_param, 0, LPM_PARAM_SIZE);
-    strncpy(lpm_param, p_conf_value, strlen(p_conf_value));
-    pr_info("parse_lpm_param = %s\n", lpm_param);
-    return 0;
-}
-
-int dbg_ldisc_drv(char *p_conf_name, char *p_conf_value)
-{
-    pr_info("%s = %s\n", p_conf_name, p_conf_value);
-    sscanf(p_conf_value, "%d", &ldisc_dbg_param);
-    return 0;
-}
-
-int dbg_bt_drv(char *p_conf_name, char *p_conf_value)
-{
-    pr_info("%s = %s\n", p_conf_name, p_conf_value);
-    return 0;
-}
-
-int dbg_fm_drv(char *p_conf_name, char *p_conf_value)
-{
-    pr_info("%s = %s\n", p_conf_name, p_conf_value);
-    return 0;
-}
-
-static const conf_entry_t conf_table[] = {
-    {"custom_baudrate", parse_custom_baudrate, 0},
-    {"patchram_settlement_delay", parse_patchram_settlement_delay, 0},
-    {"LpmUseBluesleep", parse_LpmUseBluesleep, 0},
-    {"ControllerAddrRead", parse_ControllerAddrRead, 0},
-    {"ldisc_snoop_enable_param", parse_ldisc_snoop_enable_param, 0},
-    {"lpm_param" , parse_lpm_param, 0},
-    {"ldisc_dbg_param",dbg_ldisc_drv},
-    {"bt_dbg_param",dbg_bt_drv},
-    {"fm_dbg_param",dbg_fm_drv},
-    {(const char *) NULL, NULL, 0}
-};
-
-
 #if V4L2_SNOOP_ENABLE
 /* Function callback for netlink socket */
 static void brcm_hcisnoop_recv_msg(struct sk_buff *skb)
 {
     struct nlmsghdr *nlh;
+    struct sk_buff *skb_out;
 
     if(skb != NULL)
     {
@@ -320,54 +231,11 @@ static void brcm_hcisnoop_recv_msg(struct sk_buff *skb)
     return;
 }
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0)
-struct netlink_kernel_cfg cfg = {
-    .input = brcm_hcisnoop_recv_msg,
-};
-#endif
-
-static int enable_snoop(void)
-{
-    int err;
-    if(ldisc_snoop_enable_param)
-    {
-        /* check whether snoop is enabled */
-        BT_LDISC_DBG(V4L2_DBG_TX, "ldisc_snoop_enable_param = %d",\
-            ldisc_snoop_enable_param);
-
-        /* close previously created socket */
-        if(nl_sk_hcisnoop)
-        {
-            netlink_kernel_release(nl_sk_hcisnoop);
-            nl_sk_hcisnoop = NULL;
-        }
-        /* start hci snoop to hcidump */
-        /* Create socket for hcisnoop */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,6,0)
-        nl_sk_hcisnoop = netlink_kernel_create(&init_net, NETLINK_USER, 0,
-                    brcm_hcisnoop_recv_msg, NULL, THIS_MODULE);
-#else
-        nl_sk_hcisnoop = netlink_kernel_create(&init_net, NETLINK_USER, &cfg);
-#endif
-        if (!nl_sk_hcisnoop)
-        {
-            BT_LDISC_ERR("Error creating netlink socket for HCI snoop");
-            err = -10;
-            return err;
-        }
-        return 0;
-    }
-    else {
-        return 0;
-    }
-}
-
 /* Create netlink socket to snoop Line discipline driver from user space */
 int brcm_hci_snoop(struct hci_uart *hu, void* data, unsigned int count)
 {
     int err=0;
     unsigned long flags;
-    BT_LDISC_DBG(V4L2_DBG_TX , "brcm_hci_snoop");
     /* Snoop and send data to hcidump */
     if(hcisnoop_client_pid > 0)
     {
@@ -390,7 +258,7 @@ int brcm_hci_snoop(struct hci_uart *hu, void* data, unsigned int count)
         if(nl_sk_hcisnoop != NULL)
         {
             if ((err = nlmsg_unicast(nl_sk_hcisnoop, hcisnoop_skb_out,
-                    hcisnoop_client_pid)) < 0)
+                hcisnoop_client_pid)) < 0)
             {
                 BT_LDISC_ERR("Error errcode=%d while sending packet to pid = %d",
                     err, hcisnoop_client_pid);
@@ -413,13 +281,13 @@ int brcm_hci_snoop(struct hci_uart *hu, void* data, unsigned int count)
 
 
 /* Function to abstract tty write. This will help in hci snooping both read and write packets */
-static int brcm_hci_write(struct hci_uart *hu, const unsigned char* data,
+static int brcm_hci_write(struct hci_uart *hu, unsigned char* data,
                                                              unsigned int count)
 {
-    int len = 0;
+    int len;
 
 #if V4L2_SNOOP_ENABLE
-    if(nl_sk_hcisnoop)
+    if(ldisc_snoop_enable_param)
     {
         unsigned long flags = 0;
 
@@ -501,135 +369,12 @@ static int brcm_hci_write(struct hci_uart *hu, const unsigned char* data,
 
 }
 
-/* parse and load vendor params */
-static int parse_vendor_params(void)
-{
-    struct hci_uart *hu;
-    conf_entry_t *p_entry;
-    char *p;
-    char *p_name, *p_value;
-    hu_ref(&hu, 0);
-
-    p = hu->vendor_params;
-    pr_info("parse_vendor_params = %s", hu->vendor_params);
-    while ((p_name = strsep(&p, " ")))
-    {
-        p_entry = (conf_entry_t *)conf_table;
-        while (p_entry->conf_entry != NULL)
-        {
-            if (strncmp(p_entry->conf_entry, (const char *)p_name, \
-                strlen(p_entry->conf_entry)) == 0)
-            {
-                p_value = strsep(&p_name, "=");
-                p_entry->p_action(p_value, p_name);
-                break;
-            }
-            p_entry++;
-        }
-    }
-    return 0;
-}
 
 static ssize_t show_install(struct device *dev,
         struct device_attribute *attr, char *buf)
 {
     struct hci_uart *hu = dev_get_drvdata(dev);
-    memcpy(buf, &hu->ldisc_install, sizeof(unsigned char));
-    return 1;
-}
-
-static ssize_t store_install(struct device *dev,
-        struct device_attribute *attr, char *buf,size_t size)
-{
-    unsigned long flags = 0;
-    struct hci_uart *hu;
-    hu_ref(&hu, 0);
-
-    // Avoid race condition if all app (BT/FM/Ant) simultaneously try to write to install entry
-    spin_lock_irqsave(&hu->err_lock, flags);
-
-    /* When HCI command timeout or hardware error event occurs in an application,
-    * BT/FM/Ant apps should set a value 0x02 to "install sysfs" entry. Ldisc will set
-    * "bt_err" and "fm_err" for error indication. All applications which use V4L2 solution
-    * should now restart and reset bt_err and fm_err after recovery.
-    * E.g: If fm_err is already set, FM app concludes that BT app has already reported an error.
-    * FM app only needs to restart.
-    */
-    if ((hu->ldisc_install == V4L2_STATUS_ON) && (buf[0] == V4L2_STATUS_ERR) \
-        && ((hu->ldisc_bt_err == V4L2_ERR_FLAG_RESET) \
-        || (hu->ldisc_fm_err == V4L2_ERR_FLAG_RESET)))
-    {
-        hu->ldisc_install = V4L2_STATUS_ERR;
-        hu->ldisc_bt_err = V4L2_ERR_FLAG_SET;
-        hu->ldisc_fm_err = V4L2_ERR_FLAG_SET;
-        sysfs_notify(&hu->brcm_pdev->dev.kobj, NULL, "install");
-        sysfs_notify(&hu->brcm_pdev->dev.kobj, NULL, "bt_err");
-        sysfs_notify(&hu->brcm_pdev->dev.kobj, NULL, "fm_err");
-        BT_LDISC_ERR("Error!: Userspace app has reported error. install = %c",\
-            buf[0]);
-    }
-    spin_unlock_irqrestore(&hu->err_lock, flags);
-    return size;
-}
-
-static ssize_t show_bt_err(struct device *dev,
-        struct device_attribute *attr, char *buf)
-{
-    struct hci_uart *hu = dev_get_drvdata(dev);
-    memcpy(buf, &hu->ldisc_bt_err, sizeof(unsigned char));
-    return 1;
-}
-
-static ssize_t store_bt_err(struct device *dev,
-        struct device_attribute *attr, char *buf,size_t size)
-{
-    struct hci_uart *hu;
-    hu_ref(&hu, 0);
-    hu->ldisc_bt_err = buf[0];
-    return size;
-}
-
-static ssize_t show_fm_err(struct device *dev,
-        struct device_attribute *attr, char *buf)
-{
-    struct hci_uart *hu = dev_get_drvdata(dev);
-    memcpy(buf, &hu->ldisc_fm_err, sizeof(unsigned char));
-    return 1;
-}
-
-static ssize_t store_fm_err(struct device *dev,
-        struct device_attribute *attr, char *buf,size_t size)
-{
-    struct hci_uart *hu;
-    hu_ref(&hu, 0);
-    hu->ldisc_fm_err = buf[0];
-
-    return size;
-}
-
-static ssize_t show_vendor_params(struct device *dev,
-        struct device_attribute *attr, char *buf)
-{
-    struct hci_uart *hu = dev_get_drvdata(dev);
-    memcpy(buf, hu->vendor_params, VENDOR_PARAMS_LEN);
-    return VENDOR_PARAMS_LEN;
-}
-
-static ssize_t store_vendor_params(struct device *dev,
-        struct device_attribute *attr, char *buf,size_t size)
-{
-    struct hci_uart *hu;
-    hu_ref(&hu, 0);
-    memcpy(hu->vendor_params, buf, VENDOR_PARAMS_LEN);
-    parse_vendor_params();
-
-    // enable/disable snoop
-    if(enable_snoop()!=0)
-    {
-        BT_LDISC_ERR("Unable to enable HCI snoop in ldisc");
-    }
-
-    return size;
+    return sprintf(buf, "%d\n", hu->ldisc_install);
 }
 
 static ssize_t store_bdaddr(struct device *dev,
@@ -651,56 +396,11 @@ static ssize_t store_bdaddr(struct device *dev,
 static ssize_t store_fw_patchfile(struct device *dev,
         struct device_attribute *attr, char *buf,size_t size)
 {
-    sprintf(fw_name, "%s",buf);
-    BT_LDISC_DBG(V4L2_DBG_INIT,"store_fw_patchfile  %s size %d ",fw_name,size);
+    struct hci_uart *hu = dev_get_drvdata(dev);
+    sprintf(fw_name, "%s\0",buf);
+    pr_info("store_fw_patchfile  %s size %d ",fw_name,size);
     return size;
 }
-
-#if V4L2_SNOOP_ENABLE
-static ssize_t show_snoop_enable(struct device *dev,
-        struct device_attribute *attr, char *buf)
-{
-    return sprintf(buf, "%s", snoop_enable);
-}
-
-static ssize_t store_snoop_enable(struct device *dev,
-        struct device_attribute *attr, char *buf,size_t size)
-{
-    memcpy(&snoop_enable, buf, 1);
-    if(!ldisc_snoop_enable_param) {
-        // enable HCI snoop in line discipline driver
-        if(!strcmp(snoop_enable,"1")) {
-            if(nl_sk_hcisnoop)
-            {
-                netlink_kernel_release(nl_sk_hcisnoop);
-                nl_sk_hcisnoop = NULL;
-            }
-            /* start hci snoop to hcidump */
-            /* Create socket for hcisnoop */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,6,0)
-            nl_sk_hcisnoop = netlink_kernel_create(&init_net, NETLINK_USER, 0,
-                        brcm_hcisnoop_recv_msg, NULL, THIS_MODULE);
-#else
-            nl_sk_hcisnoop = netlink_kernel_create(&init_net, NETLINK_USER, &cfg);
-#endif
-            if (!nl_sk_hcisnoop)
-            {
-                BT_LDISC_ERR("Error creating netlink socket for HCI snoop");
-            }
-            BT_LDISC_DBG(V4L2_DBG_TX, "enabling HCI snoop");
-        }
-        else {
-            /* stop hci snoop to hcidump */
-            if(nl_sk_hcisnoop)
-                netlink_kernel_release(nl_sk_hcisnoop);
-            nl_sk_hcisnoop = NULL;
-            BT_LDISC_DBG(V4L2_DBG_TX, "disabling HCI snoop");
-        }
-    }
-
-    return size;
-}
-#endif
 
 /* structures specific for sysfs entries */
 static struct kobj_attribute ldisc_bdaddr =
@@ -708,40 +408,17 @@ __ATTR(bdaddr, 0666, NULL,(void *)store_bdaddr);
 
 /* structures specific for sysfs entries */
 static struct kobj_attribute ldisc_install =
-__ATTR(install, 0666, (void *)show_install, (void *)store_install);
-
-/* structures specific for sysfs entries */
-static struct kobj_attribute ldisc_vendor_params =
-__ATTR(vendor_params, 0666, (void *)show_vendor_params, (void *)store_vendor_params);
-
-/* structures specific for sysfs entries */
-static struct kobj_attribute ldisc_bt_err =
-__ATTR(bt_err, 0666, (void *)show_bt_err, (void *)store_bt_err);
-
-/* structures specific for sysfs entries */
-static struct kobj_attribute ldisc_fm_err =
-__ATTR(fm_err, 0666, (void *)show_fm_err, (void *)store_fm_err);
+__ATTR(install, 0444, (void *)show_install, NULL);
 
 /* structures specific for sysfs entries */
 static struct kobj_attribute ldisc_fw_patchfile =
 __ATTR(fw_patchfile, 0666, NULL, (void *)store_fw_patchfile);
 
-#if V4L2_SNOOP_ENABLE
-/* structures specific for sysfs entries */
-static struct kobj_attribute ldisc_snoop_enable =
-__ATTR(snoop_enable, 0666, (void *)show_snoop_enable, (void *)store_snoop_enable);
-#endif
 
 static struct attribute *uim_attrs[] = {
     &ldisc_install.attr,
     &ldisc_bdaddr.attr,
     &ldisc_fw_patchfile.attr,
-#if V4L2_SNOOP_ENABLE
-    &ldisc_snoop_enable.attr,
-#endif
-    &ldisc_vendor_params.attr,
-    &ldisc_bt_err.attr,
-    &ldisc_fm_err.attr,
     NULL,
 };
 
@@ -845,48 +522,23 @@ void brcm_hci_uart_route_frame(enum proto_type protoid, struct hci_uart *hu,
     BT_LDISC_DBG(V4L2_DBG_RX, " (prot:%d) ", protoid);
 
 #if V4L2_SNOOP_ENABLE
-    if(nl_sk_hcisnoop)
+    if(ldisc_snoop_enable_param)
     {
-        if (!(hu->is_registered[PROTO_SH_ANT] || hu->is_registered[PROTO_SH_FM])
-           || (skb->data)[11] != 0x03 || (skb->data)[12] != 0x0c)
-        {
-            /* forward to hcisnoop */
-            BT_LDISC_DBG(V4L2_DBG_RX, "capturing snoop skb->len=%d", skb->len);
-            brcm_hci_snoop(hu, skb->data, skb->len);
+        /* forward to hcisnoop */
+        BT_LDISC_DBG(V4L2_DBG_RX, "capturing snoop skb->len=%d", skb->len);
+        brcm_hci_snoop(hu, skb->data, skb->len);
 
-            /* Remove hci header used for HCI snoop, before sending to fmdrv */
-            if(protoid == PROTO_SH_FM) {
-                skb_pull(skb, sizeof(hc_bt_hdr));
-            }
+        /* Remove hci header used for HCI snoop, before sending to fmdrv */
+        if(protoid == PROTO_SH_FM) {
+            skb_pull(skb, sizeof(hc_bt_hdr));
         }
     }
 #endif
-
     /* Remove hci header used for HCI snoop, before sending to btdrv */
     if(protoid == PROTO_SH_BT) {
         char type = sh_ldisc_cb(skb)->pkt_type;
         skb_pull(skb, sizeof(hc_bt_hdr));
         memcpy(skb_push(skb, sizeof(char)),&type, sizeof(char));
-    }
-
-    if(mutex_is_locked(&cmd_credit))
-    {
-        if(protoid == PROTO_SH_BT)
-        {
-            if((skb->data[1]==0x0e && skb->data[3]==0x01) ||  // command_complete evt with hci_credit=1
-               (skb->data[1]==0x0f && skb->data[4]==0x01))    // command_status evt with hci_credit=1
-            {
-                complete_all(&hu->cmd_rcvd);
-            }
-        }
-        else if(protoid == PROTO_SH_FM || protoid == PROTO_SH_ANT)
-        {
-            if((skb->data[0]==0x0e && skb->data[2]==0x01) ||  // command_complete evt with hci_credit=1
-               (skb->data[0]==0x0f && skb->data[3]==0x01))    // command_status evt with hci_credit=1
-            {
-                complete_all(&hu->cmd_rcvd);
-            }
-        }
     }
 
     if (unlikely
@@ -1050,6 +702,8 @@ int brcm_hci_uart_tx_wakeup(struct hci_uart *hu)
             int len;
             spin_lock_irqsave(&hu->lock, lock_flags);
 
+            BT_LDISC_DBG(V4L2_DBG_TX, "hci_uart_tx_wakeup skb->data[%d] = 0x%x 0x%x 0x%x 0x%x",
+             skb->len,skb->data[0],skb->len,skb->data[1],skb->len,skb->data[2],skb->len,skb->data[3]);
             len = tty->ops->write(tty, skb->data, skb->len);
 
             skb_pull(skb, len);
@@ -1063,6 +717,7 @@ int brcm_hci_uart_tx_wakeup(struct hci_uart *hu)
 
             brcm_hci_uart_tx_complete(hu, sh_ldisc_cb(skb)->pkt_type);
             kfree_skb(skb);
+            BT_LDISC_DBG(V4L2_DBG_TX, "skb freed");
             spin_unlock_irqrestore(&hu->lock, lock_flags);
         }
     }while(test_bit(HCI_UART_TX_WAKEUP, &hu->tx_state));
@@ -1086,6 +741,7 @@ int brcm_sh_ldisc_lpm_disable(struct hci_uart *hu)
 {
     const char hci_lpm_disable_cmd[] = {0x01,0x27,0xfc,0x0c,0x00,0x00,0x00,0x00,\
                                         0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+    int len;
 
     /* Perform LPM disable  */
     brcm_hci_write(hu, hci_lpm_disable_cmd, 16);
@@ -1099,28 +755,6 @@ int brcm_sh_ldisc_lpm_disable(struct hci_uart *hu)
     return 0;
 }
 
-void resetErrFlags(struct sh_proto_s *new_proto)
-{
-    struct hci_uart *hu;
-    hu_ref(&hu, 0);
-
-    // reset error flags as protocol driver has initiated registration
-    switch(new_proto->type) {
-        case PROTO_SH_BT:
-            hu->ldisc_bt_err = V4L2_ERR_FLAG_RESET;
-            BT_LDISC_DBG(V4L2_DBG_OPEN, "resetting bt_err");
-            sysfs_notify(&hu->brcm_pdev->dev.kobj, NULL, "bt_err");
-            break;
-        case PROTO_SH_FM:
-            hu->ldisc_fm_err = V4L2_ERR_FLAG_RESET;
-            sysfs_notify(&hu->brcm_pdev->dev.kobj, NULL, "fm_err");
-            BT_LDISC_DBG(V4L2_DBG_OPEN, "resetting fm_err");
-            break;
-        default:
-            BT_LDISC_ERR("Unknown proto id");
-    }
-
-}
 
 /*******************************************************************************
 **
@@ -1233,7 +867,6 @@ long brcm_sh_ldisc_register(struct sh_proto_s *new_proto)
                                                       hu->protos_registered);
         new_proto->write = brcm_sh_ldisc_write;
         spin_unlock_irqrestore(&reg_lock, flags);
-        resetErrFlags(new_proto);
 
         BT_LDISC_DBG(V4L2_DBG_OPEN, "exiting %s with err = %ld", __func__, err);
         return err;
@@ -1246,7 +879,7 @@ long brcm_sh_ldisc_register(struct sh_proto_s *new_proto)
                                                       hu->protos_registered);
         new_proto->write = brcm_sh_ldisc_write;
         spin_unlock_irqrestore(&reg_lock, flags);
-        resetErrFlags(new_proto);
+
         return err;
     }
 
@@ -1404,7 +1037,8 @@ static long read_bd_addr(struct hci_uart *hu)
 {
     long err = 0;
     long len =0;
-    int i = 0;
+    char * p_temp; /* store received patchram filename */
+    int i =0;
 
     struct tty_struct *tty;
     const char hci_read_bdaddr[] = { 0x01, 0x09, 0x10, 0x00 };
@@ -1459,7 +1093,9 @@ static long download_patchram(struct hci_uart *hu)
     long len =0;
     struct tty_struct *tty = hu->tty;
     uint8_t hci_writesleepmode_cmd[35] = {0};
+
     unsigned char *ptr;
+    int cnt=0;
 
     const unsigned char hci_download_minidriver[] = { 0x01, 0x2e, 0xfc, 0x00 };
     const unsigned char hci_reset_cmd[] = {0x01, 0x03, 0x0C, 0x00};
@@ -1468,19 +1104,9 @@ static long download_patchram(struct hci_uart *hu)
     unsigned char hci_update_bd_addr[] = { 0x01, 0x01, 0xFC, 0x06,0x00, \
                                                0x00,0x00,0x00,0x00,0x00 };
     const char hci_uartclockset_cmd[] = {0x01, 0x45, 0xFC, 0x01, 0x01};
+    unsigned char buf[RESP_BUFF_SIZE];
 
-    unsigned char *buf = NULL;
     struct ktermios ktermios;
-	if (!(buf = kmalloc(RESP_BUFF_SIZE, GFP_KERNEL))) {
-        BT_LDISC_ERR("Unable to allocate memory for buf");
-        err = -ENOMEM;
-        goto error_state;
-    }
-
-    if (unlikely(hu == NULL || hu->tty == NULL)) {
-        err = -EINVAL;
-        goto error_state;
-    }
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0)
     memcpy(&ktermios, tty->termios, sizeof(ktermios));
 #else
@@ -1574,8 +1200,7 @@ static long download_patchram(struct hci_uart *hu)
     if (!wait_for_completion_timeout
           (&hu->cmd_rcvd, msecs_to_jiffies(CMD_RESP_TIME))) {
             pr_err(" waiting for HCI Reset command response - timed out ");
-            err = -ETIMEDOUT;
-            goto error_state;
+            return -ETIMEDOUT;
     }
     BT_LDISC_DBG(V4L2_DBG_INIT, "%s HCI Reset complete", __func__);
 
@@ -1583,15 +1208,14 @@ static long download_patchram(struct hci_uart *hu)
     if( custom_baudrate > CLOCK_SET_BAUDRATE){
         init_completion(&hu->cmd_rcvd);
         BT_LDISC_DBG(V4L2_DBG_INIT, "Baudrate > %ld UART clock set to 48 MHz",
-                                                  (unsigned long)CLOCK_SET_BAUDRATE);
+                                                  CLOCK_SET_BAUDRATE);
         brcm_hci_write(hu, hci_uartclockset_cmd, 5);
 
         if (!wait_for_completion_timeout
                (&hu->cmd_rcvd, msecs_to_jiffies(CMD_RESP_TIME))) {
             BT_LDISC_ERR(" waiting for UART clock set command response \
                 - timed out");
-            err = -ETIMEDOUT;
-            goto error_state;
+            return -ETIMEDOUT;
         }
     }
 
@@ -1607,8 +1231,7 @@ static long download_patchram(struct hci_uart *hu)
           (&hu->cmd_rcvd, msecs_to_jiffies(CMD_RESP_TIME))) {
             pr_err(" waiting for set baud rate back to %ld command response \
                 - timed out", custom_baudrate);
-            err = -ETIMEDOUT;
-            goto error_state;
+            return -ETIMEDOUT;
     }
 
     ktermios.c_cflag = (ktermios.c_cflag & ~CBAUD) |
@@ -1623,11 +1246,11 @@ static long download_patchram(struct hci_uart *hu)
         err = read_bd_addr(hu);
         if (err != 0) {
             pr_err("ldisc: failed to read local name for patchram");
-            goto error_state;
+            return err;
         }
     }
     else
-        str2bd(bd_addr,(bt_bdaddr_t*)bd_addr_array);
+        str2bd(bd_addr,&bd_addr_array);
     BT_LDISC_DBG(V4L2_DBG_INIT, "BD ADDRESS going to  set is "\
         "%02X:%02X:%02X:%02X:%02X:%02X",
          bd_addr_array[0], bd_addr_array[1], bd_addr_array[2],
@@ -1642,8 +1265,7 @@ static long download_patchram(struct hci_uart *hu)
           (&hu->cmd_rcvd, msecs_to_jiffies(CMD_RESP_TIME))) {
             pr_err(" waiting for set bd addr command response \
                 - timed out");
-            err = -ETIMEDOUT;
-            goto error_state;
+            return -ETIMEDOUT;
     }
    BT_LDISC_DBG(V4L2_DBG_INIT, "BD ADDRESS set to "\
         "%02X:%02X:%02X:%02X:%02X:%02X",
@@ -1653,7 +1275,7 @@ static long download_patchram(struct hci_uart *hu)
     /* Enable/Disable LPM should be configurable based on the module param */
     init_completion(&hu->cmd_rcvd);
     BT_LDISC_DBG(V4L2_DBG_INIT, "lpm param %s", lpm_param);
-    str2arr(lpm_param, (uint8_t*) hci_writesleepmode_cmd, 16);
+    str2arr(lpm_param,&hci_writesleepmode_cmd,16);
 
      BT_LDISC_DBG(V4L2_DBG_INIT,"LPM PARAM set to "\
         "%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:"\
@@ -1669,15 +1291,10 @@ static long download_patchram(struct hci_uart *hu)
     if (!wait_for_completion_timeout
           (&hu->cmd_rcvd, msecs_to_jiffies(CMD_RESP_TIME))) {
             pr_err(" waiting for set LPM command response timed out");
-            err = -ETIMEDOUT;
-            goto error_state;
+            return -ETIMEDOUT;
     }
 
-    err = 0;
-
-error_state:
-    if (buf != NULL) kfree(buf);
-    return err;
+    return 0;
 }
 
 
@@ -1690,8 +1307,7 @@ long brcm_sh_ldisc_stop(struct hci_uart *hu)
 
     INIT_COMPLETION(hu->ldisc_installed);
 
-    brcm_btsleep_stop(sleep);
-    hu->ldisc_install = V4L2_STATUS_OFF;
+    hu->ldisc_install = 0;
 
     /* send uninstall notification to UIM */
     sysfs_notify(&hu->brcm_pdev->dev.kobj, NULL, "install");
@@ -1717,19 +1333,16 @@ long brcm_sh_ldisc_start(struct hci_uart *hu)
 {
     long err = 0;
     long retry = POR_RETRY_COUNT;
-    long cl_err = 0;
 
     struct tty_struct *tty = hu->tty;
 
     BT_LDISC_DBG(V4L2_DBG_INIT, " %p",tty);
 
     do {
-        brcm_btsleep_start(sleep);
         INIT_COMPLETION(hu->ldisc_installed);
         /* send notification to UIM */
-        hu->ldisc_install = V4L2_STATUS_ON;
-        BT_LDISC_DBG(V4L2_DBG_INIT, "ldisc_install = %c",\
-            hu->ldisc_install);
+        hu->ldisc_install = 1;
+        BT_LDISC_DBG(V4L2_DBG_INIT, "ldisc_install = 1");
         sysfs_notify(&hu->brcm_pdev->dev.kobj,
             NULL, "install");
 
@@ -1738,14 +1351,7 @@ long brcm_sh_ldisc_start(struct hci_uart *hu)
                 msecs_to_jiffies(LDISC_TIME));
         if (!err) { /* timeout */
             pr_err("line disc installation timed out ");
-            INIT_COMPLETION(hu->tty_close_complete);
             err = brcm_sh_ldisc_stop(hu);
-            cl_err = wait_for_completion_timeout(&hu->tty_close_complete,
-                    msecs_to_jiffies(TTY_CLOSE_TIME));
-            if (!cl_err) { /* timeout */
-                pr_err("tty close timed out");
-                break;
-            }
             continue;
         } else {
             /* ldisc installed now */
@@ -1753,19 +1359,11 @@ long brcm_sh_ldisc_start(struct hci_uart *hu)
             err = download_patchram(hu);
             if (err != 0) {
                 pr_err("patchram download failed");
-                INIT_COMPLETION(hu->tty_close_complete);
                 brcm_sh_ldisc_stop(hu);
-                cl_err = wait_for_completion_timeout(&hu->tty_close_complete,
-                        msecs_to_jiffies(TTY_CLOSE_TIME));
-                if (!cl_err) { /* timeout */
-                    pr_err("tty close timed out");
-                    break;
-                }
                 continue;
             } else {/* on success don't retry */
                 BT_LDISC_DBG(V4L2_DBG_INIT, "patchram downloaded successfully");
-                // initialize lock for err flags
-                spin_lock_init(&hu->err_lock);
+                brcm_btsleep_start(sleep);
                 break;
             }
         }
@@ -1790,13 +1388,9 @@ long brcm_sh_ldisc_write(struct sk_buff *skb)
 {
     enum proto_type protoid = PROTO_SH_MAX;
     long len;
-    struct brcm_struct *brcm;
-    char ptr[6];
 
     struct hci_uart *hu;
     hu_ref(&hu,0);
-
-    brcm = hu->priv;
 
 
     BT_LDISC_DBG(V4L2_DBG_TX, "%p",hu);
@@ -1820,11 +1414,6 @@ long brcm_sh_ldisc_write(struct sk_buff *skb)
         case HCI_SCODATA_PKT:
             protoid = PROTO_SH_BT;
             break;
-#ifdef V4L2_ANT
-       case ANT_PKT:
-            protoid = PROTO_SH_ANT;
-            break;
-#endif
         case FM_CH8_PKT:
             protoid = PROTO_SH_FM;
             break;
@@ -1839,67 +1428,15 @@ long brcm_sh_ldisc_write(struct sk_buff *skb)
 
     len = skb->len;
 
-    if ((hu->is_registered[PROTO_SH_ANT] || hu->is_registered[PROTO_SH_FM])
-            && (skb->data)[1] == 0x03 && (skb->data)[2] == 0x0c)
-    {
-        if (likely(hu->list[PROTO_SH_BT]->recv != NULL))
-        {
-            brcm->rx_skb = alloc_skb(HCI_MAX_FRAME_SIZE, GFP_ATOMIC);
-            if(brcm->rx_skb)
-                skb_reserve(brcm->rx_skb,8);
+    hu->proto->enqueue(hu, skb);
 
-            brcm->rx_skb->dev = (void *) hu->hdev;
-            sh_ldisc_cb(brcm->rx_skb)->pkt_type = HCI_EVENT_PKT;
-
-            ptr[0] = 0x0e;
-            ptr[1] = 0x04;
-            ptr[2] = 0x01;
-            ptr[3] = 0x03;
-            ptr[4] = 0x0c;
-            ptr[5] = 0x00;
-
-            memcpy(skb_put(brcm->rx_skb, 6), ptr, 6);
-
-            brcm_hci_process_frametype(HCI_EVENT_PKT,hu,brcm->rx_skb, 6);
-            brcm_hci_uart_route_frame(PROTO_SH_BT, hu, brcm->rx_skb);
-        }
-    }
-    else
-    {
-        if (hu->protos_registered > 1 &&
-           (sh_ldisc_cb(skb)->pkt_type == HCI_COMMAND_PKT ||
-            sh_ldisc_cb(skb)->pkt_type == FM_CH8_PKT ||
-            sh_ldisc_cb(skb)->pkt_type == ANT_PKT))
-        {
-            mutex_lock(&cmd_credit);
-            init_completion(&hu->cmd_rcvd);
-
-            hu->proto->enqueue(hu, skb);
-
-            /* forward to snoop */
+    /* forward to snoop */
 #if V4L2_SNOOP_ENABLE
-            if(nl_sk_hcisnoop)
-                brcm_hci_write(hu, skb->data, skb->len);
+    if(ldisc_snoop_enable_param)
+        brcm_hci_write(hu, skb->data, skb->len);
 #endif
-            brcm_hci_uart_tx_wakeup(hu);
-            if (!wait_for_completion_timeout(&hu->cmd_rcvd, msecs_to_jiffies(5000))) {
-                pr_err(" waiting for command response - timed out");
-                return 0;
-            }
-            mutex_unlock(&cmd_credit);
-        }
-        else
-        {
-            hu->proto->enqueue(hu, skb);
 
-            /* forward to snoop */
-#if V4L2_SNOOP_ENABLE
-            if(nl_sk_hcisnoop)
-                brcm_hci_write(hu, skb->data, skb->len);
-#endif
-            brcm_hci_uart_tx_wakeup(hu);
-        }
-    }
+    brcm_hci_uart_tx_wakeup(hu);
 
     /* return number of bytes written */
     return len;
@@ -1927,11 +1464,12 @@ static int brcm_hci_uart_tty_open(struct tty_struct *tty)
     hc_bt_hdr *snoop_hci_hdr;
     hc_bt_hdr *snoop_hci_recv_hdr;
 #endif
-    hu_ref(&hu, 0);
     BT_LDISC_DBG(V4L2_DBG_INIT, "tty open %p hu %p", tty,hu);
 
     /* don't do an wakeup for now */
     clear_bit(TTY_DO_WRITE_WAKEUP, &tty->flags);
+
+    hu_ref(&hu, 0);
 
     tty->disc_data = hu;
     hu->tty = tty;
@@ -2043,7 +1581,6 @@ static void brcm_hci_uart_tty_close(struct tty_struct *tty)
     }
     sh_ldisc_complete(hu);
     hu->tty = 0;
-    complete(&hu->tty_close_complete);
     BT_LDISC_DBG(V4L2_DBG_INIT, "tty close exit");
 }
 
@@ -2104,6 +1641,40 @@ static void brcm_hci_uart_tty_receive(struct tty_struct *tty,
     spin_unlock_irqrestore(&hu->rx_lock, lock_flags);
 
 }
+
+/*******************************************************************************
+**
+** Function - brcm_hci_uart_tty_flush_buffer
+**
+** Description - Called by tty low level driver to flush the data buffer in
+**              driver
+**
+* Arguments - tty   pointer to tty isntance data
+**
+** Returns - void
+**
+*******************************************************************************/
+static void brcm_hci_uart_tty_flush_buffer(struct tty_struct *tty)
+{
+    struct hci_uart *hu = (void *)tty->disc_data; /* assign tty instance to hci_uart */
+    unsigned long flags;
+
+    if (!hu || tty != hu->tty)
+        return;
+
+    if (!test_bit(HCI_UART_PROTO_SET, &hu->flags))
+        return;
+
+    spin_lock_irqsave(&hu->rx_lock, flags);
+    hu->proto->flush(hu);
+    spin_unlock_irqrestore(&hu->rx_lock, flags);
+
+    if(tty->ldisc->ops->flush_buffer)
+        tty->ldisc->ops->flush_buffer(tty);
+
+    return;
+}
+
 
 /*******************************************************************************
 **
@@ -2229,7 +1800,7 @@ static void brcm_hci_uart_tty_set_termios(struct tty_struct *tty,
 /*****************************************************************************
 **   Module INIT interface
 *****************************************************************************/
-static int brcm_hci_uart_init( void )
+static int __init brcm_hci_uart_init( void )
 
 {
     static struct tty_ldisc_ops hci_uart_ldisc;
@@ -2282,9 +1853,10 @@ static int brcm_hci_uart_init( void )
 /*****************************************************************************
 **   Module EXIT interface
 *****************************************************************************/
-static void brcm_hci_uart_exit(struct hci_uart* hu)
+static void __exit brcm_hci_uart_exit(struct hci_uart* hu)
 {
-    int err = 0;
+    int err;
+
     BT_LDISC_DBG(V4L2_DBG_INIT, "%s", __func__);
 
 #ifdef CONFIG_BT_HCIUART_H4
@@ -2303,8 +1875,9 @@ static void brcm_hci_uart_exit(struct hci_uart* hu)
     kfree_skb(hu->tx_skb);
     /* Release tty registration of line discipline */
     if ((err = tty_unregister_ldisc(N_BRCM_HCI)))
-        BT_LDISC_ERR("Can't unregister HCI line discipline (%d)", err);
+        pr_err("Can't unregister HCI line discipline (%d)", err);
 }
+
 
 /**
  * ldisc_get_plat_device -
@@ -2382,13 +1955,15 @@ static int bcmbt_ldisc_probe(struct platform_device *pdev)
     hu->brcm_pdev = pdev;
     init_completion(&hu->cmd_rcvd);
     init_completion(&hu->ldisc_installed);
-    init_completion(&hu->tty_close_complete);
 
     rc = sysfs_create_group(&pdev->dev.kobj, &uim_attr_grp);
     if (rc) {
         pr_err("failed to create sysfs entries");
         return rc;
     }
+    if( LpmUseBluesleep )
+        sleep = SLEEP_BLUESLEEP;
+    BT_LDISC_DBG(V4L2_DBG_INIT, "%s %p sleep %d", __func__,hu,sleep);
 
     return 0;
 }
@@ -2400,7 +1975,8 @@ static int bcmbt_ldisc_remove(struct platform_device *pdev)
     hu = dev_get_drvdata(&pdev->dev);
     sysfs_remove_group(&pdev->dev.kobj, &uim_attr_grp);
     brcm_hci_uart_exit(hu);
-    kfree(hu);
+
+    kfree(hu );
     hu  = NULL;
     return 0;
 }
@@ -2418,17 +1994,53 @@ static struct platform_driver bcmbt_ldisc_platform_driver = {
            },
 };
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0)
+struct netlink_kernel_cfg cfg = {
+    .input = brcm_hcisnoop_recv_msg,
+};
+#endif
+
 static int __init bcmbt_ldisc_init(void)
 {
-    platform_driver_register(&bcmbt_ldisc_platform_driver);
-    mutex_init(&cmd_credit);
+    int err = 0;
+
+    err = platform_driver_register(&bcmbt_ldisc_platform_driver);
+
+#if V4L2_SNOOP_ENABLE
+    if(ldisc_snoop_enable_param)
+    {
+        /* check whether snoop is enabled */
+        BT_LDISC_ERR("ldisc_snoop_enable_param = %d", ldisc_snoop_enable_param);
+
+        /* start hci snoop to hcidump */
+        /* Create socket for hcisnoop */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3,6,0)
+        nl_sk_hcisnoop = netlink_kernel_create(&init_net, NETLINK_USER, 0,
+                    brcm_hcisnoop_recv_msg, NULL, THIS_MODULE);
+#else
+        nl_sk_hcisnoop = netlink_kernel_create(&init_net, NETLINK_USER, &cfg);
+#endif
+        if (!nl_sk_hcisnoop)
+        {
+            BT_LDISC_ERR("Error creating netlink socket for HCI snoop");
+//BT_S : [CONBT-2025] It isn't cool to return minus value in this time it is reason kernel is crashed
+//            err = -10;
+//            return err;
+            return err;
+//BT_E : [CONBT-2025] It isn't cool to return minus value in this time it is reason kernel is crashed
+        }
+    }
+    else {
+        return 0;
+    }
+#endif
+
     return 0;
 }
 
 static void __exit bcmbt_ldisc_exit(void)
 {
     platform_driver_unregister(&bcmbt_ldisc_platform_driver);
-    mutex_destroy(&cmd_credit);
 
 #if V4L2_SNOOP_ENABLE
     if(ldisc_snoop_enable_param)
@@ -2442,6 +2054,42 @@ static void __exit bcmbt_ldisc_exit(void)
 
 module_init(bcmbt_ldisc_init);
 module_exit(bcmbt_ldisc_exit);
+
+module_param(custom_baudrate, long, S_IRUGO);
+MODULE_PARM_DESC(custom_baudrate, "set after patchram download");
+
+module_param(patchram_settlement_delay, int, S_IRUGO);
+MODULE_PARM_DESC(patchram_settlement_delay, \
+               "Settlement delay after patchram download in milliseconds");
+
+module_param(LpmUseBluesleep, int, S_IRUGO);
+MODULE_PARM_DESC(LpmUseBluesleep, \
+               "Enable/Disable usage of bluesleep driver for LPM");
+
+module_param(ControllerAddrRead, int, S_IRUGO);
+MODULE_PARM_DESC(ControllerAddrRead, \
+               "Set this to 1 to read Controller Address");
+
+//BT_S : fix wrong lpm_param issue, [START]
+//module_param(lpm_param, charp, 0000);
+module_param_string(lpm_param, lpm_param, LPM_PARAM_SIZE,0000);
+//BT_E : fix wrong lpm_param issue, [END]
+MODULE_PARM_DESC(lpm_param, "Char pointer." \
+               "Array containing HCI command to enable/disable LPM");
+
+module_param(ldisc_dbg_param, int, S_IRUGO);
+MODULE_PARM_DESC(ldisc_dbg_param, \
+               "Set to integer value from 1 to 31 for enabling/disabling" \
+               " specific categories of logs");
+
+/* enable hci snoop */
+#if V4L2_SNOOP_ENABLE
+module_param(ldisc_snoop_enable_param, int, S_IRUGO);
+MODULE_PARM_DESC(ldisc_snoop_enable_param, \
+               "enable/disable HCI snooping in ldisc. " \
+               " BT/FM packets are sent to brcm_hci_snoop in user-space " \
+               "through a raw netlink socket");
+#endif
 
 
 /*****************************************************************************

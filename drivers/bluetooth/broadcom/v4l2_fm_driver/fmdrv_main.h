@@ -26,7 +26,6 @@
 
 #ifndef _FMDRV_MAIN_H
 #define _FMDRV_MAIN_H
-#include <linux/module.h>
 #include <net/bluetooth/bluetooth.h>
 #include <net/bluetooth/hci_core.h>
 
@@ -227,13 +226,12 @@ struct fm_cmd_complete_hdr {
 #define FM_RX_RDS_AF_SWITCH_MODE_OFF 0
 
 /* Band types */
-#define FM_BAND_EUROPE      0
+#define FM_BAND_EUROPE_US   0
 #define FM_BAND_JAPAN       1
-#define FM_BAND_NA          2
-#define FM_BAND_RUSSIAN     3
-#define FM_BAND_CHINA       4
-#define FM_BAND_ITALY       5
-#define FM_BAND_WEATHER     6
+#define FM_BAND_RUSSIAN     2
+#define FM_BAND_CHINA       3
+#define FM_BAND_WEATHER     4
+
 
 /* noise floor estimation */
 #define     FM_NFE_DEFAILT      93      /* default Noise floor value */
@@ -347,7 +345,6 @@ int fmc_seek_station(struct fmdrv_ops *, unsigned char, unsigned char);
 
 int fmc_get_frequency(struct fmdrv_ops *, unsigned int *);
 int fmc_get_region(struct fmdrv_ops *, unsigned char *);
-int fmc_get_audio_mode(struct fmdrv_ops *fmdev, unsigned char *audio_mode);
 int fmc_get_mode(struct fmdrv_ops *, unsigned char *);
 int fmc_enable (struct fmdrv_ops *, unsigned char);
 int fmc_turn_fm_off(struct fmdrv_ops *);
@@ -356,7 +353,6 @@ int fmc_set_scan_step(struct fmdrv_ops *, unsigned char);
 int fmc_transfer_rds_from_cbuff(struct fmdrv_ops *, struct file *,
                     char __user *, size_t);
 void fmc_reset_rds_cache(struct fmdrv_ops *);
-void get_rds_element_value(int ioctl_num, char __user *ioctl_value);
 
 #endif
 

@@ -234,9 +234,9 @@ static void brcm_bt_drv_prepare(struct brcm_bt_dev* bt_dev)
     skb_queue_head_init(&bt_dev->tx_q);
     spin_lock_init(&bt_dev->tx_q_lock);
 
-#ifdef TASKLET_SUPPORT
+#if TASKLET_SUPPORT
     tasklet_init(&bt_dev->tx_task, __send_tasklet, (unsigned long)bt_dev);
-#else
+#else if WORKER_QUEUE
     INIT_WORK(&bt_dev->tx_workqueue,bt_send_data_ldisc);
 #endif
 
@@ -265,9 +265,6 @@ static int brcm_bt_drv_close(struct inode *i, struct file *f)
     int err=0;
     struct brcm_bt_dev *bt_dev_p = f->private_data;
 
-#ifndef TASKLET_SUPPORT
-    cancel_work_sync(&bt_dev_p->tx_workqueue);
-#endif
     /* Unregister from ST layer */
     if (test_and_clear_bit(BT_ST_REGISTERED, &bt_dev_p->flags)) {
         err = brcm_sh_ldisc_unregister(PROTO_SH_BT);
@@ -308,6 +305,9 @@ static ssize_t brcm_bt_drv_read(struct file *f, char __user *buf, size_t
     struct brcm_bt_dev *bt_dev_p = f->private_data;
     size_t skb_size = 0;
     unsigned long flags;
+#if BTDRV_DEBUG_DUMP
+    int i=0;
+#endif
 
     spin_lock_irqsave(&bt_dev_p->rx_q_lock, flags);
     skb = skb_peek(&bt_dev_p->rx_q);
@@ -374,6 +374,7 @@ static ssize_t brcm_bt_write(struct file *f, const char __user *buf,
             ret=-EFAULT;
             goto nomem;
         }
+        BT_DRV_DBG(V4L2_DBG_TX, "brcm_bt_writebuf[%d] 0x%x 0x%x 0x%x 0x%x", len,buf[0],buf[1],buf[2],buf[3]);
 
         if(copy_from_user(skb_put(skb, len), buf, len))
         {
@@ -381,6 +382,8 @@ static ssize_t brcm_bt_write(struct file *f, const char __user *buf,
             ret=-EFAULT;
             goto nomem;
         }
+        BT_DRV_DBG(V4L2_DBG_TX, "brcm_bt_write skb->data[%d] = 0x%x 0x%x 0x%x 0x%x",
+         skb->len,skb->data[0],skb->len,skb->data[1],skb->len,skb->data[2],skb->len,skb->data[3]);
 
     }
     else {
@@ -395,9 +398,9 @@ static ssize_t brcm_bt_write(struct file *f, const char __user *buf,
 
     atomic_inc(&bt_dev->tx_cnt);
 
-#ifdef TASKLET_SUPPORT
+#if TASKLET_SUPPORT
     tasklet_schedule(&bt_dev->tx_task);
-#else
+#else if WORKER_QUEUE
     queue_work(bt_dev->tx_wq,&bt_dev->tx_workqueue);
 #endif
 
@@ -405,9 +408,9 @@ static ssize_t brcm_bt_write(struct file *f, const char __user *buf,
     return len;
 
 nomem:
-     spin_unlock_irqrestore(&bt_dev->tx_q_lock, flags);
-     BT_DRV_DBG(V4L2_DBG_TX, "End ret=%d", ret);
-     return ret;
+    spin_unlock_irqrestore(&bt_dev->tx_q_lock, flags);
+    BT_DRV_DBG(V4L2_DBG_TX, "End ret=%d", ret);
+    return ret;
 }
 
 
@@ -458,11 +461,11 @@ static unsigned int brcm_bt_drv_poll(struct file *filp,
 **                    the packet to Line discipline driver.
 **
 *****************************************************************************/
-#ifdef TASKLET_SUPPORT
+#if TASKLET_SUPPORT
 static void __send_tasklet(unsigned long arg)
 {
     struct brcm_bt_dev *bt_dev_p = (struct brcm_bt_dev *)arg;
-#else
+#else if WORKER_QUEUE
 static void bt_send_data_ldisc(struct work_struct *w)
 {
     struct  brcm_bt_dev *bt_dev_p = container_of(w, struct brcm_bt_dev,
@@ -482,7 +485,7 @@ static void bt_send_data_ldisc(struct work_struct *w)
         spin_unlock_irqrestore(&bt_dev_p->tx_q_lock, flags);
         if (skb)
         {
-            sh_ldisc_cb(skb)->pkt_type = skb->data[0];
+            sh_ldisc_cb(skb)->pkt_type = (uint8_t *)skb->data;
 
             if(bt_dev_p->st_write != NULL){
                 len = bt_dev_p->st_write(skb);
@@ -588,9 +591,9 @@ static long brcm_bt_st_receive(void *priv_data, struct sk_buff *skb)
 
     BT_DRV_DBG(V4L2_DBG_RX, "rx_q len = %d",skb_queue_len(&brcm_bt_dev_p->rx_q));
     if (!skb_queue_empty(&brcm_bt_dev_p->tx_q)){
-#ifdef TASKLET_SUPPORT
+#if TASKLET_SUPPORT
      tasklet_schedule(&brcm_bt_dev_p->tx_task);
-#else
+#else if WORKER_QUEUE
      queue_work(brcm_bt_dev_p->tx_wq,&brcm_bt_dev_p->tx_workqueue);
 #endif
     }
@@ -609,7 +612,7 @@ static int __init brcm_bt_drv_init(void) /* Constructor */
 {
     int err=0;
 
-    if ((err = alloc_chrdev_region(&dev, 0, 1, "brcm_bt_drv")) < 0)
+    if ((err = alloc_chrdev_region(&dev, NULL, 1, "brcm_bt_drv")) < 0)
     {
         BT_DRV_ERR("alloc_chrdev_region FAILED");
         return err;
@@ -655,7 +658,7 @@ static int __init brcm_bt_drv_init(void) /* Constructor */
         unregister_chrdev_region(dev, 1);
         return err;
     }
-#ifndef TASKLET_SUPPORT
+#if WORKER_QUEUE
     bt_dev_p->tx_wq= create_workqueue("bt_drv");
     if (!bt_dev_p->tx_wq) {
         BT_DRV_ERR("%s(): Unable to create workqueue bt_drv\n", __func__);
@@ -671,7 +674,7 @@ static int __init brcm_bt_drv_init(void) /* Constructor */
 
 static void __exit brcm_bt_drv_exit(void) /* Destructor */
 {
-#ifndef TASKLET_SUPPORT
+#if WORKER_QUEUE
     destroy_workqueue(bt_dev_p->tx_wq);
 #endif
     if (test_and_clear_bit(BT_DRV_RUNNING, &bt_dev_p->flags))

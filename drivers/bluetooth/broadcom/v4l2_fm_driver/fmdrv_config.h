@@ -42,7 +42,7 @@
 #define DEF_V4L2_FM_WORLD_REGION FM_REGION_NA
 
 /* Set default Audio mode */
-#define DEF_V4L2_FM_AUDIO_MODE FM_AUTO_MODE
+#define DEF_V4L2_FM_AUDIO_MODE FM_STEREO_MODE
 
 /* Set default Audio path */
 #ifndef DEF_V4L2_FM_AUDIO_PATH
@@ -53,10 +53,6 @@
 /*PCM lines in master mode */
 #ifndef ROUTE_FM_I2S_SLAVE_TO_PCM_PINS
 #define ROUTE_FM_I2S_SLAVE_TO_PCM_PINS FALSE
-#endif
-
-#ifndef ROUTE_BT_I2S_MASTER_TO_PCM_PINS
-#define ROUTE_BT_I2S_MASTER_TO_PCM_PINS FALSE
 #endif
 
 /*Make this TRUE if FM I2S audio to be routed over */
@@ -80,11 +76,6 @@
 #define V4L2_FM_DEBUG TRUE
 #endif
 
-/* FM enable delay time, default set to 300 millisecond */
-#ifndef V4L2_FM_ENABLE_DELAY
-#define V4L2_FM_ENABLE_DELAY             300
-#endif
-
 /* FM driver RDS debug flag. Set this to FALSE for Production release */
 #define V4L2_RDS_DEBUG TRUE
 
@@ -92,6 +83,95 @@
 #define DEF_V4L2_FM_NFE 93
 #define DEF_V4L2_FM_SIGNAL_STRENGTH 105
 #define DEF_V4L2_FM_RSSI 0x55 /* RSSI threshold value 85 dBm */
+
+/*******************************************************************************
+**  Static Variables
+*******************************************************************************/
+
+/* Query control */
+static struct v4l2_queryctrl fmdrv_v4l2_queryctrl[] = {
+    {
+        .id = V4L2_CID_AUDIO_VOLUME,
+        .type = V4L2_CTRL_TYPE_INTEGER,
+        .name = "Volume",
+        .minimum = FM_RX_VOLUME_MIN,
+        .maximum = FM_RX_VOLUME_MAX,
+        .step = 1,
+        .default_value = FM_DEFAULT_RX_VOLUME,
+    },
+    {
+        .id = V4L2_CID_AUDIO_BALANCE,
+        .flags = V4L2_CTRL_FLAG_DISABLED,
+    },
+    {
+        .id = V4L2_CID_AUDIO_BASS,
+        .flags = V4L2_CTRL_FLAG_DISABLED,
+    },
+    {
+        .id = V4L2_CID_AUDIO_TREBLE,
+        .flags = V4L2_CTRL_FLAG_DISABLED,
+    },
+    {
+        .id = V4L2_CID_AUDIO_MUTE,
+        .type = V4L2_CTRL_TYPE_BOOLEAN,
+        .name = "Mute",
+        .minimum = 0,
+        .maximum = 2,
+        .step = 1,
+        .default_value = FM_MUTE_OFF,
+    },
+    {
+        .id = V4L2_CID_AUDIO_LOUDNESS,
+        .flags = V4L2_CTRL_FLAG_DISABLED,
+    },
+// may need private control
+};
+
+/* Region info */
+static struct region_info region_configs[] = {
+     /* Europe */
+    {
+     .low_bound = FM_GET_FREQ(8750),    /* 87.5 MHz */
+     .high_bound = FM_GET_FREQ(10800),    /* 108 MHz */
+     .deemphasis = FM_DEEMPHA_50U,
+     .scan_step = 100,
+     .fm_band = 0,
+     },
+
+    /* Japan */
+    {
+     .low_bound = FM_GET_FREQ(7600),    /* 76 MHz */
+     .high_bound = FM_GET_FREQ(9500),    /* 95 MHz */
+     .deemphasis = FM_DEEMPHA_50U,
+     .scan_step = 100,
+     .fm_band = 1,
+     },
+
+     /* North America */
+     {
+      .low_bound = FM_GET_FREQ(8750),    /* 87.5 MHz */
+      .high_bound = FM_GET_FREQ(10800),    /* 108 MHz */
+      .deemphasis = FM_DEEMPHA_75U,
+      .scan_step = 200,
+      },
+
+     /* Russia-Ext */
+    {
+     .low_bound = FM_GET_FREQ(6580),    /* 65.8 MHz */
+     .high_bound = FM_GET_FREQ(10800),    /* 108 MHz */
+     .deemphasis = FM_DEEMPHA_75U,
+     .scan_step = 100,
+    },
+
+    /* China Region */
+    {
+     .low_bound = FM_GET_FREQ(7600),    /* 76 MHz */
+     .high_bound = FM_GET_FREQ(10800),    /* 108 MHz */
+     .deemphasis = FM_DEEMPHA_75U,
+     .scan_step = 100,
+     },
+};
+
 
 #endif
 

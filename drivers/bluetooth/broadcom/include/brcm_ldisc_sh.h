@@ -36,14 +36,6 @@
 /*******************************************************************************
 **  Constants
 *******************************************************************************/
-/* install sysfs entry values */
-#define V4L2_STATUS_ERR '2'  // error occured in BT application (HCI command timeout or HW error)
-#define V4L2_STATUS_ON  '1'  // Atleast one procol driver is registered
-#define V4L2_STATUS_OFF '0'  // No procol drivers registered
-
-/* BT err flag values (bt_err) */
-#define  V4L2_ERR_FLAG_RESET '0'
-#define  V4L2_ERR_FLAG_SET   '1'
 
 /*
  * enum proto-type - The protocol on chips which share a
@@ -53,7 +45,6 @@ enum proto_type {
     PROTO_SH_BT,
     PROTO_SH_FM,
     PROTO_SH_GPS,
-    PROTO_SH_ANT,
     PROTO_SH_MAX,
 };
 
