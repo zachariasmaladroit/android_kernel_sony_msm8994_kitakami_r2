@@ -36,6 +36,7 @@
 #include <linux/ptrace.h>
 #include <linux/poll.h>
 #include <linux/timer.h>
+/*#include <asm/gpio.h>*/
 
 #include <linux/slab.h>
 #include <linux/tty.h>
@@ -52,25 +53,9 @@
 #include "brcm_hci_uart.h"
 #include "../include/v4l2_target.h"
 #include "../include/fm.h"
+#include "../include/ant.h"
 #include "../include/v4l2_logs.h"
 
-static int brcm_open(struct hci_uart *hu);
-static int brcm_flush(struct hci_uart *hu);
-static int brcm_close(struct hci_uart *hu);
-static int brcm_enqueue(struct hci_uart *hu, struct sk_buff *skb);
-static int brcm_recv_int(struct hci_uart *hu, void *data, int count);
-static int brcm_recv(struct hci_uart *hu, void *data, int count);
-static struct sk_buff *brcm_dequeue(struct hci_uart *hu);
-static const struct hci_uart_proto brcmp = {
-    .id      = HCI_UART_BRCM,
-    .open    = brcm_open,
-    .close   = brcm_close,
-    .recv    = brcm_recv,
-    .recv_int= brcm_recv_int,
-    .enqueue = brcm_enqueue,
-    .dequeue = brcm_dequeue,
-    .flush   = brcm_flush,
-};
 
 /*****************************************************************************
 **  Constants & Macros for dynamic logging
@@ -81,11 +66,12 @@ static const struct hci_uart_proto brcmp = {
 
 /* set this module parameter to enable debug info */
 extern int ldisc_dbg_param;
+extern struct sock *nl_sk_hcisnoop;
 
 #if (BTLDISC_DEBUG)
 #define BRCM_HCI_DBG(flag, fmt, arg...) \
             do { \
-                if (ldisc_dbg_param & flag) \
+                            if (ldisc_dbg_param & flag) \
                     printk(KERN_DEBUG "(brcmhci):%s:%d  "fmt"\n" , \
                                                __func__, __LINE__, ## arg); \
             } while(0)
@@ -120,6 +106,7 @@ extern int ldisc_snoop_enable_param;
 #define HCIBRCM_W4_SCO_HDR     3
 #define HCIBRCM_W4_DATA        4
 #define FMBRCM_W4_EVENT_HDR    5
+#define ANTBRCM_W4_EVENT_HDR   6
 
 #define TIMER_PERIOD 100    /* 100 ms */
 #define HOST_CONTROLLER_IDLE_TSH 4000  /* 4 s */
@@ -145,6 +132,26 @@ enum hcibrcm_states_e {
     HCIBRCM_ASLEEP_TO_AWAKE,
     HCIBRCM_AWAKE,
     HCIBRCM_AWAKE_TO_ASLEEP
+};
+
+/* Function forward declarations */
+static int brcm_open(struct hci_uart *hu);
+static int brcm_close(struct hci_uart *hu);
+static int brcm_recv(struct hci_uart *hu, void *data, int count);
+static int brcm_recv_int(struct hci_uart *hu, void *data, int count);
+static int brcm_enqueue(struct hci_uart *hu, struct sk_buff *skb);
+static struct sk_buff *brcm_dequeue(struct hci_uart *hu);
+static int brcm_flush(struct hci_uart *hu);
+
+struct hci_uart_proto brcmp = {
+    .id      = HCI_UART_BRCM,
+    .open    = brcm_open,
+    .close   = brcm_close,
+    .recv    = brcm_recv,
+    .recv_int= brcm_recv_int,
+    .enqueue = brcm_enqueue,
+    .dequeue = brcm_dequeue,
+    .flush   = brcm_flush,
 };
 
 
@@ -358,7 +365,7 @@ static int brcm_recv_int(struct hci_uart *hu, void *data, int count)
     ptr = (char *)data;
 
     BRCM_HCI_DBG(V4L2_DBG_RX, "%s hu = %p hu->cmd_rcvd = %p count =%d",__func__,hu,
-                                                         hu->cmd_rcvd, count);
+                                                         &hu->cmd_rcvd, count);
 
     if (ptr!= NULL && (count>2) && ptr[0]==0x04 && ptr[1]==0x0E) {
         BRCM_HCI_DBG(V4L2_DBG_RX, "brcm_recv_int, sending cmd_rcvd");
@@ -366,7 +373,7 @@ static int brcm_recv_int(struct hci_uart *hu, void *data, int count)
                    (count<RESP_BUFF_SIZE)?count:RESP_BUFF_SIZE);
         complete_all(&hu->cmd_rcvd);
 #if V4L2_SNOOP_ENABLE
-        if(ldisc_snoop_enable_param != 0)
+        if(nl_sk_hcisnoop)
         {
             /* forward to hcisnoop */
             BRCM_HCI_DBG(V4L2_DBG_RX, "capturing internal command response");
@@ -425,13 +432,13 @@ static int brcm_recv(struct hci_uart *hu, void *data, int count)
                     if (unlikely(brcm->rx_skb->data[0]==0x04
                         && brcm->rx_skb->data[4]==0x09
                         && brcm->rx_skb->data[5]==0x10 )) {
-                        brcm->resp_buffer[0] = brcm->rx_skb->cb;
+                        brcm->resp_buffer[0] = brcm->rx_skb->cb[0];
                         memcpy(brcm->resp_buffer, brcm->rx_skb->data,
                                                            RESP_BUFF_SIZE);
                     }
                     complete_all(&hu->cmd_rcvd);
 #if V4L2_SNOOP_ENABLE
-                    if(ldisc_snoop_enable_param != 0)
+                    if(nl_sk_hcisnoop)
                     {
                         /* forward internal command response to hcisnoop */
                         type = sh_ldisc_cb(brcm->rx_skb)->pkt_type;
@@ -455,14 +462,35 @@ static int brcm_recv(struct hci_uart *hu, void *data, int count)
                     /*In normal case all the HCI events gets routed to BT protocol driver*/
                     /*But in this case opcode FC61 sent by FM driver hence the response*/
                     /* has to go to FM driver so modifying the  type and protoid*/
-                    if (unlikely(brcm->rx_skb->data[0]==0x0e
-                        && brcm->rx_skb->data[3]==0x61
-                        && brcm->rx_skb->data[4]==0xFC ))
+                    if (hu->is_registered[PROTO_SH_FM]  && ((brcm->rx_skb->data[0]==0x0e
+                        && (brcm->rx_skb->data[3]==0x61 || brcm->rx_skb->data[3]==0x15)
+                        && brcm->rx_skb->data[4]==0xFC ) ||
+                        (brcm->rx_skb->data[0]==0xFF
+                        && brcm->rx_skb->data[2]==0x08)))
                     {
                         type = FM_CH8_PKT;
                         sh_ldisc_cb(brcm->rx_skb)->pkt_type = type;
                         protoid = PROTO_SH_FM;
                     }
+#ifdef V4L2_ANT
+                    else if (unlikely(brcm->rx_skb->data[0]==0x0e
+                        && brcm->rx_skb->data[3]==0xec
+                        && brcm->rx_skb->data[4]==0xFC ))
+                    {
+                        type = ANT_PKT;
+                        sh_ldisc_cb(brcm->rx_skb)->pkt_type = type;
+                        protoid = PROTO_SH_ANT;
+                        BRCM_HCI_DBG(V4L2_DBG_RX, "brcm_recv ANT cmd complete evt");
+                    }
+                    else if (unlikely(brcm->rx_skb->data[0]==0xff
+                        && brcm->rx_skb->data[2]==0x2d ))
+                    {
+                        type = ANT_PKT;
+                        sh_ldisc_cb(brcm->rx_skb)->pkt_type = type;
+                        protoid = PROTO_SH_ANT;
+                        BRCM_HCI_DBG(V4L2_DBG_RX, "brcm_recv ANT evt");
+                    }
+#endif
                     else
                     {
                         type = sh_ldisc_cb(brcm->rx_skb)->pkt_type;
@@ -479,8 +507,8 @@ static int brcm_recv(struct hci_uart *hu, void *data, int count)
                     }
 #if V4L2_SNOOP_ENABLE
                     else { /* For FM packet */
-                        BRCM_HCI_DBG(V4L2_DBG_RX,"for snoop, response event received, type:%d", type);
-                        if(ldisc_snoop_enable_param != 0)
+                        BRCM_HCI_DBG(V4L2_DBG_RX,"FM response event received");
+                        if(nl_sk_hcisnoop && (type != ANT_PKT))
                         {
                             /* Add header for sending pkt to snoop. Remove header
                                                    before sending to fmdrv */
@@ -506,7 +534,6 @@ static int brcm_recv(struct hci_uart *hu, void *data, int count)
 
             case HCIBRCM_W4_EVENT_HDR:
                 eh = hci_event_hdr(brcm->rx_skb);
-                BRCM_HCI_DBG(V4L2_DBG_RX, "EVT header");
                 brcm_check_data_len(brcm, hu, protoid, eh->plen);
                 continue;
 
@@ -532,7 +559,7 @@ static int brcm_recv(struct hci_uart *hu, void *data, int count)
 
             }
         }
-        BRCM_HCI_DBG(V4L2_DBG_RX, "*ptr =0x%0x",*ptr);
+        BRCM_HCI_DBG(V4L2_DBG_RX, "*ptr =%d",*ptr);
 
         /* HCIBRCM_W4_PACKET_TYPE */
         switch (*ptr) {
@@ -568,7 +595,6 @@ static int brcm_recv(struct hci_uart *hu, void *data, int count)
             brcm->rx_count = FM_EVENT_HDR_SIZE;
             protoid = PROTO_SH_FM;
             break;
-
         default:
             BRCM_HCI_DBG(V4L2_DBG_RX, "Unknown HCI packet type %2.2x",\
                                                                    (__u8)*ptr);
@@ -584,6 +610,9 @@ static int brcm_recv(struct hci_uart *hu, void *data, int count)
         {
             case PROTO_SH_BT:
             case PROTO_SH_FM:
+#ifdef V4L2_ANT
+            case PROTO_SH_ANT:
+#endif
                 /* Allocate new packet to hold received data */
                 brcm->rx_skb = alloc_skb(HCI_MAX_FRAME_SIZE, GFP_ATOMIC);
                 if(brcm->rx_skb)
@@ -620,7 +649,6 @@ static int brcm_recv(struct hci_uart *hu, void *data, int count)
 *****************************************************************************/
 static struct sk_buff *brcm_dequeue(struct hci_uart *hu)
 {
-
     struct brcm_struct *brcm = hu->priv;
     return skb_dequeue(&brcm->txq);
 }

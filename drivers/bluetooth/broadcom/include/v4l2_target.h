@@ -33,15 +33,15 @@
  /* Macros to enable/disable debugging. This will overried debug macros in each of
    * V4L2 drivers. Set these to false for production release.*/
 #ifndef BTDRV_DEBUG
-#define BTDRV_DEBUG TRUE
+#define BTDRV_DEBUG FALSE
 #endif
 
 #ifndef BTLDISC_DEBUG
-#define BTLDISC_DEBUG TRUE
+#define BTLDISC_DEBUG FALSE
 #endif
 
 #ifndef V4L2_FM_DEBUG
-#define V4L2_FM_DEBUG TRUE
+#define V4L2_FM_DEBUG FALSE
 #endif
 
 /* set this to FALSE to disable HCI snooping for production release */
@@ -49,4 +49,11 @@
 #define V4L2_SNOOP_ENABLE TRUE
 #endif
 
+#ifndef V4L2_ANT
+#define V4L2_ANT TRUE
+#endif
+
+#ifndef V4L2_ANT_DEBUG
+#define V4L2_ANT_DEBUG FALSE
+#endif
 

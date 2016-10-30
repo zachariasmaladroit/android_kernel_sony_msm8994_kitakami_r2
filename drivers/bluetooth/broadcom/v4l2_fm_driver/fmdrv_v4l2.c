@@ -54,7 +54,13 @@
 #ifndef V4L2_FM_DEBUG
 #define V4L2_FM_DEBUG TRUE
 #endif
+
+/* The major device number. We can't rely on dynamic
+ * registration any more, because ioctls need to know
+ * it.  There is no logic behind chosing 100, it's just a random
+ * number*/
 #define MAJOR_NUM 100
+/* Set the message of the device driver */
 #define IOCTL_GET_PI_CODE _IOR(MAJOR_NUM, 0, char *)
 #define IOCTL_GET_TP_CODE _IOR(MAJOR_NUM, 1, void *)
 #define IOCTL_GET_PTY_CODE _IOR(MAJOR_NUM, 2, char *)
@@ -64,6 +70,7 @@
 #define IOCTL_GET_RT_MSG _IOR(MAJOR_NUM, 6, char *)
 #define IOCTL_GET_CT_DATA _IOR(MAJOR_NUM, 7, char *)
 #define IOCTL_GET_TMC_CHANNEL _IOR(MAJOR_NUM, 8, char *)
+
 
 /*These values are set and has to be sent together.*/
 /*Keep them as a set always, never try to further seperate them*/
@@ -81,6 +88,46 @@ unsigned char bt_master_on_pcm_pins[5] = {0x01, 0x19, 0x18, 0x18, 0x18 };
 
 /* set this module parameter to enable debug info */
 extern int fm_dbg_param;
+
+/* Query control */
+struct v4l2_queryctrl fmdrv_v4l2_queryctrl[] = {
+    {
+        .id = V4L2_CID_AUDIO_VOLUME,
+        .type = V4L2_CTRL_TYPE_INTEGER,
+        .name = "Volume",
+        .minimum = FM_RX_VOLUME_MIN,
+        .maximum = FM_RX_VOLUME_MAX,
+        .step = 1,
+        .default_value = FM_DEFAULT_RX_VOLUME,
+    },
+    {
+        .id = V4L2_CID_AUDIO_BALANCE,
+        .flags = V4L2_CTRL_FLAG_DISABLED,
+    },
+    {
+        .id = V4L2_CID_AUDIO_BASS,
+        .flags = V4L2_CTRL_FLAG_DISABLED,
+    },
+    {
+        .id = V4L2_CID_AUDIO_TREBLE,
+        .flags = V4L2_CTRL_FLAG_DISABLED,
+    },
+    {
+        .id = V4L2_CID_AUDIO_MUTE,
+        .type = V4L2_CTRL_TYPE_BOOLEAN,
+        .name = "Mute",
+        .minimum = 0,
+        .maximum = 2,
+        .step = 1,
+        .default_value = FM_MUTE_OFF,
+    },
+    {
+        .id = V4L2_CID_AUDIO_LOUDNESS,
+        .flags = V4L2_CTRL_FLAG_DISABLED,
+    },
+// may need private control
+};
+
 
 #if V4L2_FM_DEBUG
 #define V4L2_FM_DRV_DBG(flag, fmt, arg...) \
@@ -105,7 +152,6 @@ static struct video_device *gradio_dev;
 static unsigned char radio_disconnected;
 
 static atomic_t v4l2_device_available = ATOMIC_INIT(1);
-static unsigned char band_to_region[] = {0, 1, 3, 4, 0xFF};
 
 /************************************************************************************
 **  Forward function declarations
@@ -216,7 +262,7 @@ static ssize_t store_fmrx_deemphasis(struct device *dev,
         struct device_attribute *attr, char *buf, size_t size)
 {
     int ret;
-    unsigned char deemph_mode;
+    unsigned long deemph_mode;
     struct fmdrv_ops *fmdev = dev_get_drvdata(dev);
 
     if (kstrtoul(buf, 0, &deemph_mode))
@@ -277,12 +323,12 @@ static ssize_t store_fmrx_band(struct device *dev,
     struct fmdrv_ops *fmdev = dev_get_drvdata(dev);
     if (kstrtoul(buf, 0, &fm_band))
         return -EINVAL;
-    pr_info("store_fmrx_band In  fm_band %d",fm_band);
+    pr_info("store_fmrx_band In  fm_band %ld",fm_band);
 
-    if (fm_band < FM_BAND_EUROPE_US || fm_band > FM_BAND_WEATHER)
+    if (fm_band < FM_BAND_EUROPE || fm_band >= FM_BAND_WEATHER)
         return -EINVAL;
 
-    ret = fm_rx_set_region(fmdev, band_to_region[fm_band]);
+    ret = fm_rx_set_region(fmdev, fm_band);
     if (ret < 0) {
         V4L2_FM_DRV_ERR("Failed to set FM Band\n");
         return ret;
@@ -302,7 +348,7 @@ static ssize_t show_fmrx_fm_audio_pins(struct device *dev,
 static ssize_t store_fmrx_fm_audio_pins(struct device *dev,
         struct device_attribute *attr, char *buf, size_t size)
 {
-    int ret;
+    int ret = 0;
     struct fmdrv_ops *fmdev = dev_get_drvdata(dev);
     if(strncmp(buf, fmdev->rx.current_pins, 3) == 0) /*I2S or PCM*/
     {
@@ -331,7 +377,7 @@ static ssize_t store_fmrx_fm_audio_pins(struct device *dev,
         return ret;
     }
 #endif
-    snprintf(fmdev->rx.current_pins, "%s\n", buf);
+    sprintf(fmdev->rx.current_pins, "%s", buf);
     return size;
     }
     else if(strncmp(buf, "I2S", 3) == 0) /*use I2S pins and release PCM pins for BT SCO*/
@@ -356,7 +402,7 @@ static ssize_t store_fmrx_fm_audio_pins(struct device *dev,
             return ret;
         }
 #endif
-        snprintf(fmdev->rx.current_pins, "%s\n", buf);
+        sprintf(fmdev->rx.current_pins, "%s", buf);
         return size;
     }
     else
@@ -373,8 +419,9 @@ static ssize_t show_fmrx_rssi_lvl(struct device *dev,
 {
     struct fmdrv_ops *fmdev = dev_get_drvdata(dev);
 
-    return sprintf(buf, "%d\n", fmdev->rx.curr_rssi);
+    return sprintf(buf, "%d\n", fmdev->rx.curr_rssi_threshold);
 }
+
 static ssize_t store_fmrx_rssi_lvl(struct device *dev,
         struct device_attribute *attr, char *buf, size_t size)
 {
@@ -818,9 +865,10 @@ static int fm_v4l2_vidioc_g_audio(struct file *file, void *priv,
 static int fm_v4l2_vidioc_s_audio(struct file *file, void *priv,
                     struct v4l2_audio *audio)
 {
+    int ret = 0;
     if (audio->index != 0)
-        return -EINVAL;
-    return 0;
+        ret = -EINVAL;
+    return ret;
 }
 
 /* Get tuner attributes. This IOCTL call will return attributes like tuner type,
@@ -832,6 +880,7 @@ static int fm_v4l2_vidioc_g_tuner(struct file *file, void *priv,
     unsigned int high = 0, low = 0;
     int ret = -EINVAL;
     struct fmdrv_ops *fmdev;
+    unsigned char mode = 0;
 
     if (tuner->index != 0)
         return ret;
@@ -844,8 +893,10 @@ static int fm_v4l2_vidioc_g_tuner(struct file *file, void *priv,
     tuner->rangelow = (low * 100000)/625;
     tuner->rangehigh = (high * 100000)/625;
 
-    tuner->audmode =  ((fmdev->rx.audio_mode == FM_STEREO_MODE) ?
+    ret = fmc_get_audio_mode(fmdev, &mode);
+    tuner->audmode =  ((mode == FM_STEREO_MODE) ?
                     V4L2_TUNER_MODE_STEREO : V4L2_TUNER_MODE_MONO);
+    V4L2_FM_DRV_DBG(V4L2_DBG_TX, "(fmdrv) tuner->audmode:%d", tuner->audmode);
     tuner->capability = fmdev->device_info.tuner_capability;
     tuner->rxsubchans = fmdev->device_info.rxsubchans;
 
@@ -892,7 +943,7 @@ static int fm_v4l2_vidioc_s_tuner(struct file *file, void *priv,
 
     /* Map V4L2 stereo/mono macro to Broadcom controller equivalent audio mode */
     mode = (tuner->audmode == V4L2_TUNER_MODE_STEREO) ?
-        FM_STEREO_MODE : FM_MONO_MODE;
+        FM_AUTO_MODE : FM_MONO_MODE;
 
     ret = fmc_set_audio_mode(fmdev, mode);
     if (ret < 0)
@@ -924,13 +975,14 @@ static int fm_v4l2_vidioc_s_frequency(struct file *file, void *priv,
 {
     int ret = 0;
     struct fmdrv_ops *fmdev;
+    struct v4l2_frequency fq;
 
     fmdev = video_drvdata(file);
     /* Translate the incoming tuner band frequencies
     (frequencies in unit of 62.5 Hz to controller
     recognized values. x = y * (62.5/1000000) * 100 = y / 160 */
-    freq->frequency = (freq->frequency/160);
-    ret = fmc_set_frequency(fmdev, freq->frequency);
+    fq.frequency = (freq->frequency/160);
+    ret = fmc_set_frequency(fmdev, fq.frequency);
     if (ret < 0)
         return ret;
     return 0;
@@ -955,9 +1007,29 @@ static int fm_v4l2_vidioc_s_hw_freq_seek(struct file *file, void *priv,
     return 0;
 }
 
-int rds_info_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+
+/* This function is called whenever a process tries to
+ * do an ioctl on this radio device. We get two extra
+ * parameters (additional to the inode and file
+ * structures, which all device functions get): the number
+ * of the ioctl called and the parameter given to the
+ * ioctl function.
+ *
+ * If the ioctl is write or read/write (meaning output
+ * is returned to the calling process), the ioctl call
+ * returns the output of this function.
+ * Very important is that this is the Private IOCTL function to handle  RDA psrser
+ * IOCTL commands. V4L2 framework also issues some IOCTLs which we have to route
+ * them to video_ioctl2 function. So all the IOCTL other than Private ones are
+ * passed to video_ioctl2 function.
+ * And another important thing is that, it's good to return from this function as soon as
+* we handle Private IOCTL so return statement is used insteadof break.
+ */
+long rds_info_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
-    int ret = 0;
+    /* Switch according to the ioctl called */
+    long ret = 0;
+/* Process if it is private IOCTL*/
     switch (cmd) {
         case IOCTL_GET_PI_CODE:
            V4L2_FM_DRV_DBG(V4L2_DBG_RX, "IOCTL_GET_PI_CODE");
@@ -995,20 +1067,21 @@ int rds_info_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
            V4L2_FM_DRV_DBG(V4L2_DBG_RX, "IOCTL_GET_TMC_CHANNEL");
            get_rds_element_value(GET_TMC_CHANNEL, (char *)arg);
            return 1;
-        defult:
+        default:
            V4L2_FM_DRV_DBG(V4L2_DBG_RX, "Invalid IOCTL");
            break;
     }
-    video_ioctl2(file, cmd, arg);
-    return 1;
+/* If anything other than private will be passed to V4L2 framework */
+    ret = video_ioctl2(file, cmd, arg);
+    return ret;
 }
+
 static const struct v4l2_file_operations fm_drv_fops = {
     .owner = THIS_MODULE,
     .read = fm_v4l2_fops_read,
     .write = fm_v4l2_fops_write,
     .poll = fm_v4l2_fops_poll,
-    /* Since no private IOCTLs are supported currently,
-    direct all calls to video_ioctl2() */
+/*This is the private IOCTL to handle RDS parser related IOCTLs*/
     .unlocked_ioctl = rds_info_ioctl,
     .open = fm_v4l2_fops_open,
     .release = fm_v4l2_fops_release,

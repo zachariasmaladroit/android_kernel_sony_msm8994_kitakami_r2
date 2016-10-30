@@ -37,6 +37,7 @@
 #define    FM_REGION_NA     0x02
 #define    FM_REGION_RUS    0x03
 #define    FM_REGION_CHN    0x04
+#define    FM_REGION_IT     0x05
 
 #define    FM_RDS_BIT       1<<4
 #define    FM_RBDS_BIT      1<<5
