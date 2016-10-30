@@ -55,22 +55,22 @@
 #define ROUTE_FM_I2S_SLAVE_TO_PCM_PINS FALSE
 #endif
 
-#ifndef ROUTE_BT_I2S_MASTER_TO_PCM_PINS
-#define ROUTE_BT_I2S_MASTER_TO_PCM_PINS FALSE
-#endif
-
 /*Make this TRUE if FM I2S audio to be routed over */
 /*PCM lines in slave mode */
 #ifndef ROUTE_FM_I2S_MASTER_TO_PCM_PINS
 #define ROUTE_FM_I2S_MASTER_TO_PCM_PINS FALSE
 #endif
 
-/*Never make both the above macros TRUE*/
+#ifndef ROUTE_BT_I2S_MASTER_TO_PCM_PINS
+#define ROUTE_BT_I2S_MASTER_TO_PCM_PINS FALSE
+#endif
+
+/*NEVER make both the above macros TRUE*/
 #if (ROUTE_FM_I2S_SLAVE_TO_PCM_PINS) && (ROUTE_FM_I2S_MASTER_TO_PCM_PINS)
 #error "I2S should be either master or slave"
 #endif
 
-/*Whenw e enable FM over PCM, audio path should be I2S*/
+/*When we enable FM over PCM, audio path should be I2S*/
 #if (ROUTE_FM_I2S_SLAVE_TO_PCM_PINS) || (ROUTE_FM_I2S_MASTER_TO_PCM_PINS)
 #define DEF_V4L2_FM_AUDIO_PATH FM_AUDIO_I2S
 #endif
