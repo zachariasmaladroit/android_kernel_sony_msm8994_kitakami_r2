@@ -4970,10 +4970,9 @@ static int __ref set_enabled(const char *val, const struct kernel_param *kp)
 
 	ret = param_set_bool(val, kp);
 	if (!enabled) {
-		if (ktm_prog_thresh_enabled) {
+		if (ktm_prog_thresh_enabled)
 			ktm_progressive_exit();
-			ktm_prog_thresh_enabled = false;
-		}
+		disable_msm_thermal();
 		interrupt_mode_init();
 	} else {
 		pr_info("no action for enabled = %d\n",
@@ -7511,15 +7510,13 @@ static int msm_thermal_dev_exit(struct platform_device *inp_dev)
 
 	if (ktm_prog_thresh_enabled) {
 		ktm_progressive_exit();
+		list_for_each_entry_safe(prog, next_prog,
+			&prog_rules_list, list_ptr) {
+			list_del(&prog->list_ptr);
+			devm_kfree(&inp_dev->dev, prog);
+			prog = NULL;
+		}
 		ktm_prog_thresh_enabled = false;
-	}
-	list_for_each_entry_safe(prog, next_prog,
-		&prog_rules_list, list_ptr) {
-		devmgr_unregister_mitigation_client(
-			&inp_dev->dev, prog->handle);
-		list_del(&prog->list_ptr);
-		devm_kfree(&inp_dev->dev, prog);
-		prog = NULL;
 	}
 
 	return 0;
