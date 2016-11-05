@@ -72,8 +72,6 @@
 #define MSM_THERMAL_THRESH_CLR    "thresh_clr_degc"
 #define MSM_THERMAL_THRESH_UPDATE "update"
 #define MAX_CPU_NAME 10
-#define OVERALL_TYPE "Overall"
-#define INDIVIDUAL_TYPE  "Individual"
 
 #define POLLING_DELAY 100
 
@@ -3326,9 +3324,6 @@ static void do_prog_freq_control(struct thermal_progressive_rule *prog,
 		temp, ret);
 		return;
 	}
-	trace_thermal_progressive_mitigate(prog->sensor_info->name,
-		cluster_ptr ? cluster_ptr->cluster_id : 0,
-		freq_table[idx].frequency);
 	pr_debug("Sensor:%s Limiting Cluster%d max frequency to %u. Temp:%ld\n",
 		prog->sensor_info->name, cluster_ptr->cluster_id,
 		freq_table[idx].frequency, temp);
@@ -4027,33 +4022,15 @@ static void msm_prog_freq_notify(struct therm_threshold *trig_thresh)
 	switch (prog->overall_prog_state) {
 	case MSM_THERM_PROGRESSIVE_SAMPLING:
 		do_prog_freq_control(prog, prog_thresh->curr_max_temp);
-		if (prog->cur_freq_idx == prog->freq_idx_high) {
+		if (prog->cur_freq_idx == prog->freq_idx_high)
 			prog->overall_prog_state =
 				MSM_THERM_PROGRESSIVE_PAUSED;
-			trace_thermal_progressive_state(
-				prog->sensor_info->name, OVERALL_TYPE,
-				prog->overall_prog_state);
-			pr_debug("sensor=%s type=%s curr_state=%s\n",
-				prog->sensor_info->name, OVERALL_TYPE,
-				prog->overall_prog_state ?
-				(prog->overall_prog_state == 1 ?
-				"paused" : "monitor") : "sampling");
-		}
 		break;
 	case MSM_THERM_PROGRESSIVE_MONITOR:
 		do_prog_freq_control(prog, prog_thresh->curr_max_temp);
-		if (prog->cur_freq_idx != prog->freq_idx_high) {
+		if (prog->cur_freq_idx != prog->freq_idx_high)
 			prog->overall_prog_state =
 				MSM_THERM_PROGRESSIVE_SAMPLING;
-			trace_thermal_progressive_state(
-				prog->sensor_info->name, OVERALL_TYPE,
-				prog->overall_prog_state);
-			pr_debug("sensor=%s type=%s curr_state=%s\n",
-				prog->sensor_info->name, OVERALL_TYPE,
-				prog->overall_prog_state ?
-				(prog->overall_prog_state == 1 ?
-				"paused" : "monitor") : "sampling");
-		}
 		break;
 	case MSM_THERM_PROGRESSIVE_PAUSED:
 		break;
@@ -4216,9 +4193,6 @@ static void msm_progressive_monitor(struct work_struct *work)
 		pr_debug("Sensor:%d temp:%ld polling_delay_ms:%d\n",
 			sensor_data->sensor_id, temp, prog->polling_delay_ms);
 
-		trace_thermal_progressive_sampling(prog->sensor_info->name,
-			temp);
-
 		switch (sensor_data->prog_state) {
 		case MSM_THERM_PROGRESSIVE_SAMPLING:
 		case MSM_THERM_PROGRESSIVE_PAUSED:
@@ -4249,9 +4223,6 @@ static void msm_progressive_monitor(struct work_struct *work)
 				sensor_data->sensor_id);
 			break;
 		}
-		trace_thermal_progressive_state(
-			prog->sensor_info->name, INDIVIDUAL_TYPE,
-				sensor_data->prog_state);
 
 		if (sensor_data->prog_trip_clear) {
 			sensor_mgr_set_threshold(sensor_data->sensor_id,
@@ -4271,12 +4242,6 @@ static void msm_progressive_monitor(struct work_struct *work)
 		new_prog_state = MSM_THERM_PROGRESSIVE_PAUSED;
 
 start_sampling:
-	trace_thermal_progressive_state(
-		prog->sensor_info->name, OVERALL_TYPE, new_prog_state);
-	pr_debug("sensor=%s type=%s curr_state=%s\n",
-		prog->sensor_info->name, OVERALL_TYPE, new_prog_state ?
-		(new_prog_state == 1 ? "paused" : "monitor") : "sampling");
-
 	prog->overall_prog_state = new_prog_state;
 	prog_thresh->thresh_list[0].notify(&prog_thresh->thresh_list[0]);
 
