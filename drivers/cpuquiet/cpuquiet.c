@@ -175,10 +175,12 @@ static void __cpuinit cpuquiet_work_func(struct work_struct *work)
 
 	mutex_unlock(&cpuquiet_cpu_lock);
 
-	/* always keep CPU0 online */
+	/* always keep CPU0&4 online */
 	cpumask_set_cpu(0, &online);
+	cpumask_set_cpu(4, &online);
 	cpu_online = *cpu_online_mask;
 	cpumask_clear_cpu(0, &offline);
+	cpumask_clear_cpu(4, &offline);
 
 	if (max_cpus < min_cpus)
 		max_cpus = min_cpus;
