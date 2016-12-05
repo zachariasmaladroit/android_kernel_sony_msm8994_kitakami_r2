@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2015, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2012-2016, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -2737,7 +2737,8 @@ static int venus_hfi_session_abort(void *sess)
 	struct hal_session *session;
 	session = sess;
 	if (!session || !session->device) {
-		dprintk(VIDC_ERR, "Invalid Params\n");
+		dprintk(VIDC_ERR, "%s: Invalid Params %pK\n",
+			__func__, session);
 		return -EINVAL;
 	}
 	venus_hfi_flush_debug_queue(
@@ -2756,7 +2757,8 @@ static int venus_hfi_session_set_buffers(void *sess,
 	struct venus_hfi_device *device;
 
 	if (!session || !session->device || !buffer_info) {
-		dprintk(VIDC_ERR, "Invalid Params\n");
+		dprintk(VIDC_ERR, "%s: Invalid Params, %pK %pK\n",
+			__func__, session, buffer_info);
 		return -EINVAL;
 	}
 	device = session->device;
@@ -2790,7 +2792,8 @@ static int venus_hfi_session_release_buffers(void *sess,
 	struct venus_hfi_device *device;
 
 	if (!session || !session->device || !buffer_info) {
-		dprintk(VIDC_ERR, "Invalid Params\n");
+		dprintk(VIDC_ERR, "%s: Invalid Params %pK, %pK\n",
+			__func__, session, buffer_info);
 		return -EINVAL;
 	}
 	device = session->device;
@@ -3378,7 +3381,7 @@ static void venus_hfi_response_handler(struct venus_hfi_device *device)
 		}
 		venus_hfi_flush_debug_queue(device, packet);
 	} else {
-		dprintk(VIDC_ERR, "SPURIOUS_INTERRUPT\n");
+		dprintk(VIDC_DBG, "device (%pK) is in deinit state\n", device);
 	}
 }
 

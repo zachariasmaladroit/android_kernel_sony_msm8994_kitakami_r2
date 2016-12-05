@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2015, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2012-2016, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -1180,7 +1180,9 @@ int msm_vdec_s_fmt(struct msm_vidc_inst *inst, struct v4l2_format *f)
 	int max_input_size = 0;
 
 	if (!inst || !f) {
-		dprintk(VIDC_ERR, "%s invalid parameters\n", __func__);
+		dprintk(VIDC_ERR,
+			"%s: invalid parameters, format %pK, inst %pK\n",
+			__func__, f, inst);
 		return -EINVAL;
 	}
 
