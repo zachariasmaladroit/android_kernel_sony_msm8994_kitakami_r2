@@ -3478,7 +3478,8 @@ dhd_allocate_if(dhd_pub_t *dhdpub, int ifidx, char *name,
 	dhd_info_t *dhdinfo = (dhd_info_t *)dhdpub->info;
 	dhd_if_t *ifp;
 
-	ASSERT(dhdinfo && (ifidx < DHD_MAX_IFS));
+	if((dhdinfo == NULL) || (ifidx >= DHD_MAX_IFS))
+		return NULL;
 	ifp = dhdinfo->iflist[ifidx];
 
 	if (ifp != NULL) {
