@@ -382,7 +382,11 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
 #		   -fno-delete-null-pointer-checks \
-#		   -fmodulo-sched -fmodulo-sched-allow-regmoves -freschedule-modulo-scheduled-loops \
+		   -fmodulo-sched \
+		   -fivopts \
+		   -fgcse -fgcse-after-reload \
+		   -fno-tree-reassoc \
+#		   -fmodulo-sched-allow-regmoves -freschedule-modulo-scheduled-loops \
 #		   -funswitch-loops -ftree-loop-im -fpredictive-commoning -fgcse -fgcse-las -fgcse-lm -fgcse-sm -fgcse-after-reload \
 #		   -fsched-pressure -fschedule-insns -fno-tree-reassoc \
 #		   -fno-tree-pre -fno-strict-aliasing \
@@ -391,8 +395,10 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 #		   -frename-registers -fweb \
 #		   -fno-aggressive-loop-optimizations \
 #		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
+		   -fno-builtin -fno-builtin-memcpy -pipe \
 		   -march=armv8-a \
-		   -mtune=cortex-a53
+		   -mtune=cortex-a53 \
+		   -std=gnu89 $(call cc-option,-fno-PIE)
 
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
