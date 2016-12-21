@@ -565,4 +565,4 @@ CONFIG_STATE_NOTIFIER=y
 # Sony RIC
 # can this be disabled on Stock ROMs without adverse effects on functionality ?
 #
-CONFIG_SECURITY_SONY_RIC=y
+# CONFIG_SECURITY_SONY_RIC is not set
