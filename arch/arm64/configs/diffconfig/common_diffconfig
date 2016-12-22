@@ -422,3 +422,6 @@ CONFIG_RCU_NOCB_CPU=y
 # CONFIG_RCU_NOCB_CPU_NONE is not set
 CONFIG_RCU_NOCB_CPU_ZERO=y
 # CONFIG_RCU_NOCB_CPU_ALL is not set
+
+# interactivity, throughput compromise
+CONFIG_HZ=300
