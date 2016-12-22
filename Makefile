@@ -395,7 +395,8 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 #		   -frename-registers -fweb \
 #		   -fno-aggressive-loop-optimizations \
 #		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
-		   -fno-builtin -fno-builtin-memcpy -pipe \
+		   -fno-builtin -pipe \
+#		   -fno-builtin-memcpy \
 		   -march=armv8-a \
 		   -mtune=cortex-a53 \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
