@@ -336,7 +336,7 @@ const_debug unsigned int sysctl_sched_nr_migrate = 32;
  *
  * default: 1s
  */
-const_debug unsigned int sysctl_sched_time_avg = MSEC_PER_SEC;
+const_debug unsigned int sysctl_sched_time_avg = 150;
 
 /*
  * period over which we measure -rt task cpu usage in us.
