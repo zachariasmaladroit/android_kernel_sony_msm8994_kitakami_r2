@@ -7,17 +7,6 @@
 # if GCC_VERSION >= 40100 &&  GCC_VERSION <= 40101
 #  error Your version of gcc miscompiles the __weak directive
 # endif
-
-/* These definitions are for GCC v4.x.  */
-#include <linux/compiler-gcc.h>
-
-#ifdef CONFIG_FORCED_INLINING
-# undef inline
-# undef __inline__
-# undef __inline
-# define inline			inline		__attribute__((always_inline))
-# define __inline__		__inline__	__attribute__((always_inline))
-# define __inline		__inline	__attribute__((always_inline))
 #endif
 
 #define __used			__attribute__((__used__))
