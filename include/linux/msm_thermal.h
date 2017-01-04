@@ -15,7 +15,6 @@
 #define __MSM_THERMAL_H
 
 #include <linux/thermal.h>
-#include <linux/msm_thermal_ioctl.h>
 
 #define MAX_THRESHOLD  2
 #define TSENS_NAME_MAX 20
@@ -256,8 +255,6 @@ extern int devmgr_client_request_mitigation(struct device_clnt_data *clnt,
 extern void devmgr_unregister_mitigation_client(
 					struct device *dev,
 					struct device_clnt_data *clnt);
-extern int msm_thermal_get_bwlm_info(struct bwlm_info_arg *bwlm_info);
-extern int msm_thermal_set_bwlm_config(struct bwlm_monitor_arg *bwlm_config);
 #else
 static inline int msm_thermal_init(struct msm_thermal_data *pdata)
 {
@@ -333,15 +330,6 @@ static inline void devmgr_unregister_mitigation_client(
 					struct device *dev,
 					struct device_clnt_data *clnt)
 {
-}
-static inline int msm_thermal_get_bwlm_info(struct bwlm_info_arg *bwlm_ptr)
-{
-	return -ENOSYS;
-}
-static inline int msm_thermal_set_bwlm_config(struct bwlm_monitor_arg
-			*bwlm_config);
-{
-	return -ENOSYS;
 }
 #endif
 
