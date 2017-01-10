@@ -70,8 +70,8 @@
 #error "I2S should be either master or slave"
 #endif
 
-/*When we enable FM over PCM, audio path should be I2S*/
-#ifndef DEF_V4L2_FM_AUDIO_PATH
+/*Whenw e enable FM over PCM, audio path should be I2S*/
+#if (ROUTE_FM_I2S_SLAVE_TO_PCM_PINS) || (ROUTE_FM_I2S_MASTER_TO_PCM_PINS)
 #define DEF_V4L2_FM_AUDIO_PATH FM_AUDIO_I2S
 #endif
 
@@ -86,7 +86,7 @@
 #endif
 
 /* FM driver RDS debug flag. Set this to FALSE for Production release */
-#define V4L2_RDS_DEBUG FALSE
+#define V4L2_RDS_DEBUG TRUE
 
 /* Set default Noise Floor Estimation value */
 #define DEF_V4L2_FM_NFE 93
