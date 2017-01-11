@@ -428,10 +428,3 @@ CONFIG_RCU_CPU_STALL_TIMEOUT=60
 
 # interactivity, throughput compromise
 CONFIG_HZ=300
-
-# If it is detected that the compiler has support for "asm goto",
-# the kernel will compile trace point locations with just a nop instruction.
-# When trace points are enabled, the nop will be converted to a jump
-# to the trace function. This technique lowers overhead and stress
-# on the branch prediction of the processor.
-CONFIG_JUMP_LABEL=y
