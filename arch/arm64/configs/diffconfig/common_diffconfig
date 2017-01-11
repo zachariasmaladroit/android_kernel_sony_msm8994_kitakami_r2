@@ -42,7 +42,7 @@ CONFIG_MSM_BCL_SOMC_CTL=y
 CONFIG_MSM_FORCE_PANIC_ON_WDOG_BARK=y
 CONFIG_MSM_FORCE_WDOG_BITE_ON_PANIC=y
 CONFIG_MSM_RTB=y
-CONFIG_MSM_TZ_LOG=y
+
 # CONFIG_NFC_QNCI is not set
 CONFIG_NLS_UTF8=y
 # CONFIG_PFT is not set
@@ -174,7 +174,7 @@ CONFIG_MSM_BUSPM_DEV=y
 # CONFIG_ARCH_MSM8992 is not set
 # CONFIG_IOMMU_FORCE_4K_MAPPINGS is not set
 # CONFIG_MSM_IOMMU_VBIF_CHECK is not set
-CONFIG_MSM_TZ_LOG=y
+# CONFIG_MSM_TZ_LOG is not set
 # CONFIG_QCOM_NPA_DUMP is not set
 # CONFIG_ALLOC_BUFFERS_IN_4K_CHUNKS is not set
 # CONFIG_POWERKEY_FORCECRASH is not set
@@ -435,3 +435,4 @@ CONFIG_HZ=300
 # to the trace function. This technique lowers overhead and stress
 # on the branch prediction of the processor.
 CONFIG_JUMP_LABEL=y
+
