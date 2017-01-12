@@ -45,14 +45,14 @@ then
 		### Zip boot.img
 		cd ../final_files/
 		mv boot_E6653.img boot.img
-		zip -r Z5_Sunkernel_Permissive_v.zip boot.img META-INF/
+		zip -r Z5_SK_Perm_v.zip boot.img META-INF/
 		rm -f boot.img
 
 		echo " "
 		echo "Copying to z5-kernelbuild"
 		echo " "
 
-		cp /WD30EFRX/android/final_files/Z5_Sunkernel_Permissive_v.zip /WD30EFRX/android/z5-kernelbuild/Z5_Sunkernel_Permissive_v$version.zip
+		cp ~/android/final_files/Z5_SK_Perm_v.zip ~/android/z5-kernelbuild/Z5_SK_Perm_v$version.zip
 
 		echo "Packaging 'Enforcing' kernel"
 		echo " "
@@ -60,15 +60,15 @@ then
 	fi
 
 
-	if [ -e /WD30EFRX/android/z5-kernels/fs/ecryptfs/ecryptfs.ko ]
+	if [ -e ~/android/z5-kernels/fs/ecryptfs/ecryptfs.ko ]
 	then
 
 		echo " "
 		echo "Copying over ecryptfs kernel module"
 		echo " "
 
-#		cp /WD30EFRX/android/z5-kernels/fs/ecryptfs/ecryptfs.ko /WD30EFRX/android/z5-kernelbuild/modules4sumire/ecryptfs.ko_Z5_Sunkernel_v$version
-		zip /WD30EFRX/android/z5-kernelbuild/modules4sumire/ecryptfs.ko_Z5_Sunkernel_v$version.zip /WD30EFRX/android/z5-kernels/fs/ecryptfs/ecryptfs.ko
+#		cp ~/android/z5-kernels/fs/ecryptfs/ecryptfs.ko ~/android/z5-kernelbuild/modules4sumire/ecryptfs.ko_Z5_SK_v$version
+		zip ~/android/z5-kernelbuild/modules4sumire/ecryptfs.ko_Z5_SK_v$version.zip ~/android/z5-kernels/fs/ecryptfs/ecryptfs.ko
 
 		echo " "
 		echo "done"
@@ -81,14 +81,14 @@ then
 	### Zip boot.img
 	#cd ../final_files/
 	#mv boot_E6653_E.img boot.img
-	#zip -r Z5_Sunkernel_Enforcing_v.zip boot.img META-INF/
+	#zip -r Z5_SK_Enf_v.zip boot.img META-INF/
 	#rm -f boot.img
 	#
 	#echo " "
 	#echo "Copying to z5-kernelbuild"
 	#echo " "
 	#
-	#cp /WD30EFRX/android/final_files/Z5_Sunkernel_Enforcing_v.zip /WD30EFRX/android/z5-kernelbuild/Z5_Sunkernel_Enforcing_v$version.zip
+	#cp ~/android/final_files/Z5_SK_Enf_v.zip ~/android/z5-kernelbuild/Z5_SK_Enf_v$version.zip
 	#
 	#fi
 
