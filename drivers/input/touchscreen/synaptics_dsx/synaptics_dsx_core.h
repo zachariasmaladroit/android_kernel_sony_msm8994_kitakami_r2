@@ -285,6 +285,7 @@ struct synaptics_rmi4_data {
 	bool update_coords;
 	int (*irq_enable)(struct synaptics_rmi4_data *rmi4_data, bool enable);
 	int (*reset_device)(struct synaptics_rmi4_data *rmi4_data);
+	ktime_t timestamp;
 
 	struct pinctrl *ts_pinctrl;
 	struct pinctrl_state *pinctrl_state_active;
