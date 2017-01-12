@@ -844,6 +844,9 @@ static void tick_broadcast_init_next_event(struct cpumask *mask,
 void tick_broadcast_setup_oneshot(struct clock_event_device *bc)
 {
 	int cpu = smp_processor_id();
+	
+	if (!bc)
+		return;
 
 	if (!bc)
 		return;
