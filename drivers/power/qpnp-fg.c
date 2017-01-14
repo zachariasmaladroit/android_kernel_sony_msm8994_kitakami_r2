@@ -5381,7 +5381,7 @@ static int fg_common_hw_init(struct fg_chip *chip)
 			settings[FG_MEM_DELTA_SOC].offset);
 #else
 	rc = fg_mem_masked_write(chip, settings[FG_MEM_DELTA_SOC].address, 0xFF,
-			settings[FG_MEM_DELTA_SOC].value == 1 ? 1 : soc_to_setpoint(settings[FG_MEM_DELTA_SOC].value),
+			soc_to_setpoint(settings[FG_MEM_DELTA_SOC].value),
 			settings[FG_MEM_DELTA_SOC].offset);
 #endif
 
