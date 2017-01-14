@@ -17,16 +17,21 @@
 #include <linux/quotaops.h>
 #include <linux/backing-dev.h>
 #include <linux/fsync.h>
+#include <linux/display_state.h>
 #include "internal.h"
 
 bool fsync_enabled = true;
 module_param(fsync_enabled, bool, 0644);
 bool fsync_enabled_on_input_boost = false;
 module_param(fsync_enabled_on_input_boost, bool, 0644);
+bool dynamic_fsync = true;
+module_param(dynamic_fsync, bool, 0644);
 
 void set_fsync(bool enable)
 {
-	if (!fsync_enabled_on_input_boost)
+	if (dynamic_fsync)
+		fsync_enabled = !is_display_on();
+	else if (!fsync_enabled_on_input_boost)
 		fsync_enabled = enable;
 }
 
