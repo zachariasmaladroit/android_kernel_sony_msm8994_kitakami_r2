@@ -4,13 +4,14 @@ config BCMDHD
 	---help---
 	  This module adds support for wireless adapters based on
 	  Broadcom chipset.
+
 config BCMDHD_SDIO
 	bool "SDIO bus interface support"
-	depends on BCMDHD && MMC && !BCMDHD_PCIE
+	depends on BCMDHD && MMC
 
 config BCMDHD_PCIE
 	bool "PCIe bus interface support"
-	depends on BCMDHD && PCI
+	depends on BCMDHD && PCI && !BCMDHD_SDIO
 
 config BCM4339
 	bool "Broadcom 4339 wireless cards support"
@@ -28,7 +29,7 @@ config BCM4354
 
 config BCM4356
 	bool "Broadcom 4356 wireless cards support"
-	depends on BCMDHD && BCMDHD_PCIE
+	depends on BCMDHD && (BCMDHD_SDIO || BCMDHD_PCIE)
 	---help---
 	  This module adds support for wireless adapters based on
 	  Broadcom 4356 chipset.
