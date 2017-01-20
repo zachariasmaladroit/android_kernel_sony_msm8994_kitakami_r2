@@ -306,7 +306,7 @@ static void __init parse_dt_cpu_power(void)
 
 		rate = of_get_property(cn, "clock-frequency", &len);
 		if (!rate || len != 4) {
-			pr_err("%s: Missing clock-frequency property\n",
+			pr_debug("%s: Missing clock-frequency property\n",
 				cn->full_name);
 			continue;
 		}
@@ -349,7 +349,7 @@ static void update_cpu_power(unsigned int cpu)
 
 	set_power_scale(cpu, cpu_capacity(cpu) / middle_capacity);
 
-	pr_info("CPU%u: update cpu_power %lu\n",
+	pr_debug("CPU%u: update cpu_power %lu\n",
 		cpu, arch_scale_freq_power(NULL, cpu));
 }
 
