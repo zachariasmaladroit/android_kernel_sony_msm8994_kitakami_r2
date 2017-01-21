@@ -65,6 +65,9 @@
 #define WCD9XXX_CLSH_STATE_HPH_ST (WCD9XXX_CLSH_STATE_HPHL | \
 						WCD9XXX_CLSH_STATE_HPHR)
 
+#define WCD9XXX_CLSAB_STATE_HPH_ST (WCD9XXX_CLSAB_STATE_HPHL | \
+						WCD9XXX_CLSAB_STATE_HPHR)
+
 #define WCD9XXX_CLSH_STATE_HPHL_EAR (WCD9XXX_CLSH_STATE_HPHL | \
 						WCD9XXX_CLSH_STATE_EAR)
 #define WCD9XXX_CLSH_STATE_HPHR_EAR (WCD9XXX_CLSH_STATE_HPHR | \
@@ -87,6 +90,7 @@
 #define WCD9XXX_CLSH_STATE_HPHL_EAR_LO (WCD9XXX_CLSH_STATE_HPHL | \
 						WCD9XXX_CLSH_STATE_EAR | \
 						WCD9XXX_CLSH_STATE_LO)
+						
 #define WCD9XXX_CLSH_STATE_HPHR_EAR_LO (WCD9XXX_CLSH_STATE_HPHR | \
 						WCD9XXX_CLSH_STATE_EAR | \
 						WCD9XXX_CLSH_STATE_LO)
@@ -184,7 +188,7 @@ extern void wcd9xxx_clsh_fsm(struct snd_soc_codec *codec,
 		struct wcd9xxx_clsh_cdc_data *cdc_clsh_d,
 		u8 req_state, bool req_type, u8 clsh_event);
 
-extern void wcd9xxx_enable_high_perf_mode(struct snd_soc_codec *codec,
+extern void pdesireaudio_uhqa_mode(struct snd_soc_codec *codec,
 				struct wcd9xxx_clsh_cdc_data *clsh_d,
 				u8 uhqa_mode, u8 req_state, bool req_type);
 
@@ -286,5 +290,7 @@ enum {
 	SPKR2_CLIPDET_VAL7,
 	MAX_CFG_REGISTERS,
 };
+
+extern int pdesireaudio_soundmode;
 
 #endif
