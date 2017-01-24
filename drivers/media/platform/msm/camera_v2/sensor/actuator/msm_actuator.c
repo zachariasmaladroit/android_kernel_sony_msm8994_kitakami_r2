@@ -699,10 +699,8 @@ static int32_t msm_actuator_bivcm_move_focus(
 				&ringing_params_kernel,
 				sign_dir,
 				target_lens_pos);
-			if (rc < 0) {
-				kfree(ringing_params_kernel);
+			if (rc < 0)
 				return rc;
-			}
 			curr_lens_pos = target_lens_pos;
 		} else {
 			target_step_pos = step_boundary;
