@@ -811,8 +811,8 @@
 			qcom,ilim-ma = <660>;
 			qcom,fs-curr-ua = <24000>;
 			somc,calc-curr;
-			somc,init-br = <140>;
-			somc-s1,br-power-save = <131>;
+			somc,init-br = <64>;
+			somc-s1,br-power-save = <50>;
 			qcom,led-strings-list = [00 01];
 		};
 	};
