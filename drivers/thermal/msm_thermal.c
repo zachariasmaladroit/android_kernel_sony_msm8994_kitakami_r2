@@ -1347,7 +1347,6 @@ static void update_cluster_freq(void)
 	}
 }
 
-static int cur_index_little = 0, cur_index_big = 0;
 static bool restored_little = true, restored_big = true;
 
 static void do_cluster_freq_ctrl(long temp)
@@ -1368,7 +1367,6 @@ static void do_cluster_freq_ctrl(long temp)
 			skip_little = true;
 		} else {
 			index_little = 0;
-			cur_index_little = 0;
 			restored_little = true;
 		}
 	} else {
@@ -1379,11 +1377,6 @@ static void do_cluster_freq_ctrl(long temp)
 				index_little = temp_count_max_little;
 		} else
 			index_little = 1;
-
-		if (index_little == cur_index_little)
-			skip_little = true;
-		else
-			cur_index_little = index_little;
 
 		restored_little = false;
 	}
@@ -1396,7 +1389,6 @@ static void do_cluster_freq_ctrl(long temp)
 			skip_big = true;
 		} else {
 			index_big = 0;
-			cur_index_big = 0;
 			restored_big = true;
 		}
 	} else {
@@ -1407,11 +1399,6 @@ static void do_cluster_freq_ctrl(long temp)
 				index_big = temp_count_max_big;
 		} else
 			index_big = 1;
-
-		if (index_big == cur_index_big)
-			skip_big = true;
-		else
-			cur_index_big = index_big;
 
 		restored_big = false;
 	}
