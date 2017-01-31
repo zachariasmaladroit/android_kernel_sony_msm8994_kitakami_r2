@@ -3138,8 +3138,8 @@ static int __validate_send_modfd_resp_inputs(struct qseecom_dev_handle *data,
 	return 0;
 }
 
-static int qseecom_send_modfd_resp(struct qseecom_dev_handle *data,
-						void __user *argp)
+static int __qseecom_send_modfd_resp(struct qseecom_dev_handle *data,
+				void __user *argp, bool is_64bit_addr)
 {
 	struct qseecom_send_modfd_listener_resp resp;
 	struct qseecom_registered_listener_list *this_lstnr = NULL;
@@ -3165,6 +3165,11 @@ static int qseecom_send_modfd_resp(struct qseecom_dev_handle *data,
 	return 0;
 }
 
+static int qseecom_send_modfd_resp(struct qseecom_dev_handle *data,
+					void __user *argp)
+{
+	return __qseecom_send_modfd_resp(data, argp, false);
+}
 
 static int qseecom_get_qseos_version(struct qseecom_dev_handle *data,
 						void __user *argp)

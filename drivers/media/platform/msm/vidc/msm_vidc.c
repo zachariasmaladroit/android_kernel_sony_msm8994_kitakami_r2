@@ -469,9 +469,10 @@ int map_and_register_buf(struct msm_vidc_inst *inst, struct v4l2_buffer *b)
 	int plane = 0;
 	int i = 0, rc = 0;
 	struct msm_smem *same_fd_handle = NULL;
-	bool check_same_fd_handle = !is_dynamic_output_buffer_mode(b, inst) &&
-		!(inst->session_type == MSM_VIDC_ENCODER &&
-			b->type == V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE);
+
+        bool check_same_fd_handle = !is_dynamic_output_buffer_mode(b, inst) &&
+                !( inst->session_type == MSM_VIDC_ENCODER &&
+                         b->type == V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE);
 
 	if (!b || !inst) {
 		dprintk(VIDC_ERR, "%s: invalid input\n", __func__);
@@ -535,7 +536,8 @@ int map_and_register_buf(struct msm_vidc_inst *inst, struct v4l2_buffer *b)
 		if (rc < 0)
 			goto exit;
 
-		if (check_same_fd_handle)
+		//if (!is_dynamic_output_buffer_mode(b, inst))
+                if (check_same_fd_handle)
 			same_fd_handle = get_same_fd_buffer(
 						&inst->registeredbufs,
 						b->m.planes[i].reserved[0]);
@@ -627,7 +629,7 @@ int unmap_and_deregister_buf(struct msm_vidc_inst *inst,
 
 	for (i = 0; i < temp->num_planes; i++) {
 		dprintk(VIDC_DBG,
-			"%s: [UNMAP] binfo = %pK, handle[%d] = %pK, device_addr = 0x%pKa, fd = %d, offset = %d, mapped = %d\n",
+			"%s: [UNMAP] binfo = %pK, handle[%d] = %pK, device_addr = 0x%pa, fd = %d, offset = %d, mapped = %d\n",
 			__func__, temp, i, temp->handle[i],
 			&temp->device_addr[i], temp->fd[i],
 			temp->buff_off[i], temp->mapped[i]);
@@ -850,11 +852,10 @@ free_and_unmap:
 			for (i = 0; i < bi->num_planes; i++) {
 				if (bi->handle[i] && bi->mapped[i]) {
 					dprintk(VIDC_DBG,
-						"%s: binfo = 0x%pK, handle[%d] = %pK, device_addr = %pa, fd = %d, offset = %d, buffer_type 0x%x, mapped = %d\n",
+						"%s: [UNMAP] binfo = 0x%pK, handle[%d] = %pK, device_addr = 0x%pa, fd = %d, offset = %d, mapped = %d\n",
 						__func__, bi, i, bi->handle[i],
 						&bi->device_addr[i], bi->fd[i],
-						bi->buff_off[i], bi->type,
-                        bi->mapped[i]);
+						bi->buff_off[i], bi->mapped[i]);
 					msm_comm_smem_free(inst,
 							bi->handle[i]);
 				}

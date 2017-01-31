@@ -1239,7 +1239,8 @@ int config_ppp_op_mode(struct ppp_blit_op *blit_op)
 	config_ppp_out(&blit_op->dst, yuv2rgb);
 
 	pr_debug("BLIT FG Param Fmt %d (x %d,y %d,w %d,h %d), ROI(x %d,y %d, w\
-		 %d, h %d) Addr_P0 %pK, Stride S0 %d Addr_P1 %pK, Stride S1 %d\n",
+		%d, h %d) Addr_P0 %pK, Stride S0 %d Addr_P1 %pK,\
+		Stride S1 %d\n",
 		blit_op->src.color_fmt, blit_op->src.prop.x, blit_op->src.prop.y,
 		blit_op->src.prop.width, blit_op->src.prop.height,
 		blit_op->src.roi.x, blit_op->src.roi.y, blit_op->src.roi.width,
@@ -1247,7 +1248,8 @@ int config_ppp_op_mode(struct ppp_blit_op *blit_op)
                 blit_op->src.p1, blit_op->src.stride1);
 	if (blit_op->bg.p0 != blit_op->dst.p0)
 		pr_debug("BLIT BG Param Fmt %d (x %d,y %d,w %d,h %d), ROI(x %d,y %d, w\
-			 %d, h %d) Addr %pK, Stride S0 %d Addr_P1 %pK, Stride S1 %d\n",
+			 %d, h %d) Addr %pK, Stride S0 %d Addr_P1 %pK,\
+			 Stride S1 %d\n",
 			blit_op->bg.color_fmt, blit_op->bg.prop.x, blit_op->bg.prop.y,
 			blit_op->bg.prop.width, blit_op->bg.prop.height,
 			blit_op->bg.roi.x, blit_op->bg.roi.y, blit_op->bg.roi.width,

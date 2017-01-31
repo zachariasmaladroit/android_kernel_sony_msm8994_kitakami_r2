@@ -1136,7 +1136,7 @@ static int msm_ispif_set_vfe_info(struct ispif_device *ispif,
 	if (!vfe_info || (vfe_info->num_vfe <= 0) ||
 		((uint32_t)(vfe_info->num_vfe) > ispif->hw_num_isps)) {
 		pr_err("Invalid VFE info: %pK %d\n", vfe_info,
-			   (vfe_info ? vfe_info->num_vfe:0));
+			(vfe_info ? vfe_info->num_vfe:0));
 		return -EINVAL;
 	}
 	memcpy(&ispif->vfe_info, vfe_info, sizeof(struct msm_ispif_vfe_info));
@@ -1315,8 +1315,11 @@ static long msm_ispif_subdev_ioctl(struct v4l2_subdev *sd,
 	case MSM_SD_SHUTDOWN: {
 		struct ispif_device *ispif =
 			(struct ispif_device *)v4l2_get_subdevdata(sd);
-		if (ispif && ispif->base)
+		if (ispif && ispif->base) {
+			mutex_lock(&ispif->mutex);
 			msm_ispif_release(ispif);
+			mutex_unlock(&ispif->mutex);
+		}
 		return 0;
 	}
 	default:

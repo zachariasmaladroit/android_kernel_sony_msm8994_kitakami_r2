@@ -460,7 +460,7 @@ static struct ion_handle *ion_handle_get_by_id_nolock(struct ion_client *client,
 }
 
 struct ion_handle *ion_handle_get_by_id(struct ion_client *client,
-						int id)
+	int id)
 {
 	struct ion_handle *handle;
 
@@ -624,14 +624,15 @@ static struct ion_handle *__ion_alloc(struct ion_client *client, size_t len,
 }
 
 struct ion_handle *ion_alloc(struct ion_client *client, size_t len,
-			     size_t align, unsigned int heap_id_mask,
-			     unsigned int flags)
+		size_t align, unsigned int heap_id_mask,
+		unsigned int flags)
 {
 	return __ion_alloc(client, len, align, heap_id_mask, flags, false);
 }
 EXPORT_SYMBOL(ion_alloc);
 
-static void ion_free_nolock(struct ion_client *client, struct ion_handle *handle)
+static void ion_free_nolock(struct ion_client *client, 
+					struct ion_handle *handle)
 {
 	bool valid_handle;
 
@@ -1179,7 +1180,7 @@ static void ion_vm_open(struct vm_area_struct *vma)
 	mutex_lock(&buffer->lock);
 	list_add(&vma_list->list, &buffer->vmas);
 	mutex_unlock(&buffer->lock);
-	pr_debug("%s: adding %p\n", __func__, vma);
+	pr_debug("%s: adding %pK\n", __func__, vma);
 }
 
 static void ion_vm_close(struct vm_area_struct *vma)
@@ -1194,7 +1195,7 @@ static void ion_vm_close(struct vm_area_struct *vma)
 			continue;
 		list_del(&vma_list->list);
 		kfree(vma_list);
-		pr_debug("%s: deleting %p\n", __func__, vma);
+		pr_debug("%s: deleting %pK\n", __func__, vma);
 		break;
 	}
 	mutex_unlock(&buffer->lock);
@@ -1485,7 +1486,8 @@ static long ion_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		struct ion_handle *handle;
 
 		mutex_lock(&client->lock);
-		handle = ion_handle_get_by_id_nolock(client, data.handle.handle);
+		handle = ion_handle_get_by_id_nolock(client, 
+							data.handle.handle);
 		if (IS_ERR(handle)) {
 			mutex_unlock(&client->lock);
 			return PTR_ERR(handle);

@@ -1220,7 +1220,7 @@ static void cpp_load_fw(struct cpp_device *cpp_dev, char *fw_name_bin)
 		rc = request_firmware(&fw, fw_name_bin, dev);
 		if (rc) {
 			dev_err(dev,
-				"Fail to loc blob %s from dev %p, Error: %d\n",
+				"Fail to loc blob %s from dev %pK, Error: %d\n",
 				fw_name_bin, dev, rc);
 		}
 		if (NULL != fw)
@@ -2292,8 +2292,9 @@ long msm_cpp_subdev_ioctl(struct v4l2_subdev *sd,
 	struct msm_camera_v4l2_ioctl_t *ioctl_ptr = arg;
 	int rc = 0;
 
-	if ((sd == NULL) || (ioctl_ptr == NULL)) {
-		pr_err("Wrong ioctl_ptr %p, sd %p\n", ioctl_ptr, sd);
+	if ((sd == NULL) || (ioctl_ptr == NULL) ||
+		(ioctl_ptr->ioctl_ptr == NULL)) {
+		pr_err("Wrong ioctl_ptr %pK, sd %pK\n", ioctl_ptr, sd);
 		return -EINVAL;
 	}
 
@@ -2305,6 +2306,10 @@ long msm_cpp_subdev_ioctl(struct v4l2_subdev *sd,
 	cpp_dev = v4l2_get_subdevdata(sd);
 	if (cpp_dev == NULL) {
 		pr_err("cpp_dev is null\n");
+		return -EINVAL;
+	}
+	if (_IOC_DIR(cmd) == _IOC_NONE) {
+		pr_err("Invalid ioctl/subdev cmd %u", cmd);
 		return -EINVAL;
 	}
 	mutex_lock(&cpp_dev->mutex);

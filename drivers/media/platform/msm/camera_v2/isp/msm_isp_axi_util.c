@@ -33,6 +33,7 @@ int msm_isp_axi_create_stream(
 	struct msm_vfe_axi_stream_request_cmd *stream_cfg_cmd)
 {
 	uint32_t i = stream_cfg_cmd->stream_src;
+
 	if (i >= VFE_AXI_SRC_MAX) {
 		pr_err("%s:%d invalid stream_src %d\n", __func__, __LINE__,
 			stream_cfg_cmd->stream_src);
@@ -997,7 +998,7 @@ static int  msm_isp_axi_stream_enable_cfg(
 				!dual_vfe_res->axi_data[ISP_VFE0] ||
 				!dual_vfe_res->vfe_base[ISP_VFE1] ||
 				!dual_vfe_res->axi_data[ISP_VFE1]) {
-				pr_err("%s:%d failed vfe0 %p %p vfe %p %p\n",
+				pr_err("%s:%d failed vfe0 %pK %pK vfe %pK %pK\n",
 					__func__, __LINE__,
 					dual_vfe_res->vfe_base[ISP_VFE0],
 					dual_vfe_res->axi_data[ISP_VFE0],
