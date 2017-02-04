@@ -189,6 +189,7 @@ CONFIG_SMB135X_CHARGER=y
 # CONFIG_SECURE_TOUCH is not set
 # CONFIG_TI_DRV2667 is not set
 # CONFIG_QCOM_LIQUID_DOCK is not set
+# CONFIG_PCI_QUIRKS is not set
 
 # advanced congestion control algorithms
 CONFIG_TCP_CONG_ADVANCED=y
