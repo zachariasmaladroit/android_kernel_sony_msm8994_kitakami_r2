@@ -383,23 +383,34 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -Wno-format-security \
 		   -fno-delete-null-pointer-checks \
 		   -fmodulo-sched \
-		   -fivopts \
-		   -fgcse -fgcse-after-reload \
+		   -fmodulo-sched-allow-regmoves \
+		   -fivopts -fipa-pta \
+		   -fira-hoist-pressure \
+		   -fgcse -fgcse-las -fgcse-after-reload \
 		   -fno-tree-reassoc \
-#		   -fmodulo-sched-allow-regmoves -freschedule-modulo-scheduled-loops \
+		   -fno-strict-overflow \
+		   -ftree-pre -ftree-forwprop -ftree-fre -ftree-phiprop -ftree-partial-pre \
+#		   -freschedule-modulo-scheduled-loops \
 #		   -funswitch-loops -ftree-loop-im -fpredictive-commoning -fgcse -fgcse-las -fgcse-lm -fgcse-sm -fgcse-after-reload \
 #		   -fsched-pressure -fschedule-insns -fno-tree-reassoc \
 #		   -fno-tree-pre -fno-strict-aliasing \
 		   -fno-var-tracking-assignments \
-#		   -fbranch-target-load-optimize -fsingle-precision-constant \
+		   -ftree-loop-im -funswitch-loops \
+		   -fbranch-target-load-optimize -fsingle-precision-constant \
+		   -finline-functions \
+		   -falign-functions=1 -falign-jumps=1 -falign-loops=1 -falign-labels=1 \
 #		   -frename-registers -fweb \
 #		   -fno-aggressive-loop-optimizations \
 #		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
 #		   -fno-builtin \
-		   -pipe \
 #		   -fno-builtin-memcpy \
+		   -fprefetch-loop-arrays \
+		   -freorder-blocks \
+		   -pipe \
 		   -march=armv8-a \
-		   -mtune=cortex-a53 \
+		   -mtune=cortex-a57.cortex-a53 \
+		   -mfpu=neon-fp-armv8 \
+		   -mfloat-abi=hard
 		   -std=gnu89 $(call cc-option,-fno-PIE)
 
 KBUILD_AFLAGS_KERNEL :=
