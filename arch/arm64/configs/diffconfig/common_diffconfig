@@ -191,6 +191,11 @@ CONFIG_SMB135X_CHARGER=y
 # CONFIG_QCOM_LIQUID_DOCK is not set
 # CONFIG_PCI_QUIRKS is not set
 
+# disable MEMCG, it adds overhead and aggravates memory fragmentation
+# CONFIG_MEMCG is not set
+# CONFIG_MEMCG_SWAP is not set
+# CONFIG_MEMCG_SWAP_ENABLED is not set
+
 # advanced congestion control algorithms
 CONFIG_TCP_CONG_ADVANCED=y
 CONFIG_TCP_CONG_BIC=y
