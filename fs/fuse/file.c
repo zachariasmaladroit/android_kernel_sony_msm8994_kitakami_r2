@@ -2622,7 +2622,7 @@ static void fuse_do_truncate(struct file *file)
 	attr.ia_file = file;
 	attr.ia_valid |= ATTR_FILE;
 
-	fuse_do_setattr(file->f_path.dentry, &attr, file);
+	fuse_do_setattr(inode, &attr, file);
 }
 
 static inline loff_t fuse_round_up(loff_t off)
