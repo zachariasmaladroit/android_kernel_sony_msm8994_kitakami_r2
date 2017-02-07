@@ -159,7 +159,7 @@ CONFIG_TOUCHSCREEN_CLEARPAD_RMI_DEV=y
 #### SunKernel ####
 ##########################
 
-CONFIG_LOCALVERSION="-5.11_corona_III.2_7_2_ctl_X"
+CONFIG_LOCALVERSION="-5.11_corona_III.2_7_ctl_X"
 CONFIG_LOCALVERSION_AUTO=n
 
 CONFIG_JOYSTICK_XPAD=y
@@ -193,11 +193,9 @@ CONFIG_SMB135X_CHARGER=y
 # CONFIG_PCI_QUIRKS is not set
 
 # disable MEMCG, it adds overhead and aggravates memory fragmentation
-# CONFIG_MEMCG_KMEM is not set
 # CONFIG_MEMCG is not set
 # CONFIG_MEMCG_SWAP is not set
 # CONFIG_MEMCG_SWAP_ENABLED is not set
-# CONFIG_MM_OWNER is not set
 
 # advanced congestion control algorithms
 CONFIG_TCP_CONG_ADVANCED=y
