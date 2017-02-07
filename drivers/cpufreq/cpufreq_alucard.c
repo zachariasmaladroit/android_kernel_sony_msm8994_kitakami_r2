@@ -176,7 +176,7 @@ static void ac_check_cpu(int cpu, unsigned int load)
 static void ac_dbs_timer(struct work_struct *work)
 {
 	struct ac_cpu_dbs_info_s *dbs_info = container_of(work,
-			struct ac_cpu_dbs_info_s, cdbs.dwork.work);
+			struct ac_cpu_dbs_info_s, cdbs.work.work);
 	unsigned int cpu = dbs_info->cdbs.cur_policy->cpu;
 	struct ac_cpu_dbs_info_s *core_dbs_info = &per_cpu(ac_cpu_dbs_info,
 			cpu);
