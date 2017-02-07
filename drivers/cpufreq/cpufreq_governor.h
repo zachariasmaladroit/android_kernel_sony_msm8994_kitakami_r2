@@ -147,7 +147,7 @@ struct cpu_dbs_common_info {
 	 */
 	unsigned int prev_load;
 	struct cpufreq_policy *cur_policy;
-	struct delayed_work dwork;
+	struct delayed_work work;
 	/*
 	 * percpu mutex that serializes governor limit change with gov_dbs_timer
 	 * invocation. We do not want gov_dbs_timer to run when user is changing
