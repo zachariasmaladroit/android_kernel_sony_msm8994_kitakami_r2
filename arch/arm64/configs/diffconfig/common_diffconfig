@@ -188,14 +188,8 @@ CONFIG_SMB135X_CHARGER=y
 # CONFIG_QCOM_LIQUID_DOCK is not set
 # CONFIG_PCI_QUIRKS is not set
 # CONFIG_SYSRQ_SCHED_DEBUG is not set
-# CONFIG_RELAY is not set
 
-# disable MEMCG, it adds overhead and aggravates memory fragmentation
-# CONFIG_MEMCG_KMEM is not set
-# CONFIG_MEMCG is not set
-# CONFIG_MEMCG_SWAP is not set
-# CONFIG_MEMCG_SWAP_ENABLED is not set
-# CONFIG_MM_OWNER is not set
+CONFIG_RELAY=y
 
 # advanced congestion control algorithms
 CONFIG_TCP_CONG_ADVANCED=y
@@ -273,7 +267,7 @@ CONFIG_PSTORE_RAM=y
 CONFIG_BLK_DEV_RAM_SIZE=4096
 
 # Cgroup stuff
-CONFIG_CGROUP_DEBUG=y
+# CONFIG_CGROUP_DEBUG is not set
 
 # CPU sets (for LaOS Nougat)
 # CONFIG_CPUSETS is not set
@@ -356,7 +350,7 @@ CONFIG_DEFAULT_ROW=y
 CONFIG_DEFAULT_IOSCHED="row"
 
 # CPU scheduling related
-CONFIG_ARCH_WANTS_CTXSW_LOGGING=y
+# CONFIG_ARCH_WANTS_CTXSW_LOGGING is not set
 
 # optimization levels
 CONFIG_CC_OPTIMIZE_FOR_SIZE=y
@@ -537,8 +531,7 @@ CONFIG_IP6_NF_MATCH_RPFILTER=y
 
 # misc
 CONFIG_UID_STAT=y
-CONFIG_NFC_PN547=y
-# CONFIG_NFC_PN547_PMC_CLK_REQ is not set
+# NFC
 # needed ?
 # CONFIG_TI_DRV2667 is not set
 CONFIG_SCSI_UFSHCD=y
@@ -575,7 +568,7 @@ CONFIG_TABLET_USB_WACOM=y
 # CONFIG_INPUT_KEYCHORD is not set
 
 # MultiROM related disabling
-CONFIG_SECURE_TOUCH=y
+# CONFIG_SECURE_TOUCH is not set
 
 # production builds
 # CONFIG_POWERKEY_FORCECRASH is not set
@@ -692,18 +685,17 @@ CONFIG_USB_HIDDEV=y
 
 # Android Nougat / LaOS
 # do we need this ?
-CONFIG_ANDROID_TIMED_GPIO=y
-CONFIG_QCOM_NPA_DUMP=y
+
+# CONFIG_QCOM_NPA_DUMP is not set
 # disable this for LineageOS (not needed)
 CONFIG_SONY_SSM=y
 CONFIG_SECURITYFS=y
 
 # Qualcomm MSM specific device drivers
-CONFIG_PFT=y
+# CONFIG_PFT is not set
 
 # pseudo filesystems - enable for LaOS
-CONFIG_TMPFS_POSIX_ACL=y
-CONFIG_TMPFS_XATTR=y
+
 
 # Random Number Generation - LaOS / Nougat
 CONFIG_ASYMMETRIC_KEY_TYPE=y
@@ -712,6 +704,6 @@ CONFIG_PUBLIC_KEY_ALGO_RSA=y
 CONFIG_X509_CERTIFICATE_PARSER=y
 
 # Library routines - LaOS / Nougat
-CONFIG_CLZ_TAB=y
+# CONFIG_CLZ_TAB is not set
 CONFIG_MPILIB=y
 CONFIG_OID_REGISTRY=y
