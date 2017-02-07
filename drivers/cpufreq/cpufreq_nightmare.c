@@ -137,7 +137,7 @@ static void nm_check_cpu(int cpu, unsigned int load)
 static void nm_dbs_timer(struct work_struct *work)
 {
 	struct nm_cpu_dbs_info_s *dbs_info = container_of(work,
-			struct nm_cpu_dbs_info_s, cdbs.work.work);
+			struct nm_cpu_dbs_info_s, cdbs.dwork.work);
 	unsigned int cpu = dbs_info->cdbs.cur_policy->cpu;
 	struct nm_cpu_dbs_info_s *core_dbs_info = &per_cpu(nm_cpu_dbs_info,
 			cpu);
