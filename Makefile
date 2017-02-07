@@ -405,11 +405,11 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 #		   -fno-builtin \
 #		   -fno-builtin-memcpy \
 #		   -fprefetch-loop-arrays \
-		   -freorder-blocks \
+#		   -freorder-blocks \
 		   -pipe \
 		   -march=armv8-a \
-		   -mtune=cortex-a57.cortex-a53 \
-		   -mfpu=neon-fp-armv8 \
+		   -mtune=cortex-a53 \
+#		   -mfpu=neon-fp-armv8 \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
 
 KBUILD_AFLAGS_KERNEL :=
