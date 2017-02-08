@@ -685,11 +685,11 @@ static bool __init
 arch_timer_probed(int type, const struct of_device_id *matches)
 {
 	struct device_node *dn;
-	bool probed = true;
+	bool probed = false;
 
 	dn = of_find_matching_node(NULL, matches);
-	if (dn && of_device_is_available(dn) && !(arch_timers_present & type))
-		probed = false;
+	if (dn && of_device_is_available(dn) && (arch_timers_present & type))
+		probed = true;
 	of_node_put(dn);
 
 	return probed;
