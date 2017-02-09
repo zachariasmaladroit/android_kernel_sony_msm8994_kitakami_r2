@@ -247,10 +247,8 @@ static inline void rt_set_overload(struct rq *rq)
 	 * if we should look at the mask. It would be a shame
 	 * if we looked at the mask, but the mask was not
 	 * updated yet.
-	 *
-	 * Matched by the barrier in pull_rt_task().
 	 */
-	smp_wmb();
+	wmb();
 	atomic_inc(&rq->rd->rto_count);
 }
 
@@ -1901,12 +1899,6 @@ static void pull_rt_task(struct rq *this_rq)
 
 	if (likely(!rt_overloaded(this_rq)))
 		return;
-
-	/*
-	 * Match the barrier from rt_set_overloaded; this guarantees that if we
-	 * see overloaded we must also see the rto_mask bit.
-	 */
-	smp_rmb();
 
 	for_each_cpu(cpu, this_rq->rd->rto_mask) {
 		if (this_cpu == cpu)
