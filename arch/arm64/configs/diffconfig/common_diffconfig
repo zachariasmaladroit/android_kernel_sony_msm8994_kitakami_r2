@@ -192,11 +192,9 @@ CONFIG_SMB135X_CHARGER=y
 CONFIG_RELAY=y
 
 # disable MEMCG, it adds overhead and aggravates memory fragmentation
-# CONFIG_MEMCG_KMEM is not set
 # CONFIG_MEMCG is not set
 # CONFIG_MEMCG_SWAP is not set
 # CONFIG_MEMCG_SWAP_ENABLED is not set
-# CONFIG_MM_OWNER is not set
 
 # advanced congestion control algorithms
 CONFIG_TCP_CONG_ADVANCED=y
