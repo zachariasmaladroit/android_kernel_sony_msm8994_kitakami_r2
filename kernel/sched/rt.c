@@ -1883,15 +1883,14 @@ static void push_rt_tasks(struct rq *rq)
 		;
 }
 
-static void pull_rt_task(struct rq *this_rq)
+static int pull_rt_task(struct rq *this_rq)
 {
-	int this_cpu = this_rq->cpu, cpu;
-	bool resched = false;
+	int this_cpu = this_rq->cpu, ret = 0, cpu;
 	struct task_struct *p;
 	struct rq *src_rq;
 
 	if (likely(!rt_overloaded(this_rq)))
-		return;
+		return 0;
 
 	for_each_cpu(cpu, this_rq->rd->rto_mask) {
 		if (this_cpu == cpu)
@@ -1944,7 +1943,7 @@ static void pull_rt_task(struct rq *this_rq)
 			if (p->prio < src_rq->curr->prio)
 				goto skip;
 
-			resched = true;
+			ret = 1;
 
 			deactivate_task(src_rq, p, 0);
 			set_task_cpu(p, this_cpu);
@@ -1960,8 +1959,7 @@ skip:
 		double_unlock_balance(this_rq, src_rq);
 	}
 
-	if (resched)
-		resched_task(this_rq->curr);
+	return ret;
 }
 
 static void pre_schedule_rt(struct rq *rq, struct task_struct *prev)
@@ -2064,7 +2062,8 @@ static void switched_from_rt(struct rq *rq, struct task_struct *p)
 	if (!p->on_rq || rq->rt.rt_nr_running)
 		return;
 
-	pull_rt_task(rq);
+	if (pull_rt_task(rq))
+		resched_task(rq->curr);
 }
 
 void init_sched_rt_class(void)
