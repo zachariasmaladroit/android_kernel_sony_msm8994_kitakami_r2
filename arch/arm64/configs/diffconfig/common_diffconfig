@@ -191,10 +191,11 @@ CONFIG_SMB135X_CHARGER=y
 
 CONFIG_RELAY=y
 
-# disable MEMCG, it adds overhead and aggravates memory fragmentation
-# CONFIG_MEMCG is not set
-# CONFIG_MEMCG_SWAP is not set
-# CONFIG_MEMCG_SWAP_ENABLED is not set
+# disable MEMCG for LaOS, it adds overhead and aggravates memory fragmentation
+# CONFIG_MEMCG_KMEM is not set
+CONFIG_MEMCG=y
+CONFIG_MEMCG_SWAP=y
+CONFIG_MEMCG_SWAP_ENABLED=y
 
 # advanced congestion control algorithms
 CONFIG_TCP_CONG_ADVANCED=y
