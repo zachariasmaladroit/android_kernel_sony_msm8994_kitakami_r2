@@ -1178,8 +1178,8 @@ static int check_version(Elf_Shdr *sechdrs,
 	if(!strncmp("moc_", mod->name, 4))
 		return 1;
 
-//	if(!strncmp("texfat", mod->name, 6))
-//		return 1;
+	if(!strncmp("texfat", mod->name, 6))
+		return 1;
 
 //	if(!strncmp("core_ctl", mod->name, 8))
 //		return 1;
