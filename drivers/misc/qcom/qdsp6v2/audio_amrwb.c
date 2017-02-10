@@ -2,7 +2,7 @@
  *
  * Copyright (C) 2008 Google, Inc.
  * Copyright (C) 2008 HTC Corporation
- * Copyright (c) 2011-2014, 2016, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2011-2014, The Linux Foundation. All rights reserved.
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -37,8 +37,7 @@ static long audio_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 			/* Configure PCM output block */
 			rc = q6asm_enc_cfg_blk_pcm(audio->ac,
 					audio->pcm_cfg.sample_rate,
-					audio->pcm_cfg.channel_count,
-					false);
+					audio->pcm_cfg.channel_count);
 			if (rc < 0) {
 				pr_err("pcm output block config failed\n");
 				break;
