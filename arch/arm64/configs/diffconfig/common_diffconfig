@@ -556,8 +556,8 @@ CONFIG_SCSI_UFS_QCOM_ICE=y
 # CONFIG_PANIC_ON_DM_VERITY_ERRORS is not set
 
 # SYSVIPC - disable for LaOS Nougat (security, legacy)
-# CONFIG_SYSVIPC is not set
-# CONFIG_SYSVIPC_SYSCTL is not set
+CONFIG_SYSVIPC=y
+CONFIG_SYSVIPC_SYSCTL=y
 
 # Userland interfaces
 CONFIG_INPUT_KEYRESET=y
