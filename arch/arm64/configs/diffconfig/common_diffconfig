@@ -48,7 +48,7 @@ CONFIG_MSM_RTB=y
 
 # CONFIG_NFC_QNCI is not set
 CONFIG_NLS_UTF8=y
-# CONFIG_PFT is not set
+
 # CONFIG_PHYLIB is not set
 CONFIG_PINCTRL_SOMC=y
 CONFIG_PMI8994_FLASH=y
@@ -177,7 +177,7 @@ CONFIG_MSM_BUSPM_DEV=y
 # CONFIG_ARCH_MSM8992 is not set
 # CONFIG_IOMMU_FORCE_4K_MAPPINGS is not set
 # CONFIG_MSM_IOMMU_VBIF_CHECK is not set
-# CONFIG_MSM_TZ_LOG is not set
+CONFIG_MSM_TZ_LOG=y
 
 # CONFIG_ALLOC_BUFFERS_IN_4K_CHUNKS is not set
 
@@ -227,6 +227,8 @@ CONFIG_CRYPTO_SHA256_ARM64=y
 CONFIG_CRYPTO_SHA512_ARM64=y
 CONFIG_CRYPTO_CRC32_ARM64_CE=y
 
+# CONFIG_COREDUMP is not set
+
 # SELinux
 CONFIG_SECURITY_SELINUX=y
 CONFIG_SECURITY_SELINUX_BOOTPARAM_VALUE=1
@@ -259,6 +261,25 @@ CONFIG_CPU_IDLE_GOV_NULL=y
 # NTFS kernel native support, Sony's ROM still doesn't seem to honor it on microSD
 # CONFIG_NTFS_FS is not set
 # CONFIG_NTFS_RW is not set
+
+CONFIG_MSDOS_FS=y
+
+CONFIG_FS_POSIX_ACL=y
+#
+CONFIG_TMPFS_POSIX_ACL=y
+CONFIG_TMPFS_XATTR=y
+
+CONFIG_QUOTA=y
+# CONFIG_QUOTA_NETLINK_INTERFACE is not set
+CONFIG_PRINT_QUOTA_WARNING=y
+# CONFIG_QUOTA_DEBUG is not set
+# CONFIG_QFMT_V1 is not set
+# CONFIG_QFMT_V2 is not set
+CONFIG_QUOTACTL=y
+# CONFIG_AUTOFS4_FS is not set
+CONFIG_FUSE_FS=y
+# CONFIG_CUSE is not set
+CONFIG_GENERIC_ACL=y
 
 CONFIG_BALANCE_ANON_FILE_RECLAIM=y
 # CONFIG_PM_SYNC_BEFORE_SUSPEND is not set
@@ -436,7 +457,7 @@ CONFIG_CPU_FREQ_GOV_INTERACTIVE=y
 # CONFIG_CPU_FREQ_GOV_WHEATLEY is not set
 #
 # sched_migration_update_sum
-CONFIG_SCHED_FREQ_INPUT=y
+# CONFIG_SCHED_FREQ_INPUT is not set
 
 # dynamic fsync, LMK adj rbtree
 # CONFIG_DYNAMIC_FSYNC is not set
@@ -476,7 +497,7 @@ CONFIG_MSM_PERFORMANCE_HOTPLUG_ON=y
 #
 # requirement for getting Kexec Hardboot to work
 # and it is turned on by default
-CONFIG_PROC_DEVICETREE=y
+# CONFIG_PROC_DEVICETREE is not set
 CONFIG_OF_MDIO=y
 
 # CONFIG_ARCH_MSM8994_V1_TLBI_WA is not set
@@ -578,10 +599,10 @@ CONFIG_TABLET_USB_HANWANG=y
 CONFIG_TABLET_USB_KBTAB=y
 CONFIG_TABLET_USB_WACOM=y
 # "magic" keys for bug reports
-# CONFIG_INPUT_KEYCHORD is not set
+CONFIG_INPUT_KEYCHORD=y
 
 # MultiROM related disabling
-# CONFIG_SECURE_TOUCH is not set
+CONFIG_SECURE_TOUCH=y
 
 # production builds - disable
 # CONFIG_POWERKEY_FORCECRASH is not set
@@ -698,14 +719,14 @@ CONFIG_USB_HIDDEV=y
 
 # Android Nougat / LaOS
 # do we need this ?
-CONFIG_ANDROID_TIMED_GPIO
-# CONFIG_QCOM_NPA_DUMP is not set
+CONFIG_ANDROID_TIMED_GPIO=y
+CONFIG_QCOM_NPA_DUMP=y
 # disable this for LineageOS (not needed)
 # CONFIG_SONY_SSM is not set
 # CONFIG_SECURITYFS is not set
 
 # Qualcomm MSM specific device drivers
-# CONFIG_PFT is not set
+CONFIG_PFT=y
 
 # pseudo filesystems - enable for LaOS
 
