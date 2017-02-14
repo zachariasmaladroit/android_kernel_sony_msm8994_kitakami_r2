@@ -34,6 +34,7 @@
 #include <linux/of.h>
 #include <linux/of_address.h>
 #include <linux/pm.h>
+#include <linux/pm_runtime.h>
 #include <linux/regulator/consumer.h>
 #include <linux/regulator/rpm-smd-regulator.h>
 #include <linux/module.h>
@@ -161,8 +162,7 @@ static struct msm_bus_scale_pdata mdp_reg_bus_scale_table = {
 	.name = "mdss_reg",
 };
 
-static void mdss_mdp_footswitch_ctrl_locked(struct mdss_data_type *mdata,
-	int on);
+static void mdss_mdp_footswitch_ctrl(struct mdss_data_type *mdata, int on);
 static int mdss_mdp_parse_dt(struct platform_device *pdev);
 static int mdss_mdp_parse_dt_pipe(struct platform_device *pdev);
 static int mdss_mdp_parse_dt_mixer(struct platform_device *pdev);
@@ -909,9 +909,10 @@ void mdss_bus_bandwidth_ctrl(int enable)
 			if (!mdata->handoff_pending)
 				msm_bus_scale_client_update_request(
 						mdata->bus_hdl, 0);
-			mdss_mdp_footswitch_ctrl(mdata, false);
+			pm_runtime_mark_last_busy(&mdata->pdev->dev);
+			pm_runtime_put_autosuspend(&mdata->pdev->dev);
 		} else {
-			mdss_mdp_footswitch_ctrl(mdata, true);
+			pm_runtime_get_sync(&mdata->pdev->dev);
 			msm_bus_scale_client_update_request(
 				mdata->bus_hdl, mdata->curr_bw_uc_idx);
 		}
@@ -950,7 +951,7 @@ void mdss_mdp_clk_ctrl(int enable)
 
 	if (changed) {
 		if (enable)
-			mdss_mdp_footswitch_ctrl(mdata, true);
+			pm_runtime_get_sync(&mdata->pdev->dev);
 
 		mdata->clk_ena = enable;
 		mdss_mdp_clk_update(MDSS_CLK_AHB, enable);
@@ -960,8 +961,10 @@ void mdss_mdp_clk_ctrl(int enable)
 		if (mdata->vsync_ena)
 			mdss_mdp_clk_update(MDSS_CLK_MDP_VSYNC, enable);
 
-		if (!enable)
-			mdss_mdp_footswitch_ctrl(mdata, false);
+		if (!enable) {
+			pm_runtime_mark_last_busy(&mdata->pdev->dev);
+			pm_runtime_put_autosuspend(&mdata->pdev->dev);
+		}
 	}
 
 	mutex_unlock(&mdp_clk_lock);
@@ -1693,7 +1696,6 @@ static int mdss_mdp_probe(struct platform_device *pdev)
 	mdss_res = mdata;
 	mutex_init(&mdata->reg_lock);
 	mutex_init(&mdata->bus_bw_lock);
-	mutex_init(&mdata->fs_ena_lock);
 	atomic_set(&mdata->sd_client_count, 0);
 	atomic_set(&mdata->active_intf_cnt, 0);
 
@@ -1792,6 +1794,14 @@ static int mdss_mdp_probe(struct platform_device *pdev)
 		goto probe_done;
 	}
 
+	pm_runtime_set_autosuspend_delay(&pdev->dev, AUTOSUSPEND_TIMEOUT_MS);
+	if (mdata->idle_pc_enabled)
+		pm_runtime_use_autosuspend(&pdev->dev);
+	pm_runtime_set_suspended(&pdev->dev);
+	pm_runtime_enable(&pdev->dev);
+	if (!pm_runtime_enabled(&pdev->dev))
+		mdss_mdp_footswitch_ctrl(mdata, true);
+
 	rc = mdss_mdp_register_sysfs(mdata);
 	if (rc)
 		pr_err("unable to register mdp sysfs nodes\n");
@@ -1842,7 +1852,6 @@ probe_done:
 		mdss_mdp_hw.ptr = NULL;
 		mdss_mdp_pp_term(&pdev->dev);
 		mutex_destroy(&mdata->reg_lock);
-		mutex_destroy(&mdata->fs_ena_lock);
 		mdss_res = NULL;
 	}
 
@@ -3476,13 +3485,6 @@ vreg_set_voltage_fail:
 	return rc;
 }
 
-void mdss_mdp_footswitch_ctrl(struct mdss_data_type *mdata, int on)
-{
-	mutex_lock(&mdata->fs_ena_lock);
-	mdss_mdp_footswitch_ctrl_locked(mdata, on);
-	mutex_unlock(&mdata->fs_ena_lock);
-}
-
 /**
  * mdss_mdp_footswitch_ctrl() - Disable/enable MDSS GDSC and CX/Batfet rails
  * @mdata: MDP private data
@@ -3493,25 +3495,17 @@ void mdss_mdp_footswitch_ctrl(struct mdss_data_type *mdata, int on)
  * active (but likely in an idle state), the vote for the CX and the batfet
  * rails should not be released.
  */
-static void mdss_mdp_footswitch_ctrl_locked(struct mdss_data_type *mdata,
-	int on)
+static void mdss_mdp_footswitch_ctrl(struct mdss_data_type *mdata, int on)
 {
 	int ret;
 	int active_cnt = 0;
-	bool device_on = true;
 
 	if (!mdata->fs)
 		return;
 
 	if (on) {
 		if (!mdata->fs_ena) {
-			/* do not resume panels when coming out of idle
-				power collapse */
-			device_on = true;
-			if (!mdata->idle_pc)
-				device_for_each_child(&mdata->pdev->dev,
-					&device_on, mdss_fb_suspres_panel);
-
+			pr_debug("Enable MDP FS\n");
 			ret = regulator_enable(mdata->fs);
 			if (ret)
 				pr_warn("Footswitch failed to enable\n");
@@ -3522,23 +3516,10 @@ static void mdss_mdp_footswitch_ctrl_locked(struct mdss_data_type *mdata,
 		}
 		if (mdata->en_svs_high)
 			mdss_mdp_config_cx_voltage(mdata, true);
-		mdata->fs_ena++;
-		pr_debug("Enable MDP FS [%d]\n", mdata->fs_ena);
+		mdata->fs_ena = true;
 	} else {
-		if (!mdata->fs_ena) {
-			pr_warn("MDP FS unbalanced disable\n");
-			return;
-		}
-		mdata->fs_ena--;
-		pr_debug("Disable MDP FS [%d]\n", mdata->fs_ena);
-		if (!mdata->fs_ena) {
-			/* do not suspend panels when going in to idle
-				power collapse */
-			device_on = false;
-			if (!mdata->idle_pc)
-				device_for_each_child(&mdata->pdev->dev,
-					&device_on, mdss_fb_suspres_panel);
-
+		if (mdata->fs_ena) {
+			pr_debug("Disable MDP FS\n");
 			active_cnt = atomic_read(&mdata->active_intf_cnt);
 			if (active_cnt != 0) {
 				/*
@@ -3556,6 +3537,7 @@ static void mdss_mdp_footswitch_ctrl_locked(struct mdss_data_type *mdata,
 				mdss_mdp_config_cx_voltage(mdata, false);
 			regulator_disable(mdata->fs);
 		}
+		mdata->fs_ena = false;
 	}
 }
 
@@ -3590,37 +3572,20 @@ int mdss_mdp_secure_display_ctrl(unsigned int enable)
 
 static inline int mdss_mdp_suspend_sub(struct mdss_data_type *mdata)
 {
-	mutex_lock(&mdata->fs_ena_lock);
-
 	mdata->suspend_fs_ena = mdata->fs_ena;
-	if (mdata->suspend_fs_ena)
-		pr_warn("%s: Forcing MDP footswitch off for suspend (suspend_fs_ena=%d)!\n",
-			__func__, mdata->suspend_fs_ena);
+	mdss_mdp_footswitch_ctrl(mdata, false);
 
-	while (mdata->fs_ena)
-		mdss_mdp_footswitch_ctrl_locked(mdata, false);
-
-	pr_debug("suspend done suspend_fs_ena=%d\n", mdata->suspend_fs_ena);
-
-	mutex_unlock(&mdata->fs_ena_lock);
+	pr_debug("suspend done fs=%d\n", mdata->suspend_fs_ena);
 
 	return 0;
 }
 
 static inline int mdss_mdp_resume_sub(struct mdss_data_type *mdata)
 {
-	mutex_lock(&mdata->fs_ena_lock);
-
 	if (mdata->suspend_fs_ena)
-		pr_warn("%s: Forcing MDP footswitch back on for resume (suspend_fs_ena=%d)!\n",
-			__func__, mdata->suspend_fs_ena);
+		mdss_mdp_footswitch_ctrl(mdata, true);
 
-	while (mdata->suspend_fs_ena--)
-		mdss_mdp_footswitch_ctrl_locked(mdata, true);
-
-	pr_debug("resume done fs_ena=%d\n", mdata->fs_ena);
-
-	mutex_unlock(&mdata->fs_ena_lock);
+	pr_debug("resume done fs=%d\n", mdata->suspend_fs_ena);
 
 	return 0;
 }
@@ -3648,6 +3613,15 @@ static int mdss_mdp_pm_resume(struct device *dev)
 		return -ENODEV;
 
 	dev_dbg(dev, "display pm resume\n");
+
+	/*
+	 * It is possible that the runtime status of the mdp device may
+	 * have been active when the system was suspended. Reset the runtime
+	 * status to suspended state after a complete system resume.
+	 */
+	pm_runtime_disable(dev);
+	pm_runtime_set_suspended(dev);
+	pm_runtime_enable(dev);
 
 	return mdss_mdp_resume_sub(mdata);
 }
@@ -3682,8 +3656,64 @@ static int mdss_mdp_resume(struct platform_device *pdev)
 #define mdss_mdp_resume NULL
 #endif
 
+#ifdef CONFIG_PM_RUNTIME
+static int mdss_mdp_runtime_resume(struct device *dev)
+{
+	struct mdss_data_type *mdata = dev_get_drvdata(dev);
+	bool device_on = true;
+	if (!mdata)
+		return -ENODEV;
+
+	dev_dbg(dev, "pm_runtime: resuming. active overlay cnt=%d\n",
+		atomic_read(&mdata->active_intf_cnt));
+
+	/* do not resume panels when coming out of idle power collapse */
+	if (!mdata->idle_pc)
+		device_for_each_child(dev, &device_on, mdss_fb_suspres_panel);
+	mdss_mdp_footswitch_ctrl(mdata, true);
+
+	return 0;
+}
+
+static int mdss_mdp_runtime_idle(struct device *dev)
+{
+	struct mdss_data_type *mdata = dev_get_drvdata(dev);
+	if (!mdata)
+		return -ENODEV;
+
+	dev_dbg(dev, "pm_runtime: idling...\n");
+
+	return 0;
+}
+
+static int mdss_mdp_runtime_suspend(struct device *dev)
+{
+	struct mdss_data_type *mdata = dev_get_drvdata(dev);
+	bool device_on = false;
+	if (!mdata)
+		return -ENODEV;
+	dev_dbg(dev, "pm_runtime: suspending. active overlay cnt=%d\n",
+		atomic_read(&mdata->active_intf_cnt));
+
+	if (mdata->clk_ena) {
+		pr_err("MDP suspend failed\n");
+		return -EBUSY;
+	}
+
+	mdss_mdp_footswitch_ctrl(mdata, false);
+	/* do not suspend panels when going in to idle power collapse */
+	if (!mdata->idle_pc)
+		device_for_each_child(dev, &device_on, mdss_fb_suspres_panel);
+
+	return 0;
+}
+#endif
+
 static const struct dev_pm_ops mdss_mdp_pm_ops = {
 	SET_SYSTEM_SLEEP_PM_OPS(mdss_mdp_pm_suspend, mdss_mdp_pm_resume)
+	SET_RUNTIME_PM_OPS(mdss_mdp_runtime_suspend,
+			mdss_mdp_runtime_resume,
+			mdss_mdp_runtime_idle)
 };
 
 static int mdss_mdp_remove(struct platform_device *pdev)
@@ -3691,6 +3721,7 @@ static int mdss_mdp_remove(struct platform_device *pdev)
 	struct mdss_data_type *mdata = platform_get_drvdata(pdev);
 	if (!mdata)
 		return -ENODEV;
+	pm_runtime_disable(&pdev->dev);
 	mdss_mdp_pp_term(&pdev->dev);
 	mdss_mdp_bus_scale_unregister(mdata);
 	mdss_debugfs_remove(mdata);
