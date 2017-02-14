@@ -384,10 +384,10 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -fno-delete-null-pointer-checks \
 		   -fno-tree-reassoc \
 		   -fno-strict-overflow \
-		   -fmodulo-sched \
-		   -fmodulo-sched-allow-regmoves \
-		   -fivopts \
-		   -fipa-pta \
+#		   -fmodulo-sched \
+#		   -fmodulo-sched-allow-regmoves \
+#		   -fivopts \
+#		   -fipa-pta \
 #		   -fgcse -fgcse-las -fgcse-after-reload \
 		   -fno-var-tracking-assignments \
 #		   -ftree-pre -ftree-forwprop -ftree-fre -ftree-phiprop -ftree-partial-pre \
@@ -395,7 +395,7 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 #		   -funswitch-loops -ftree-loop-im -fpredictive-commoning -fgcse -fgcse-las -fgcse-lm -fgcse-sm -fgcse-after-reload \
 #		   -fsched-pressure -fschedule-insns -fno-tree-reassoc \
 #		   -fno-tree-pre -fno-strict-aliasing \
-		   -ftree-loop-im -funswitch-loops \
+#		   -ftree-loop-im -funswitch-loops \
 #		   -fbranch-target-load-optimize \
 #		   -fsingle-precision-constant \
 		   -falign-functions=16 -falign-jumps=16 -falign-loops=16 -falign-labels=16 \
@@ -405,11 +405,11 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -fno-builtin \
 		   -fno-builtin-memcpy \
 #		   -fprefetch-loop-arrays \
-		   -freorder-blocks \
+#		   -freorder-blocks \
 		   -pipe \
 		   -march=armv8-a \
 		   -mtune=cortex-a57.cortex-a53 \
-		   -mfpu=neon-fp-armv8 \
+#		   -mfpu=neon-fp-armv8 \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
 
 KBUILD_AFLAGS_KERNEL :=
