@@ -368,6 +368,9 @@ CONFIG_KSM_CHECK_PAGE=y
 # per-process reclaim (CAVE ! races and interactions wrt zram, etc.)
 # CONFIG_PROCESS_RECLAIM is not set
 
+# zram related
+CONFIG_Z3FOLD=y
+
 # security hardening
 CONFIG_DEBUG_SET_MODULE_RONX=y
 
