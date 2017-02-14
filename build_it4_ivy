@@ -1,12 +1,12 @@
 ### GCC 4.9.x
-### I'm using UBERTC https://bitbucket.org/UBERTC/aarch64-linux-android-4.9-kernel
+### I'm using Google aarch64 toolchain https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/
 
 export USE_CCACHE=1
 
 export CACHE_DIR=~/.ccache
 
 export ARCH=arm64
-export PATH=~/android/z5_build-environment/arm-linux-androideabi-4.9/bin/:$PATH
+export PATH=~/android/z5_build-environment/aarch64-linux-android-4.9/bin/:$PATH
 export CROSS_COMPILE=aarch64-linux-android-
 
 export KBUILD_DIFFCONFIG=ivy_diffconfig
