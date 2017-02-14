@@ -22,7 +22,11 @@ CONFIG_FB_MSM_MDSS=y
 CONFIG_FB_MSM_MDSS_WRITEBACK=y
 CONFIG_FB_MSM_MDSS_SPECIFIC_PANEL=y
 CONFIG_FB_MSM_MDSS_HDMI_PANEL=y
-# CONFIG_FB_MSM_MDSS_MHL3 is not set
+# CONFIG_FB_MSM_MDSS_HDMI_MHL_SII8334 is not set
+CONFIG_FB_MSM_MDSS_MHL3=y
+# CONFIG_FB_MSM_MDSS_DSI_CTRL_STATUS is not set
+# CONFIG_FB_MSM_MDSS_EDP_PANEL is not set
+# CONFIG_FB_MSM_MDSS_MDP3 is not set
 CONFIG_FB_MSM_MDSS_XLOG_DEBUG=y
 
 # CONFIG_IKCONFIG is not set
@@ -158,7 +162,7 @@ CONFIG_TOUCHSCREEN_CLEARPAD_RMI_DEV=y
 #### SunKernel ####
 ##########################
 
-CONFIG_LOCALVERSION="-376_corona_III.3_ctl_X"
+CONFIG_LOCALVERSION="-376_corona_III.3_2_ctl_X"
 CONFIG_LOCALVERSION_AUTO=n
 
 CONFIG_JOYSTICK_XPAD=y
@@ -511,13 +515,11 @@ CONFIG_HZ=300
 
 # MHL driver
 # CONFIG_FB_MSM_MDSS_HDMI_MHL_SII8334 is not set
-# CONFIG_FB_MSM_MDSS_MHL3 is not set
+CONFIG_FB_MSM_MDSS_MHL3=y
 # CONFIG_FB_MSM_MDSS_DSI_CTRL_STATUS is not set
 # CONFIG_FB_MSM_MDSS_EDP_PANEL is not set
 # CONFIG_FB_MSM_MDSS_MDP3 is not set
-CONFIG_MHL_SIMG_SONY=y
-CONFIG_MHL_DEVICE_ID=0x07
-CONFIG_MHL_BIST=y
+# CONFIG_MHL_SIMG_SONY is not set
 
 # misc hardware acceleration
 CONFIG_HAVE_ARCH_BITREVERSE=y
@@ -555,6 +557,23 @@ CONFIG_SCSI_UFS_QCOM_ICE=y
 # CONFIG_DM_FLAKEY is not set
 # CONFIG_PANIC_ON_DM_VERITY_ERRORS is not set
 
+# CONFIG_DM_DEBUG is not set
+CONFIG_DM_CRYPT=y
+CONFIG_DM_REQ_CRYPT=y
+# CONFIG_DM_SNAPSHOT is not set
+# CONFIG_DM_THIN_PROVISIONING is not set
+# CONFIG_DM_CACHE is not set
+# CONFIG_DM_MIRROR is not set
+# CONFIG_DM_RAID is not set
+# CONFIG_DM_ZERO is not set
+# CONFIG_DM_MULTIPATH is not set
+# CONFIG_DM_DELAY is not set
+# CONFIG_DM_UEVENT is not set
+# CONFIG_DM_FLAKEY is not set
+# CONFIG_DM_VERITY is not set
+# CONFIG_TARGET_CORE is not set
+# CONFIG_FUSION is not set
+
 # SYSVIPC - disable for LaOS Nougat (security, legacy)
 CONFIG_SYSVIPC=y
 CONFIG_SYSVIPC_SYSCTL=y
@@ -574,10 +593,10 @@ CONFIG_TABLET_USB_WACOM=y
 # "magic" keys for bug reports
 # CONFIG_INPUT_KEYCHORD is not set
 
-# MultiROM related disabling
-# CONFIG_SECURE_TOUCH is not set
+# MultiROM - disable this to get it
+CONFIG_SECURE_TOUCH=y
 
-# production builds
+# production builds - disable this
 # CONFIG_POWERKEY_FORCECRASH is not set
 
 # backlight LCD display control - is this needed ?
