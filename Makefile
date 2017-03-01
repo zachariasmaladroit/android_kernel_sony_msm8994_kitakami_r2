@@ -244,8 +244,8 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 GRAPHITE = -pipe
 # -floop-parallelize-all -ftree-parallelize-loops=3
 
-HOSTCC       = ccache gcc
-HOSTCXX      = ccache g++
+HOSTCC       = gcc
+HOSTCXX      = g++
 HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -Os -pipe -fomit-frame-pointer
 HOSTCXXFLAGS = -Os -pipe
 # -DNDEBUG -fgcse-las $(GRAPHITE)
@@ -332,7 +332,7 @@ include $(srctree)/scripts/Kbuild.include
 
 AS		= $(CROSS_COMPILE)as
 LD		= $(CROSS_COMPILE)ld
-CC		= ccache $(CROSS_COMPILE)gcc
+CC		= $(CROSS_COMPILE)gcc
 CPP		= $(CC) -E
 AR		= $(CROSS_COMPILE)ar
 NM		= $(CROSS_COMPILE)nm
@@ -384,10 +384,10 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -fno-delete-null-pointer-checks \
 		   -fno-tree-reassoc \
 		   -fno-strict-overflow \
-		   -fmodulo-sched \
-		   -fmodulo-sched-allow-regmoves \
-		   -fivopts \
-		   -fipa-pta \
+#		   -fmodulo-sched \
+#		   -fmodulo-sched-allow-regmoves \
+#		   -fivopts \
+#		   -fipa-pta \
 #		   -fgcse -fgcse-las -fgcse-after-reload \
 		   -fno-var-tracking-assignments \
 #		   -ftree-pre -ftree-forwprop -ftree-fre -ftree-phiprop -ftree-partial-pre \
@@ -405,7 +405,7 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -fno-builtin \
 		   -fno-builtin-memcpy \
 #		   -fprefetch-loop-arrays \
-		   -freorder-blocks \
+#		   -freorder-blocks \
 		   -pipe \
 		   -march=armv8-a \
 		   -mtune=cortex-a57.cortex-a53 \
