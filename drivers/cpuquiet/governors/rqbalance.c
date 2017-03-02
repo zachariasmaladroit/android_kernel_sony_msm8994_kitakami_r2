@@ -97,14 +97,14 @@ static bool soc_is_hmp;
 static unsigned int available_clusters = 0;
 
 /* configurable parameters */
-static unsigned int  balance_level = 55;
+static unsigned int  balance_level = 40;
 static unsigned int  idle_bottom_freq[MAX_CLUSTERS];
 static unsigned int  idle_top_freq[MAX_CLUSTERS];
 static unsigned int  num_of_cores[MAX_CLUSTERS];
 static unsigned long up_delay;
 static unsigned long down_delay;
 static unsigned long last_change_time;
-static unsigned int  load_sample_rate = 20; /* msec */
+static unsigned int  load_sample_rate = 10; /* msec */
 static unsigned int  userspace_suspend_state = 0;
 static struct workqueue_struct *rqbalance_wq;
 static struct delayed_work rqbalance_work;
