@@ -251,10 +251,10 @@ static inline int get_offline_core(int cluster)
  */
 static unsigned int nr_run_thresholds[] = {
 /*      1,	2,	3,	4 (target on-line num of cpus) */
-	100,	250,	400,	450,
+	100,	250,	350,	450,
 
 /*	5,	6,	7,	8 (HMP target on-line num of CPUs) */
-	500,	600,	750,	UINT_MAX
+	480,	600,	750,	UINT_MAX
 };
 
 static unsigned int nr_down_run_thresholds[] = {
