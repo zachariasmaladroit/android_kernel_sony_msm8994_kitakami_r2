@@ -386,8 +386,6 @@ struct mipi_panel_info {
 	u32  init_delay;
 
 	int input_fpks;
-
-	u32  post_init_delay;
 };
 
 struct edp_panel_info {
