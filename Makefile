@@ -388,8 +388,8 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -fno-aggressive-loop-optimizations \
 		   -fno-var-tracking-assignments \
 		   -fno-tree-reassoc \
-		   -fno-builtin \
-		   -fno-builtin-memcpy \
+#		   -fno-builtin \
+#		   -fno-builtin-memcpy \
 		   -fmodulo-sched \
 		   -fmodulo-sched-allow-regmoves \
 		   -fivopts \
