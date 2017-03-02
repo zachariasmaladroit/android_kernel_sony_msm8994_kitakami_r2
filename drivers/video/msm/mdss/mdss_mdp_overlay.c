@@ -1933,7 +1933,7 @@ int mdss_mdp_overlay_kickoff(struct msm_fb_data_type *mfd,
 	int sd_in_pipe = 0;
 	struct mdss_mdp_commit_cb commit_cb;
 
-	if (!ctl || !ctl->mixer_left)
+	if (!ctl)
 		return -ENODEV;
 
 	ATRACE_BEGIN(__func__);
