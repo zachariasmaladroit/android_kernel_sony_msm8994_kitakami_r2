@@ -384,28 +384,29 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -fno-delete-null-pointer-checks \
 		   -fno-tree-reassoc \
 		   -fno-strict-overflow \
-#		   -fmodulo-sched \
-#		   -fmodulo-sched-allow-regmoves \
-#		   -fivopts \
-#		   -fipa-pta \
-#		   -fgcse -fgcse-las -fgcse-after-reload \
+		   -fno-tree-pre -fno-strict-aliasing \
+		   -fno-aggressive-loop-optimizations \
 		   -fno-var-tracking-assignments \
+		   -fno-tree-reassoc \
+		   -fno-builtin \
+		   -fno-builtin-memcpy \
+		   -fmodulo-sched \
+		   -fmodulo-sched-allow-regmoves \
+		   -fivopts \
+		   -fipa-pta \
+#		   -fgcse -fgcse-las -fgcse-after-reload \
+#		   -ftree-loop-im -funswitch-loops \
 #		   -ftree-pre -ftree-forwprop -ftree-fre -ftree-phiprop -ftree-partial-pre \
 #		   -freschedule-modulo-scheduled-loops \
-#		   -funswitch-loops -ftree-loop-im -fpredictive-commoning -fgcse -fgcse-las -fgcse-lm -fgcse-sm -fgcse-after-reload \
-#		   -fsched-pressure -fschedule-insns -fno-tree-reassoc \
-#		   -fno-tree-pre -fno-strict-aliasing \
-#		   -ftree-loop-im -funswitch-loops \
+		   -funswitch-loops -ftree-loop-im -fpredictive-commoning -fgcse -fgcse-las -fgcse-lm -fgcse-sm -fgcse-after-reload \
+#		   -fsched-pressure -fschedule-insns \
 #		   -fbranch-target-load-optimize \
 #		   -fsingle-precision-constant \
 #		   -falign-functions=16 -falign-jumps=16 -falign-loops=16 -falign-labels=16 \
 #		   -frename-registers -fweb \
-		   -fno-aggressive-loop-optimizations \
 #		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
-		   -fno-builtin \
-		   -fno-builtin-memcpy \
-#		   -fprefetch-loop-arrays \
-#		   -freorder-blocks \
+		   -fprefetch-loop-arrays \
+		   -freorder-blocks \
 		   -pipe \
 		   -march=armv8-a \
 		   -mtune=cortex-a57.cortex-a53 \
