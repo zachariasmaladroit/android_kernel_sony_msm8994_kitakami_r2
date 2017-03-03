@@ -2833,7 +2833,6 @@ static int __init sps_init(void)
 		SPS_ERR("sps:Unable to allocate driver state context.");
 		return -ENOMEM;
 	}
-
 	ret = platform_driver_register(&msm_sps_driver);
 
 	return ret;
