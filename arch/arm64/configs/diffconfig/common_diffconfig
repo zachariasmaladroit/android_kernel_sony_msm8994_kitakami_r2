@@ -209,6 +209,9 @@ CONFIG_MEMCG=y
 CONFIG_MEMCG_SWAP=y
 CONFIG_MEMCG_SWAP_ENABLED=y
 
+# limit kswapd to the first 4 cores
+CONFIG_KSWAPD_CPU_AFFINITY_MASK="f"
+
 # advanced congestion control algorithms
 CONFIG_TCP_CONG_ADVANCED=y
 CONFIG_TCP_CONG_BIC=y
