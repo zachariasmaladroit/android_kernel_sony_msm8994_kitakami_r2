@@ -5526,7 +5526,7 @@ static int mem_cgroup_swappiness_write(struct cgroup *cgrp, struct cftype *cft,
 	struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
 	struct mem_cgroup *parent;
 
-	if ((val > 200) || ((val > 100) && !css->parent))
+	if (val > 100)
 		return -EINVAL;
 
 	if (cgrp->parent == NULL)
