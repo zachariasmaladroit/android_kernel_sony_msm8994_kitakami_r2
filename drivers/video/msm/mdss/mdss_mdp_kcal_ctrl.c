@@ -404,7 +404,7 @@ static int kcal_ctrl_probe(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, lut_data);
 
-	lut_data->enable = 0x0;
+	lut_data->enable = 0x1;
 	lut_data->red = DEF_PCC;
 	lut_data->green = DEF_PCC;
 	lut_data->blue = DEF_PCC;
