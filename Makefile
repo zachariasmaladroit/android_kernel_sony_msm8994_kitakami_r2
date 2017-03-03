@@ -378,7 +378,6 @@ LINUXINCLUDE    := \
 KBUILD_CPPFLAGS := -D__KERNEL__
 
 KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
-#		   -D_GLIBCXX_USE_CXX11_ABI=0 \
 		   -fno-strict-aliasing -fno-common \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
@@ -410,9 +409,9 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -fprefetch-loop-arrays \
 #		   -freorder-blocks \
 		   -pipe \
+#		   -mfpu=neon-fp-armv8 \
 		   -march=armv8-a \
 		   -mtune=cortex-a57.cortex-a53 \
-#		   -mfpu=neon-fp-armv8 \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
 
 KBUILD_AFLAGS_KERNEL :=
