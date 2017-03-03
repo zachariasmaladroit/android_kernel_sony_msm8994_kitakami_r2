@@ -378,6 +378,7 @@ LINUXINCLUDE    := \
 KBUILD_CPPFLAGS := -D__KERNEL__
 
 KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+#		   -D_GLIBCXX_USE_CXX11_ABI=0 \
 		   -fno-strict-aliasing -fno-common \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
@@ -393,12 +394,13 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -fmodulo-sched \
 		   -fmodulo-sched-allow-regmoves \
 		   -fivopts \
-		   -fipa-pta \
+#		   -fipa-pta \
+		   -fgcse -fgcse-las -fgcse-lm -fgcse-sm -fgcse-after-reload \
 #		   -fgcse -fgcse-las -fgcse-after-reload \
 #		   -ftree-loop-im -funswitch-loops \
 #		   -ftree-pre -ftree-forwprop -ftree-fre -ftree-phiprop -ftree-partial-pre \
 #		   -freschedule-modulo-scheduled-loops \
-		   -funswitch-loops -ftree-loop-im -fpredictive-commoning -fgcse -fgcse-las -fgcse-lm -fgcse-sm -fgcse-after-reload \
+#		   -funswitch-loops -ftree-loop-im -fpredictive-commoning \
 #		   -fsched-pressure -fschedule-insns \
 #		   -fbranch-target-load-optimize \
 #		   -fsingle-precision-constant \
@@ -406,7 +408,7 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 #		   -frename-registers -fweb \
 #		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
 		   -fprefetch-loop-arrays \
-		   -freorder-blocks \
+#		   -freorder-blocks \
 		   -pipe \
 		   -march=armv8-a \
 		   -mtune=cortex-a57.cortex-a53 \
