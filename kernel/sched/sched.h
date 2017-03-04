@@ -1472,7 +1472,6 @@ static inline u64 steal_ticks(u64 steal)
 }
 #endif
 
-#fdef CONFIG_CPU_QUIET
 static inline u64 do_nr_running_integral(struct rq *rq)
 {
 	s64 nr, deltax;
@@ -1485,7 +1484,6 @@ static inline u64 do_nr_running_integral(struct rq *rq)
 
 	return nr_running_integral;
 }
-#endif
 
 #ifdef CONFIG_INTELLI_PLUG
 static inline unsigned int do_avg_nr_running(struct rq *rq)
