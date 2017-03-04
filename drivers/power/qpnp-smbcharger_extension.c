@@ -2722,7 +2722,7 @@ int somc_chg_shutdown_lowbatt(struct power_supply *bms_psy)
 
 	if (!chg_params || !chg_params->dev || !chg_params->usb_psy ||
 			!chg_params->ext_vbus_psy) {
-		pr_err("chg_params is not initialized\n");
+		pr_debug("chg_params is not initialized\n");
 		return -EINVAL;
 	}
 
