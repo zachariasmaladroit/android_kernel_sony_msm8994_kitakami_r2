@@ -384,7 +384,7 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -fno-delete-null-pointer-checks \
 		   -fno-tree-reassoc \
 		   -fno-strict-overflow \
-		   -fno-tree-pre -fno-strict-aliasing \
+		   -fno-tree-pre \
 		   -fno-aggressive-loop-optimizations \
 		   -fno-var-tracking-assignments \
 		   -fno-tree-reassoc \
@@ -409,8 +409,9 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -fprefetch-loop-arrays \
 #		   -freorder-blocks \
 		   -pipe \
+#		   -march=armv8-a \
 #		   -mfpu=neon-fp-armv8 \
-		   -march=armv8-a \
+		   -mcpu=cortex-a57.cortex-a53 \
 		   -mtune=cortex-a57.cortex-a53 \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
 
