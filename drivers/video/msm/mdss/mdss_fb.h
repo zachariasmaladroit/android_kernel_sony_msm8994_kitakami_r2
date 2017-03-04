@@ -63,9 +63,9 @@
 #define MDP_PP_AD_BL_LINEAR_INV	0x1
 
 /* Enables Sonys feature Early Unblank for quick wakeup */
-#define SOMC_FEATURE_EARLY_UNBLANK
+#define SOMC_FEATURE_EARLY_UNBLANK	1
 
-#ifdef SOMC_FEATURE_EARLY_UNBLANK
+#if SOMC_FEATURE_EARLY_UNBLANK
 #include <linux/workqueue.h>
 #endif /* SOMC_FEATURE_EARLY_UNBLANK */
 
@@ -356,7 +356,7 @@ struct msm_fb_data_type {
 	bool suspend_avoided;
 #endif
 
-#ifdef SOMC_FEATURE_EARLY_UNBLANK
+#if SOMC_FEATURE_EARLY_UNBLANK
 	/* speed up wakeup */
 	/* do unblank (>150ms) on own kworker
 	 * so we don't starve other works
