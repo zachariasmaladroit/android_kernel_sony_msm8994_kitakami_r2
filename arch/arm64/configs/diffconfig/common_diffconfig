@@ -170,9 +170,9 @@ CONFIG_LOCALVERSION_AUTO=n
 CONFIG_ARCH_MSM8994_V1_TLBI_WA=y
 
 # logging and other "overhead"
-CONFIG_MSM_RPM_LOG=y
-CONFIG_MSM_RPM_STATS_LOG=y
-CONFIG_MSM_SMEM_LOGGING=y
+# CONFIG_MSM_RPM_LOG is not set
+# CONFIG_MSM_RPM_STATS_LOG is not set
+# CONFIG_MSM_SMEM_LOGGING is not set
 
 CONFIG_JOYSTICK_XPAD=y
 CONFIG_JOYSTICK_XPAD_FF=y
@@ -209,8 +209,8 @@ CONFIG_MEMCG=y
 CONFIG_MEMCG_SWAP=y
 CONFIG_MEMCG_SWAP_ENABLED=y
 
-# limit kswapd to the first 4 cores
-CONFIG_KSWAPD_CPU_AFFINITY_MASK="f"
+# limit kswapd to the first 4 cores (with "f")
+CONFIG_KSWAPD_CPU_AFFINITY_MASK=""
 
 # advanced congestion control algorithms
 CONFIG_TCP_CONG_ADVANCED=y
@@ -404,11 +404,12 @@ CONFIG_LSM_MMAP_MIN_ADDR=32768
 CONFIG_DEFAULT_MMAP_MIN_ADDR=32768
 
 # ASN.1 grammar compiler
-CONFIG_ASN1=y
+# lineageOS
+# CONFIG_ASN1 is not set
 
 # PM related (WG, etc.)
 CONFIG_WQ_POWER_EFFICIENT_DEFAULT=y
-# CONFIG_POWERSUSPEND is not set
+CONFIG_POWERSUSPEND=y
 CONFIG_QUICK_WAKEUP=y
 
 # more governors, not all included
@@ -447,6 +448,7 @@ CONFIG_CPU_FREQ_GOV_INTERACTIVE=y
 # CONFIG_CPU_FREQ_GOV_WHEATLEY is not set
 #
 # sched_migration_update_sum
+# not needed in lineageOS ?
 CONFIG_SCHED_FREQ_INPUT=y
 
 # dynamic fsync, LMK adj rbtree
@@ -459,9 +461,8 @@ CONFIG_SCHED_FREQ_INPUT=y
 # Hotplug stuff
 CONFIG_HOTPLUG=y
 CONFIG_STATE_NOTIFIER=y
-CONFIG_POWERSUSPEND=y
 # CONFIG_MSM_CORE_CTL is not set
-CONFIG_MSM_PERFORMANCE=y
+# CONFIG_MSM_PERFORMANCE is not set
 # CONFIG_MSM_PERFORMANCE_HOTPLUG_ON is not set
 CONFIG_LCD_NOTIFIER=y
 # CONFIG_ALUCARD_HOTPLUG is not set
@@ -561,7 +562,7 @@ CONFIG_FB_MSM_MDSS_MHL3=y
 # CONFIG_MHL_SIMG_SONY is not set
 
 # misc hardware acceleration
-CONFIG_HAVE_ARCH_BITREVERSE=y
+# CONFIG_HAVE_ARCH_BITREVERSE is not set
 
 # Network, Netfilter stuff
 CONFIG_NF_CONNTRACK_SECMARK=y
@@ -634,7 +635,7 @@ CONFIG_TABLET_USB_WACOM=y
 # "magic" keys for bug reports
 # CONFIG_INPUT_KEYCHORD is not set
 
-# MultiROM - disable this to get it
+# MultiROM support - disable this to get it
 CONFIG_SECURE_TOUCH=y
 
 # production builds - disable this
