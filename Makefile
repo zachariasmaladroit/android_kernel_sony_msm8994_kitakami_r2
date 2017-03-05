@@ -388,8 +388,11 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 #		   -fno-sched-pressure \
 		   -fno-aggressive-loop-optimizations \
 		   -fno-var-tracking-assignments \
-#		   -fno-builtin \
-#		   -fno-builtin-memcpy \
+		   -fno-builtin \
+		   -fno-builtin-memcpy \
+		   -falign-jumps=1 \
+		   -falign-loops=1 \
+#		   -falign-functions=16 -falign-jumps=16 -falign-loops=16 -falign-labels=16 \
 #		   -fmodulo-sched \
 #		   -fmodulo-sched-allow-regmoves \
 #		   -fivopts \
@@ -403,7 +406,6 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 #		   -fsched-pressure -fschedule-insns \
 #		   -fbranch-target-load-optimize \
 #		   -fsingle-precision-constant \
-#		   -falign-functions=16 -falign-jumps=16 -falign-loops=16 -falign-labels=16 \
 #		   -frename-registers -fweb \
 #		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
 #		   -fprefetch-loop-arrays \
