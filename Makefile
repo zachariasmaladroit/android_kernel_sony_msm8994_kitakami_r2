@@ -384,17 +384,17 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -fno-delete-null-pointer-checks \
 		   -fno-tree-reassoc \
 		   -fno-strict-overflow \
-		   -fno-tree-pre \
+#		   -fno-tree-pre \
+#		   -fno-sched-pressure \
 		   -fno-aggressive-loop-optimizations \
 		   -fno-var-tracking-assignments \
 #		   -fno-builtin \
 #		   -fno-builtin-memcpy \
-		   -fmodulo-sched \
-		   -fmodulo-sched-allow-regmoves \
-		   -fno-sched-pressure \
-		   -fivopts \
+#		   -fmodulo-sched \
+#		   -fmodulo-sched-allow-regmoves \
+#		   -fivopts \
 #		   -fipa-pta \
-		   -fgcse -fgcse-las -fgcse-lm -fgcse-sm -fgcse-after-reload \
+#		   -fgcse -fgcse-las -fgcse-lm -fgcse-sm -fgcse-after-reload \
 #		   -fgcse -fgcse-las -fgcse-after-reload \
 #		   -ftree-loop-im -funswitch-loops \
 #		   -ftree-pre -ftree-forwprop -ftree-fre -ftree-phiprop -ftree-partial-pre \
@@ -406,7 +406,7 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 #		   -falign-functions=16 -falign-jumps=16 -falign-loops=16 -falign-labels=16 \
 #		   -frename-registers -fweb \
 #		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
-		   -fprefetch-loop-arrays \
+#		   -fprefetch-loop-arrays \
 #		   -freorder-blocks \
 		   -pipe \
 #		   -mfpu=neon-fp-armv8 \
