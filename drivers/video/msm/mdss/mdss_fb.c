@@ -76,7 +76,7 @@
 #define BLANK_FLAG_LP	FB_BLANK_VSYNC_SUSPEND
 #define BLANK_FLAG_ULP	FB_BLANK_NORMAL
 
-#if SOMC_FEATURE_EARLY_UNBLANK
+#ifdef SOMC_FEATURE_EARLY_UNBLANK
 #include <linux/input.h>
 /* with a define we avoid modifying fb.h's FB-enum */
 #define FB_EARLY_UNBLANK 0xC0FFEE
@@ -125,7 +125,7 @@ static void mdss_fb_set_mdp_sync_pt_threshold(struct msm_fb_data_type *mfd,
 static void mdss_panelinfo_to_fb_var(struct mdss_panel_info *pinfo,
 					struct fb_var_screeninfo *var);
 
-#if SOMC_FEATURE_EARLY_UNBLANK
+#ifdef SOMC_FEATURE_EARLY_UNBLANK
 static void mdss_background_unblank(struct work_struct *ws);
 
 static int pwr_pressed;
@@ -1086,7 +1086,7 @@ static int mdss_fb_probe(struct platform_device *pdev)
 	}
 
 	INIT_LIST_HEAD(&mfd->proc_list);
-#if SOMC_FEATURE_EARLY_UNBLANK
+#ifdef SOMC_FEATURE_EARLY_UNBLANK
 	mfd->early_unblank_completed = false;
 	mfd->unblank_kworker = NULL;
 	INIT_WORK(&mfd->unblank_work, mdss_background_unblank);
@@ -1163,7 +1163,7 @@ static int mdss_fb_probe(struct platform_device *pdev)
 	mfd->suspend_avoided = false;
 #endif
 
-#if SOMC_FEATURE_EARLY_UNBLANK
+#ifdef SOMC_FEATURE_EARLY_UNBLANK
 	if (mfd->index == 0) {
 		/* only the primary panel, index 0, uses this kworker */
 		mfd->unblank_kworker =
@@ -1262,7 +1262,7 @@ static int mdss_fb_suspend_sub(struct msm_fb_data_type *mfd)
 		return 0;
 
 	pr_debug("mdss_fb suspend index=%d\n", mfd->index);
-#if SOMC_FEATURE_EARLY_UNBLANK
+#ifdef SOMC_FEATURE_EARLY_UNBLANK
 	mdss_ensure_kworker_done(mfd->unblank_kworker);
 #endif /* SOMC_FEATURE_EARLY_UNBLANK */
 
@@ -1289,7 +1289,7 @@ static int mdss_fb_suspend_sub(struct msm_fb_data_type *mfd)
 		 * as a fall back option, enter ulp state to leave the display
 		 * on, but turn off all interface clocks.
 		 */
-#if SOMC_FEATURE_EARLY_UNBLANK
+#ifdef SOMC_FEATURE_EARLY_UNBLANK
 		/* Check if Early Unblank has done an early power on of
 		 * the panel, but got no request from layers above to do so.
 		 * If that is the case (for instance when a smart cover is
@@ -1320,7 +1320,7 @@ static int mdss_fb_suspend_sub(struct msm_fb_data_type *mfd)
 		fb_set_suspend(mfd->fbi, FBINFO_STATE_SUSPENDED);
 	}
 
-#if SOMC_FEATURE_EARLY_UNBLANK
+#ifdef SOMC_FEATURE_EARLY_UNBLANK
 	pwr_pressed = false;
 #endif /* SOMC_FEATURE_EARLY_UNBLANK */
 
@@ -1361,7 +1361,7 @@ static int mdss_fb_resume_sub(struct msm_fb_data_type *mfd)
 	 * flag. If fb was in ulp state when entering suspend, then nothing
 	 * needs to be done.
 	 */
-#if SOMC_FEATURE_EARLY_UNBLANK
+#ifdef SOMC_FEATURE_EARLY_UNBLANK
 	if (mfd->unblank_kworker && pwr_pressed &&
 	    !mdss_panel_is_power_on_ulp(mfd->suspend.panel_power_state)) {
 		pr_debug("starting unblank async from resume");
@@ -1898,7 +1898,7 @@ static int mdss_fb_blank_sub(int blank_mode, struct fb_info *info,
 
 	switch (blank_mode) {
 	case FB_BLANK_UNBLANK:
-#if SOMC_FEATURE_EARLY_UNBLANK
+#ifdef SOMC_FEATURE_EARLY_UNBLANK
 		mdss_ensure_kworker_done(mfd->unblank_kworker);
 		mdss_fb_update_early_unblank_completed(mfd, false);
 		/* if kworker was successful we are done...
@@ -1953,7 +1953,7 @@ static int mdss_fb_blank_sub(int blank_mode, struct fb_info *info,
 	return ret;
 }
 
-#if SOMC_FEATURE_EARLY_UNBLANK
+#ifdef SOMC_FEATURE_EARLY_UNBLANK
 static void mdss_background_unblank(struct work_struct *ws)
 {
 	int ret;
@@ -2870,7 +2870,7 @@ static int mdss_fb_release_all(struct fb_info *info, bool release_all)
 									ad_ret);
 		}
 
-#if SOMC_FEATURE_EARLY_UNBLANK
+#ifdef SOMC_FEATURE_EARLY_UNBLANK
 		mdss_ensure_kworker_done(mfd->unblank_kworker);
 		mdss_fb_update_early_unblank_completed(mfd, false);
 #endif /* SOMC_FEATURE_EARLY_UNBLANK */
@@ -4492,7 +4492,7 @@ int __init mdss_fb_init(void)
 	if (platform_driver_register(&mdss_fb_driver))
 		return rc;
 
-#if SOMC_FEATURE_EARLY_UNBLANK
+#ifdef SOMC_FEATURE_EARLY_UNBLANK
 	if (input_register_handler(&mdss_input_handler))
 		return rc;
 #endif /* SOMC_FEATURE_EARLY_UNBLANK */
