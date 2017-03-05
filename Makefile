@@ -391,6 +391,7 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 #		   -fno-builtin-memcpy \
 		   -fmodulo-sched \
 		   -fmodulo-sched-allow-regmoves \
+		   -fno-sched-pressure \
 		   -fivopts \
 #		   -fipa-pta \
 		   -fgcse -fgcse-las -fgcse-lm -fgcse-sm -fgcse-after-reload \
