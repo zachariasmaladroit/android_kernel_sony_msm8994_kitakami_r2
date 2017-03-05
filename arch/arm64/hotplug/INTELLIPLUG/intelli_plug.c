@@ -29,7 +29,7 @@
 #define INTELLI_PLUG_MAJOR_VERSION	5
 #define INTELLI_PLUG_MINOR_VERSION	1
 
-#define DEF_SAMPLING_MS			250
+#define DEF_SAMPLING_MS			268
 #define RESUME_SAMPLING_MS		HZ / 10
 #define START_DELAY_MS			HZ * 20
 #define MIN_INPUT_INTERVAL		150 * 1000L
@@ -75,7 +75,7 @@ struct ip_cpu_info {
 static DEFINE_PER_CPU(struct ip_cpu_info, ip_info);
 
 /* HotPlug Driver controls */
-static atomic_t intelli_plug_active = ATOMIC_INIT(1);
+static atomic_t intelli_plug_active = ATOMIC_INIT(0);
 static unsigned int cpus_boosted = DEFAULT_NR_CPUS_BOOSTED;
 static unsigned int min_cpus_online = DEFAULT_MIN_CPUS_ONLINE;
 static unsigned int max_cpus_online = DEFAULT_MAX_CPUS_ONLINE;
