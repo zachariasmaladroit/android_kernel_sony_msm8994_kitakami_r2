@@ -813,6 +813,8 @@ source "arch/arm64/hotplug/BRICKED/Kconfig"
 
 source "arch/arm64/hotplug/INTELLIPLUG/Kconfig"
 
+source "arch/arm64/hotplug/LAZYPLUG/Kconfig"
+
 source "arch/arm64/hotplug/MSMHOTPLUG/Kconfig"
 
 source "arch/arm64/hotplug/MSMSLEEPER/Kconfig"
