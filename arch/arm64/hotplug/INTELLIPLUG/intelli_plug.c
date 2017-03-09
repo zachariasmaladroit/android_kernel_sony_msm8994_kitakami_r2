@@ -34,9 +34,13 @@
 #undef DEBUG_INTELLI_PLUG
 
 #define INTELLI_PLUG_MAJOR_VERSION	4
-#define INTELLI_PLUG_MINOR_VERSION	2
+#define INTELLI_PLUG_MINOR_VERSION	0
 
 #define DEF_SAMPLING_MS			(400)
+
+#define DUAL_PERSISTENCE		(2500 / DEF_SAMPLING_MS)
+#define TRI_PERSISTENCE			(1700 / DEF_SAMPLING_MS)
+#define QUAD_PERSISTENCE		(1000 / DEF_SAMPLING_MS)
 
 #define BUSY_PERSISTENCE		(3500 / DEF_SAMPLING_MS)
 
@@ -142,7 +146,6 @@ static unsigned int *nr_run_profiles[] = {
 };
 
 #define NR_RUN_ECO_MODE_PROFILE	3
-#define NR_RUN_HYSTERESIS_OCTA	16
 #define NR_RUN_HYSTERESIS_QUAD	8
 #define NR_RUN_HYSTERESIS_DUAL	4
 
@@ -154,7 +157,7 @@ module_param(nr_possible_cores, uint, 0444);
 static unsigned int cpu_nr_run_threshold = CPU_NR_THRESHOLD;
 module_param(cpu_nr_run_threshold, uint, 0664);
 
-static unsigned int nr_run_hysteresis = NR_RUN_HYSTERESIS_OCTA;
+static unsigned int nr_run_hysteresis = NR_RUN_HYSTERESIS_QUAD;
 module_param(nr_run_hysteresis, uint, 0664);
 
 static unsigned int nr_run_last;
@@ -602,10 +605,7 @@ int __init intelli_plug_init(void)
 		 INTELLI_PLUG_MAJOR_VERSION,
 		 INTELLI_PLUG_MINOR_VERSION);
 
-	if (nr_possible_cores > 4) {
-		nr_run_hysteresis = NR_RUN_HYSTERESIS_OCTA;
-		nr_run_profile_sel = 0;
-	} else if (nr_possible_cores > 2) {
+	if (nr_possible_cores > 2) {
 		nr_run_hysteresis = NR_RUN_HYSTERESIS_QUAD;
 		nr_run_profile_sel = 0;
 	} else {
