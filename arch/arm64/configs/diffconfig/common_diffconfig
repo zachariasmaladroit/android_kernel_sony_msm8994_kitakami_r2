@@ -343,6 +343,10 @@ CONFIG_USB_NET_ZAURUS=y
 # Faux Sound Control for WCD9330 TomTom codec
 CONFIG_SOUND_CONTROL_HAX_3_GPL=y
 
+# MSM SoC Audio processing
+# other stuff is already enabled
+CONFIG_DOLBY_DAP=y
+
 CONFIG_NLS_ISO8859_15=y
 CONFIG_NLS_CODEPAGE_852=y
 CONFIG_NLS_DEFAULT="iso8859-15"
