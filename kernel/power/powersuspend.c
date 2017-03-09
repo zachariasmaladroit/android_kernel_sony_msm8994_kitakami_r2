@@ -14,6 +14,8 @@
  *
  *  v1.4 - add a hybrid-kernel mode, accepting both kernel hooks (first wins)
  *
+ *  v1.5 - fix hybrid-kernel mode cannot be set through sysfs
+ *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
  * may be copied, distributed, and modified under those terms.
@@ -33,7 +35,7 @@
 #define MAJOR_VERSION	1
 #define MINOR_VERSION	5
 
-//#define POWER_SUSPEND_DEBUG // Add debugging prints in dmesg
+#define POWER_SUSPEND_DEBUG // Add debugging prints in dmesg
 
 struct workqueue_struct *suspend_work_queue;
 
@@ -136,8 +138,6 @@ abort_resume:
 	mutex_unlock(&power_suspend_lock);
 }
 
-bool power_suspended = false;
-
 void set_power_suspend_state(int new_state)
 {
 	unsigned long irqflags;
@@ -148,14 +148,12 @@ void set_power_suspend_state(int new_state)
 		pr_info("[POWERSUSPEND] state activated.\n");
 		#endif
 		state = new_state;
-		power_suspended = true;
 		queue_work(suspend_work_queue, &power_suspend_work);
 	} else if (state == POWER_SUSPEND_ACTIVE && new_state == POWER_SUSPEND_INACTIVE) {
 		#ifdef POWER_SUSPEND_DEBUG
 		pr_info("[POWERSUSPEND] state deactivated.\n");
 		#endif
 		state = new_state;
-		power_suspended = false;
 		queue_work(suspend_work_queue, &power_resume_work);
 	}
 	spin_unlock_irqrestore(&state_lock, irqflags);
@@ -178,7 +176,7 @@ void set_power_suspend_state_panel_hook(int new_state)
 	#ifdef POWER_SUSPEND_DEBUG
 	pr_info("[POWERSUSPEND] panel resquests %s.\n", new_state == POWER_SUSPEND_ACTIVE ? "sleep" : "wakeup");
 	#endif
-	// Yank555.lu : Only allow autosleep hook changes in autosleep & hybrid mode
+	// Yank555.lu : Only allow panel hook changes in panel & hybrid mode
 	if (mode == POWER_SUSPEND_PANEL || mode == POWER_SUSPEND_HYBRID)
 		set_power_suspend_state(new_state);
 }
