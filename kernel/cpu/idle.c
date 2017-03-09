@@ -120,7 +120,9 @@ static void cpu_idle_loop(void)
 					stop_critical_timings();
 					rcu_idle_enter();
 					arch_cpu_idle();
-					WARN_ON_ONCE(irqs_disabled());
+					if (WARN_ON_ONCE(irqs_disabled())) {
+						local_irq_enable();
+					}
 					rcu_idle_exit();
 					start_critical_timings();
 				} else {
