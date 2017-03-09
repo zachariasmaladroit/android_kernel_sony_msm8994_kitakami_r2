@@ -628,7 +628,7 @@ static inline u64 rq_clock_task(struct rq *rq)
 
 #define NR_AVE_SCALE(x)		((x) << FSHIFT)
 
-#ifdef CONFIG_INTELLI_PLUG
+#if (defined CONFIG_INTELLI_PLUG) || (defined CONFIG_LAZYPLUG)
 struct nr_stats_s {
 	/* time-based average load */
 	u64 nr_last_stamp;
@@ -1485,7 +1485,7 @@ static inline u64 do_nr_running_integral(struct rq *rq)
 	return nr_running_integral;
 }
 
-#ifdef CONFIG_INTELLI_PLUG
+#if (defined CONFIG_INTELLI_PLUG) || (defined CONFIG_LAZYPLUG)
 static inline unsigned int do_avg_nr_running(struct rq *rq)
 {
 
@@ -1508,11 +1508,11 @@ static inline unsigned int do_avg_nr_running(struct rq *rq)
 
 static inline void inc_nr_running(struct rq *rq)
 {
-#ifdef CONFIG_INTELLI_PLUG
+#if (defined CONFIG_INTELLI_PLUG) || (defined CONFIG_LAZYPLUG)
 	struct nr_stats_s *nr_stats = &per_cpu(runqueue_stats, rq->cpu);
 #endif
 	sched_update_nr_prod(cpu_of(rq), 1, true);
-#ifdef CONFIG_INTELLI_PLUG
+#if (defined CONFIG_INTELLI_PLUG) || (defined CONFIG_LAZYPLUG)
 	write_seqcount_begin(&nr_stats->ave_seqcnt);
 	nr_stats->ave_nr_running = do_avg_nr_running(rq);
 	nr_stats->nr_last_stamp = rq->clock_task;
@@ -1522,7 +1522,7 @@ static inline void inc_nr_running(struct rq *rq)
 	rq->nr_last_stamp = rq->clock_task;
 #endif
 	rq->nr_running++;
-#ifdef CONFIG_INTELLI_PLUG
+#if (defined CONFIG_INTELLI_PLUG) || (defined CONFIG_LAZYPLUG)
 	write_seqcount_end(&nr_stats->ave_seqcnt);
 #else
 	write_seqcount_end(&rq->ave_seqcnt);
@@ -1546,11 +1546,11 @@ static inline void inc_nr_running(struct rq *rq)
 
 static inline void dec_nr_running(struct rq *rq)
 {
-#ifdef CONFIG_INTELLI_PLUG
+#if (defined CONFIG_INTELLI_PLUG) || (defined CONFIG_LAZYPLUG)
 	struct nr_stats_s *nr_stats = &per_cpu(runqueue_stats, rq->cpu);
 #endif
 	sched_update_nr_prod(cpu_of(rq), 1, false);
-#ifdef CONFIG_INTELLI_PLUG
+#if (defined CONFIG_INTELLI_PLUG) || (defined CONFIG_LAZYPLUG)
 	write_seqcount_begin(&nr_stats->ave_seqcnt);
 	nr_stats->ave_nr_running = do_avg_nr_running(rq);
 	nr_stats->nr_last_stamp = rq->clock_task;
@@ -1560,7 +1560,7 @@ static inline void dec_nr_running(struct rq *rq)
 	rq->nr_last_stamp = rq->clock_task;
 #endif
 	rq->nr_running--;
-#ifdef CONFIG_INTELLI_PLUG
+#if (defined CONFIG_INTELLI_PLUG) || (defined CONFIG_LAZYPLUG)
 	write_seqcount_end(&nr_stats->ave_seqcnt);
 #else
 	write_seqcount_end(&rq->ave_seqcnt);

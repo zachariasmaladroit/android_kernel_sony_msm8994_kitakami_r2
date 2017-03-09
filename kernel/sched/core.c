@@ -167,7 +167,7 @@ void start_bandwidth_timer(struct hrtimer *period_timer, ktime_t period)
 
 DEFINE_MUTEX(sched_domains_mutex);
 DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
-#ifdef CONFIG_INTELLI_PLUG
+#if (defined CONFIG_INTELLI_PLUG) || (defined CONFIG_LAZYPLUG)
 DEFINE_PER_CPU_SHARED_ALIGNED(struct nr_stats_s, runqueue_stats);
 #endif
 static void update_rq_clock_task(struct rq *rq, s64 delta);
@@ -4124,7 +4124,7 @@ u64 nr_running_integral(unsigned int cpu)
  *  This covers the NO_HZ=n code, for extra head-aches, see the comment below.
  */
 
-#ifdef CONFIG_INTELLI_PLUG
+#if (defined CONFIG_INTELLI_PLUG) || (defined CONFIG_LAZYPLUG)
 unsigned long avg_nr_running(void)
 {
 	unsigned long i, sum = 0;
