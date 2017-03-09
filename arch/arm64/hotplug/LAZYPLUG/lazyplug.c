@@ -80,7 +80,7 @@
 #define LAZYPLUG_MAJOR_VERSION	1
 #define LAZYPLUG_MINOR_VERSION	6
 
-#define DEF_SAMPLING_MS			(250)
+#define DEF_SAMPLING_MS			(268)
 #define DEF_IDLE_COUNT			(19) /* 268 * 19 = 5092, almost equals to 5 seconds */
 
 #define BUSY_PERSISTENCE		(3500 / DEF_SAMPLING_MS)
