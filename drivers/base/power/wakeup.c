@@ -32,6 +32,8 @@ static bool enable_wlan_wake_ws = true;
 module_param(enable_wlan_wake_ws, bool, 0644);
 static bool enable_bluedroid_timer_ws = true;
 module_param(enable_bluedroid_timer_ws, bool, 0644);
+static bool enable_bluesleep_ws = true;
+module_param(enable_bluesleep_ws, bool, 0644);
 static bool enable_ipa_ws = true;
 module_param(enable_ipa_ws, bool, 0644);
 
@@ -541,6 +543,8 @@ static void wakeup_source_activate(struct wakeup_source *ws)
 			!strncmp(ws->name, "wlan_wake", 9)) ||
 		(!enable_bluedroid_timer_ws &&
 			!strncmp(ws->name, "bluedroid_timer", 15)) ||
+		(!enable_bluesleep_ws &&
+			!strncmp(ws->name, "bluesleep", 9)) ||
 		(!enable_ipa_ws &&
 			!strncmp(ws->name, "IPA_WS", 6)))) {
 		/*
