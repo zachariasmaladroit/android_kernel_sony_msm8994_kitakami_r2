@@ -124,6 +124,7 @@ struct menu_device {
 
 	unsigned int	next_timer_us;
 	unsigned int	predicted_us;
+	unsigned int	exit_us;
 	unsigned int	bucket;
 	unsigned int	correction_factor[BUCKETS];
 	unsigned int	intervals[INTERVALS];
@@ -285,6 +286,7 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
 	}
 
 	data->last_state_idx = CPUIDLE_DRIVER_STATE_START - 1;
+	data->exit_us = 0;
 
 	/* Special case when user has set very strict latency requirement */
 	if (unlikely(latency_req == 0))
@@ -345,6 +347,7 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
 			continue;
 
 		data->last_state_idx = i;
+		data->exit_us = s->exit_latency;
 	}
 
 	return data->last_state_idx;
@@ -395,8 +398,8 @@ static void menu_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
 	 * We correct for the exit latency; we are assuming here that the
 	 * exit latency happens after the event that we're interested in.
 	 */
-	if (measured_us > target->exit_latency)
-		measured_us -= target->exit_latency;
+	if (measured_us > data->exit_us)
+		measured_us -= data->exit_us;
 
 
 	/* Update our correction ratio */
