@@ -80,8 +80,7 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
 
 	entered_state = target_state->enter(dev, drv, index);
 
-	if (!cpuidle_state_is_coupled(dev, drv, entered_state))
-		local_irq_enable();
+	local_irq_enable();
 
 	if (entered_state >= 0) {
 		/* Update cpuidle counters */
