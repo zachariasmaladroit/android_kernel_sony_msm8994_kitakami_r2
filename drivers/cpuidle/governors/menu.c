@@ -188,19 +188,18 @@ static u64 div_round64(u64 dividend, u32 divisor)
 static void get_typical_interval(struct menu_device *data)
 {
 	int i, divisor;
-	unsigned int max, thresh;
-	uint64_t avg, stddev;
-
-	thresh = UINT_MAX; /* Discard outliers above this value */
+	uint64_t max, avg, stddev;
+	int64_t thresh = LLONG_MAX; /* Discard outliers above this value. */
 
 again:
 
-	/* First calculate the average of past intervals */
+	/* first calculate average and standard deviation of the past */
 	max = 0;
 	avg = 0;
 	divisor = 0;
+	stddev = 0;
 	for (i = 0; i < INTERVALS; i++) {
-		unsigned int value = data->intervals[i];
+		int64_t value = data->intervals[i];
 		if (value <= thresh) {
 			avg += value;
 			divisor++;
@@ -210,10 +209,8 @@ again:
 	}
 	do_div(avg, divisor);
 
-	/* Then try to determine standard deviation */
-	stddev = 0;
 	for (i = 0; i < INTERVALS; i++) {
-		unsigned int value = data->intervals[i];
+		int64_t value = data->intervals[i];
 		if (value <= thresh) {
 			int64_t diff = value - avg;
 			stddev += diff * diff;
