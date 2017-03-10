@@ -118,7 +118,7 @@ struct menu_device {
 	unsigned int	exit_us;
 	unsigned int	bucket;
 	u64		correction_factor[BUCKETS];
-	unsigned int	intervals[INTERVALS];
+	u32		intervals[INTERVALS];
 	int		interval_ptr;
 };
 
