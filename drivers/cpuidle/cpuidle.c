@@ -292,11 +292,14 @@ int cpuidle_enable_device(struct cpuidle_device *dev)
 	if (!drv || !cpuidle_curr_governor)
 		return -EIO;
 
-	if (!dev->registered)
-		return -EINVAL;
-
 	if (!dev->state_count)
 		dev->state_count = drv->state_count;
+
+	if (dev->registered == 0) {
+		ret = __cpuidle_register_device(dev);
+		if (ret)
+			return ret;
+	}
 
 	poll_idle_init(drv);
 
@@ -412,17 +415,13 @@ int cpuidle_register_device(struct cpuidle_device *dev)
 		return ret;
 	}
 
-	ret = cpuidle_enable_device(dev);
-	if (ret) {
-		mutex_unlock(&cpuidle_lock);
-		return ret;
-	}
-
+	cpuidle_enable_device(dev);
 	cpuidle_install_idle_handler();
 
 	mutex_unlock(&cpuidle_lock);
 
 	return 0;
+
 }
 
 EXPORT_SYMBOL_GPL(cpuidle_register_device);
