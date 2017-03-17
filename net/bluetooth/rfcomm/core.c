@@ -307,7 +307,7 @@ struct rfcomm_dlc *rfcomm_dlc_alloc(gfp_t prio)
 
 	skb_queue_head_init(&d->tx_queue);
 	mutex_init(&d->lock);
-	atomic_set(&d->refcnt, 1);
+	refcount_set(&d->refcnt, 1);
 
 	rfcomm_dlc_clear_state(d);
 
@@ -338,7 +338,7 @@ static void rfcomm_dlc_unlink(struct rfcomm_dlc *d)
 {
 	struct rfcomm_session *s = d->session;
 
-	BT_DBG("dlc %pK refcnt %d session %pK", d, atomic_read(&d->refcnt), s);
+	BT_DBG("dlc %pK refcnt %d session %pK", d, refcount_read(&d->refcnt), s);
 
 	list_del(&d->list);
 	d->session = NULL;
