@@ -11,14 +11,14 @@ if CPU_QUIET
 
 config CPU_QUIET_GOVERNOR_USERSPACE
 	bool "'userspace' governor"
-	default y
+	default n
 	help
 	 Manual control of the number of CPUs online.
 	 This governor allows userspace to control the number of online CPUs.
 	 That means this governor allow user to implement the real governor
 	 in user space.
 
-	 If in doubt say Y.
+	 If in doubt say N.
 
 config CPU_QUIET_GOVERNOR_RUNNABLE
 	bool "'runnable threads' governor"
