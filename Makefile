@@ -390,8 +390,7 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -fno-var-tracking-assignments \
 		   -fno-builtin \
 		   -fno-builtin-memcpy \
-		   -falign-jumps=1 \
-		   -falign-loops=1 \
+		   -mno-unaligned-access \
 #		   -falign-functions=16 -falign-jumps=16 -falign-loops=16 -falign-labels=16 \
 #		   -fmodulo-sched \
 #		   -fmodulo-sched-allow-regmoves \
@@ -410,8 +409,8 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 #		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
 #		   -fprefetch-loop-arrays \
 #		   -freorder-blocks \
-		   -pipe \
 #		   -mfpu=neon-fp-armv8 \
+		   -pipe \
 		   -march=armv8-a \
 		   -mtune=cortex-a57.cortex-a53 \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
