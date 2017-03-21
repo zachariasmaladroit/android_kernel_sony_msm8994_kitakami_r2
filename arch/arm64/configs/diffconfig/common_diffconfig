@@ -535,7 +535,7 @@ CONFIG_RCU_FANOUT_LEAF=16
 
 # RCU additional tweaks
 CONFIG_RCU_CPU_STALL_TIMEOUT=60
-# CONFIG_RCU_CPU_STALL_VERBOSE is not set
+CONFIG_RCU_CPU_STALL_VERBOSE=y
 
 # interactivity, throughput compromise
 CONFIG_HZ=100
