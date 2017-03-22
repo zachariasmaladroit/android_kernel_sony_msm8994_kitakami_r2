@@ -747,3 +747,21 @@ CONFIG_SECURITYFS=y
 # CONFIG_CLZ_TAB is not set
 # CONFIG_MPILIB is not set
 # CONFIG_OID_REGISTRY is not set
+
+#
+# PPS support
+#
+CONFIG_PPS=y
+# CONFIG_PPS_DEBUG is not set
+
+#
+# PPS clients support
+#
+# CONFIG_PPS_CLIENT_KTIMER is not set
+# CONFIG_PPS_CLIENT_LDISC is not set
+# CONFIG_PPS_CLIENT_GPIO is not set
+
+#
+# PTP clock support
+#
+CONFIG_PTP_1588_CLOCK=y
