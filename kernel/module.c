@@ -1180,6 +1180,12 @@ static int check_version(Elf_Shdr *sechdrs,
 
 	if(!strncmp("texfat", mod->name, 6))
 		return 1;
+		
+	if(!strncmp("sii8620", mod->name, 7))
+		return 1;
+		
+	if(!strncmp("mhl-sii8620", mod->name, 11))
+		return 1;
 
 //	if(!strncmp("core_ctl", mod->name, 8))
 //		return 1;
