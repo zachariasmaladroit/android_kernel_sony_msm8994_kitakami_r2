@@ -1,4 +1,5 @@
 obj-y = base.o
+obj-y += cmdline_helper.o
 obj-$(CONFIG_OF_FLATTREE) += fdt.o
 obj-$(CONFIG_OF_PROMTREE) += pdt.o
 obj-$(CONFIG_OF_ADDRESS)  += address.o
