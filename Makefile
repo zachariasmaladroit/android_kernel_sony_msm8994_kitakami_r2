@@ -384,32 +384,35 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -fno-delete-null-pointer-checks \
 		   -fno-tree-reassoc \
 		   -fno-strict-overflow \
+#		   -fno-tree-pre \
+#		   -fno-sched-pressure \
+		   -fno-aggressive-loop-optimizations \
+		   -fno-var-tracking-assignments \
+		   -fno-builtin \
+		   -fno-builtin-memcpy \
+		   -mno-unaligned-access \
+#		   -falign-functions=16 -falign-jumps=16 -falign-loops=16 -falign-labels=16 \
 #		   -fmodulo-sched \
 #		   -fmodulo-sched-allow-regmoves \
 #		   -fivopts \
 #		   -fipa-pta \
+#		   -fgcse -fgcse-las -fgcse-lm -fgcse-sm -fgcse-after-reload \
 #		   -fgcse -fgcse-las -fgcse-after-reload \
-		   -fno-var-tracking-assignments \
+#		   -ftree-loop-im -funswitch-loops \
 #		   -ftree-pre -ftree-forwprop -ftree-fre -ftree-phiprop -ftree-partial-pre \
 #		   -freschedule-modulo-scheduled-loops \
-#		   -funswitch-loops -ftree-loop-im -fpredictive-commoning -fgcse -fgcse-las -fgcse-lm -fgcse-sm -fgcse-after-reload \
-#		   -fsched-pressure -fschedule-insns -fno-tree-reassoc \
-#		   -fno-tree-pre -fno-strict-aliasing \
-#		   -ftree-loop-im -funswitch-loops \
+#		   -funswitch-loops -ftree-loop-im -fpredictive-commoning \
+#		   -fsched-pressure -fschedule-insns \
 #		   -fbranch-target-load-optimize \
 #		   -fsingle-precision-constant \
-		   -falign-functions=16 -falign-jumps=16 -falign-loops=16 -falign-labels=16 \
 #		   -frename-registers -fweb \
-		   -fno-aggressive-loop-optimizations \
 #		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
-		   -fno-builtin \
-		   -fno-builtin-memcpy \
 #		   -fprefetch-loop-arrays \
 #		   -freorder-blocks \
+#		   -mfpu=neon-fp-armv8 \
 		   -pipe \
 		   -march=armv8-a \
 		   -mtune=cortex-a57.cortex-a53 \
-#		   -mfpu=neon-fp-armv8 \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
 
 KBUILD_AFLAGS_KERNEL :=
