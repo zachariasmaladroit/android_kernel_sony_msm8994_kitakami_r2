@@ -5704,8 +5704,7 @@ static int perf_swevent_add(struct perf_event *event, int flags)
 
 static void perf_swevent_del(struct perf_event *event, int flags)
 {
-	if(!hlist_unhashed(&event->hlist_entry))
-		hlist_del_rcu(&event->hlist_entry);
+	hlist_del_rcu(&event->hlist_entry);
 }
 
 static void perf_swevent_start(struct perf_event *event, int flags)
