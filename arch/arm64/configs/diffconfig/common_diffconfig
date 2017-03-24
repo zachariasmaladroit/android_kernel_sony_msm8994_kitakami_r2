@@ -331,3 +331,5 @@ CONFIG_DEFAULT_TCP_CONG="westwood"
 
 # upstream changes
 # CONFIG_MSM_ULTRASOUND is not set
+
+CONFIG_MSM_CORE_CTL=y
