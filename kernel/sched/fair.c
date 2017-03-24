@@ -1281,7 +1281,7 @@ unsigned int max_task_load(void)
 }
 
 /* Use this knob to turn on or off HMP-aware task placement logic */
-unsigned int __read_mostly sched_enable_hmp = 0;
+unsigned int __read_mostly sched_enable_hmp = 1;
 
 /* A cpu can no longer accomodate more tasks if:
  *
@@ -1318,7 +1318,7 @@ unsigned int __read_mostly sysctl_sched_spill_load_pct = 100;
  * sched_small_task are considered as small tasks.
  */
 unsigned int __read_mostly sched_small_task;
-unsigned int __read_mostly sysctl_sched_small_task_pct = 10;
+unsigned int __read_mostly sysctl_sched_small_task_pct = 60;
 
 /*
  * Tasks with demand >= sched_heavy_task will have their
@@ -1329,7 +1329,7 @@ unsigned int __read_mostly sysctl_sched_small_task_pct = 10;
  */
 #ifdef CONFIG_SCHED_FREQ_INPUT
 unsigned int __read_mostly sysctl_sched_heavy_task_pct;
-unsigned int __read_mostly sched_heavy_task;
+unsigned int __read_mostly sched_heavy_task = 85;
 #endif
 
 /*
