@@ -1362,7 +1362,7 @@ int __read_mostly sysctl_sched_upmigrate_min_nice = 9;
  * ended up with their load characteristics. Any entity enabling
  * boost is responsible for disabling it as well.
  */
-unsigned int sysctl_sched_boost = 1;
+unsigned int sysctl_sched_boost;
 
 static inline int available_cpu_capacity(int cpu)
 {
