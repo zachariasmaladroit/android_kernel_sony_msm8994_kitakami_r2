@@ -383,14 +383,25 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Wno-format-security \
 		   -fno-delete-null-pointer-checks \
 		   -std=gnu89 \
+		   -fno-tree-reassoc \
+		   -fno-strict-overflow \
+		   -fno-tree-pre \
+		   -fno-sched-pressure \
+		   -fno-aggressive-loop-optimizations \
+		   -fno-var-tracking-assignments \
 		   -Wno-tautological-compare \
-#		   -Wno-bool-compare \
 		   -Wno-misleading-indentation \
 		   -Wno-parentheses \
-		   -mcpu=cortex-a53 -mtune=cortex-a53 \
+		   -mcpu=cortex-a57.cortex-a53 -mtune=cortex-a57.cortex-a53 \
 		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
 		   -funswitch-loops -fpredictive-commoning -fgcse-after-reload \
-		   -fno-aggressive-loop-optimizations
+		   -fno-aggressive-loop-optimizations \
+		   -fprefetch-loop-arrays \
+		   -fsingle-precision-constant \
+		   -fmodulo-sched \
+		   -fmodulo-sched-allow-regmoves \
+		   -fivopts
+#		   -Wno-bool-compare \
 
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
