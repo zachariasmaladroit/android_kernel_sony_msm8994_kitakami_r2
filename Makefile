@@ -393,11 +393,11 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
 		   -funswitch-loops -fpredictive-commoning -fgcse-after-reload \
 		   -fno-aggressive-loop-optimizations \
-		   -fprefetch-loop-arrays \
 		   -fsingle-precision-constant \
 		   -fmodulo-sched \
 		   -fmodulo-sched-allow-regmoves \
 		   -fivopts
+#		   -fprefetch-loop-arrays \
 #		   -Wno-bool-compare \
 #		   -Wno-tautological-compare \
 #		   -Wno-misleading-indentation \
