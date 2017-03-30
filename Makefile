@@ -383,6 +383,10 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Wno-format-security \
 		   -fno-delete-null-pointer-checks \
 		   -std=gnu89 \
+		   -Wno-tautological-compare \
+#		   -Wno-bool-compare \
+		   -Wno-misleading-indentation \
+		   -Wno-parentheses \
 		   -mcpu=cortex-a53 -mtune=cortex-a53 \
 		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
 		   -funswitch-loops -fpredictive-commoning -fgcse-after-reload \
