@@ -523,14 +523,6 @@ static void wakeup_source_activate(struct wakeup_source *ws)
 			"unregistered wakeup source\n"))
 		return;
 
-	if (WARN(wakeup_source_not_registered(ws),
-			"unregistered wakeup source\n"))
-		return;
-
-	if (WARN(wakeup_source_not_registered(ws),
-			"unregistered wakeup source\n"))
-		return;
-
 	if (((!enable_wlan_rx_wake_ws &&
 			!strncmp(ws->name, "wlan_rx_wake", 12)) ||
 		(!enable_si_ws &&
@@ -558,9 +550,6 @@ static void wakeup_source_activate(struct wakeup_source *ws)
 		return;
 	}
 
-	if (WARN(wakeup_source_not_registered(ws),
-			"unregistered wakeup source\n"))
-		return;
 	/*
 	 * active wakeup source should bring the system
 	 * out of PM_SUSPEND_FREEZE state
