@@ -480,7 +480,7 @@ static bool wakeup_source_blocker(struct wakeup_source *ws)
 {
 	unsigned int wslen = 0;
 
-	if (ws) {
+	if (!is_display_on() && ws) {
 		wslen = strlen(ws->name);
 
 		if ((!enable_ipa_ws && !strncmp(ws->name, "IPA_WS", wslen)) ||
