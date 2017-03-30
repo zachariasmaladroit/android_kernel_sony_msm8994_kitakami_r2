@@ -389,9 +389,6 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-sched-pressure \
 		   -fno-aggressive-loop-optimizations \
 		   -fno-var-tracking-assignments \
-		   -Wno-tautological-compare \
-		   -Wno-misleading-indentation \
-		   -Wno-parentheses \
 		   -mcpu=cortex-a57.cortex-a53 -mtune=cortex-a57.cortex-a53 \
 		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
 		   -funswitch-loops -fpredictive-commoning -fgcse-after-reload \
@@ -402,6 +399,9 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fmodulo-sched-allow-regmoves \
 		   -fivopts
 #		   -Wno-bool-compare \
+#		   -Wno-tautological-compare \
+#		   -Wno-misleading-indentation \
+#		   -Wno-parentheses \
 
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
