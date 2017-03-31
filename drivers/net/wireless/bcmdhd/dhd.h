@@ -662,13 +662,13 @@ inline static void MUTEX_UNLOCK_SOFTAP_SET(dhd_pub_t * dhdp)
 #define DHD_OS_WD_WAKE_LOCK(pub)		dhd_os_wd_wake_lock(pub)
 #define DHD_OS_WD_WAKE_UNLOCK(pub)		dhd_os_wd_wake_unlock(pub)
 #ifdef BCMPCIE_OOB_HOST_WAKE
-#define OOB_WAKE_LOCK_TIMEOUT 500
+#define OOB_WAKE_LOCK_TIMEOUT 250
 #define DHD_OS_OOB_IRQ_WAKE_LOCK_TIMEOUT(pub, val) dhd_os_oob_irq_wake_lock_timeout(pub, val)
 #define DHD_OS_OOB_IRQ_WAKE_UNLOCK(pub)		dhd_os_oob_irq_wake_unlock(pub)
 #endif /* BCMPCIE_OOB_HOST_WAKE */
 #define DHD_PACKET_TIMEOUT_MS	500
-#define DHD_EVENT_TIMEOUT_MS	1500
-
+#define DHD_EVENT_TIMEOUT_MS	1000
+//#define MAX_TX_TIMEOUT         500
 
 /* interface operations (register, remove) should be atomic, use this lock to prevent race
  * condition among wifi on/off and interface operation functions
