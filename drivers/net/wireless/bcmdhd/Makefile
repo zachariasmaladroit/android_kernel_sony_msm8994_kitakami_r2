@@ -173,7 +173,7 @@ DHDCFLAGS += -DUSE_INITIAL_SHORT_DWELL_TIME
 DHDCFLAGS += -DWL_ABORT_SCAN
 
 # Disable to delay link down event
-DHDCFLAGS += -DDISABLE_BCN_DLY
+#DHDCFLAGS += -DDISABLE_BCN_DLY
 
 ##############################
 # Android Platform Definition
