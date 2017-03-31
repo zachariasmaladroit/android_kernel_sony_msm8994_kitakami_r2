@@ -383,20 +383,25 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Wno-format-security \
 		   -fno-delete-null-pointer-checks \
 		   -std=gnu89 \
-		   -fno-tree-reassoc \
+		   -fdiagnostics-color=always \
+		   -fdevirtualize-speculatively \
+		   -fsched-pressure -fschedule-insns -fno-tree-reassoc \
+		   -fno-aggressive-loop-optimizations \
+		   -fno-var-tracking-assignments \
+		   -fno-aggressive-loop-optimizations \
 		   -fno-strict-overflow \
 		   -fno-tree-pre \
 		   -fno-sched-pressure \
-		   -fno-aggressive-loop-optimizations \
-		   -fno-var-tracking-assignments \
-		   -mcpu=cortex-a57.cortex-a53 -mtune=cortex-a57.cortex-a53 \
 		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
-		   -funswitch-loops -fpredictive-commoning -fgcse-after-reload \
-		   -fno-aggressive-loop-optimizations \
-		   -fsingle-precision-constant \
-		   -fmodulo-sched \
-		   -fmodulo-sched-allow-regmoves \
-		   -fivopts
+		   -freorder-blocks -freorder-blocks-and-partition \
+		   -ftree-loop-im -funswitch-loops -fpredictive-commoning -fgcse -fgcse-after-reload \
+		   -march=armv8-a+crc \
+		   -mtune=cortex-a57.cortex-a53
+#		   -fwhole-program --combine
+#		   -fno-tree-reassoc \
+#		   -fsingle-precision-constant
+#		   -fivopts
+#		   -mcpu=cortex-a57.cortex-a53 \
 #		   -fprefetch-loop-arrays \
 #		   -Wno-bool-compare \
 #		   -Wno-tautological-compare \
