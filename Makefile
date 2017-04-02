@@ -397,6 +397,7 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -march=armv8-a+crc \
 		   -mtune=cortex-a57.cortex-a53 \
 		   -std=gnu89 $(call cc-option,-fno-PIE) \
+		   -fprefetch-loop-arrays
 #		   -mno-unaligned-access \
 #		   -fno-tree-pre \
 #		   -fno-sched-pressure \
