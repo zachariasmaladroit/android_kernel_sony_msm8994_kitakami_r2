@@ -384,21 +384,21 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -fno-delete-null-pointer-checks \
 		   -fdiagnostics-color=always \
 		   -fdevirtualize-speculatively \
-		   -fsched-pressure -fschedule-insns -fno-tree-reassoc \
 		   -fno-aggressive-loop-optimizations \
 		   -fno-var-tracking-assignments \
 		   -fno-aggressive-loop-optimizations \
 		   -fno-strict-overflow \
-		   -fno-tree-pre \
-		   -fno-sched-pressure \
-		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
-		   -freorder-blocks -freorder-blocks-and-partition \
-		   -ftree-loop-im -funswitch-loops -fpredictive-commoning -fgcse -fgcse-after-reload \
 		   -march=armv8-a+crc \
 		   -mtune=cortex-a57.cortex-a53 \
 		   -std=gnu89 $(call cc-option,-fno-PIE) \
 		   -fprefetch-loop-arrays
 #		   -mno-unaligned-access \
+#		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
+#		   -freorder-blocks -freorder-blocks-and-partition \
+#		   -ftree-loop-im -funswitch-loops -fpredictive-commoning -fgcse -fgcse-after-reload \
+#		   -fno-tree-pre \
+#		   -fno-sched-pressure \
+#		   -fsched-pressure -fschedule-insns -fno-tree-reassoc \
 #		   -fno-tree-pre \
 #		   -fno-sched-pressure \
 #		   -falign-functions=16 -falign-jumps=16 -falign-loops=16 -falign-labels=16 \
