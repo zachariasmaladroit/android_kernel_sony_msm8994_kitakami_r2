@@ -382,15 +382,24 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
 		   -fno-delete-null-pointer-checks \
-		   -fno-tree-reassoc \
-		   -fno-strict-overflow \
-#		   -fno-tree-pre \
-#		   -fno-sched-pressure \
+		   -fdiagnostics-color=always \
+		   -fdevirtualize-speculatively \
+		   -fsched-pressure -fschedule-insns -fno-tree-reassoc \
 		   -fno-aggressive-loop-optimizations \
 		   -fno-var-tracking-assignments \
-		   -fno-builtin \
-		   -fno-builtin-memcpy \
-		   -mno-unaligned-access \
+		   -fno-aggressive-loop-optimizations \
+		   -fno-strict-overflow \
+		   -fno-tree-pre \
+		   -fno-sched-pressure \
+		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
+		   -freorder-blocks -freorder-blocks-and-partition \
+		   -ftree-loop-im -funswitch-loops -fpredictive-commoning -fgcse -fgcse-after-reload \
+		   -march=armv8-a+crc \
+		   -mtune=cortex-a57.cortex-a53 \
+		   -std=gnu89 $(call cc-option,-fno-PIE) \
+#		   -mno-unaligned-access \
+#		   -fno-tree-pre \
+#		   -fno-sched-pressure \
 #		   -falign-functions=16 -falign-jumps=16 -falign-loops=16 -falign-labels=16 \
 #		   -fmodulo-sched \
 #		   -fmodulo-sched-allow-regmoves \
@@ -410,10 +419,6 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 #		   -fprefetch-loop-arrays \
 #		   -freorder-blocks \
 #		   -mfpu=neon-fp-armv8 \
-		   -pipe \
-		   -march=armv8-a \
-		   -mtune=cortex-a57.cortex-a53 \
-		   -std=gnu89 $(call cc-option,-fno-PIE)
 
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
