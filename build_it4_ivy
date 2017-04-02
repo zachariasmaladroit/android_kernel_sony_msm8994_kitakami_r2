@@ -8,7 +8,6 @@ export CACHE_DIR=~/.ccache
 export ARCH=arm64
 export PATH=~/android/z5_build-environment/aarch64-linux-android-4.9/bin/:$PATH
 export CROSS_COMPILE=aarch64-linux-android-
-export EXTRA_CFLAGS=-mno-unaligned-access
 
 export KBUILD_DIFFCONFIG=ivy_diffconfig
 make msm8994-perf_defconfig
