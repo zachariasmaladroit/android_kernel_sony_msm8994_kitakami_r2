@@ -390,8 +390,8 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -fno-strict-overflow \
 		   -march=armv8-a+crc \
 		   -mtune=cortex-a57.cortex-a53 \
-		   -std=gnu89 $(call cc-option,-fno-PIE) \
-		   -fprefetch-loop-arrays
+		   -std=gnu89 $(call cc-option,-fno-PIE)
+#		   -fprefetch-loop-arrays
 #		   -mno-unaligned-access \
 #		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
 #		   -freorder-blocks -freorder-blocks-and-partition \
