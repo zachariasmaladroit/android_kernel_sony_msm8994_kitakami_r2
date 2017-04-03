@@ -495,10 +495,8 @@ static int profile_enable_set(void *data, u64 val)
 	if (val && profile->log_buffer == NULL) {
 		/* allocate profile_log_buffer the first time enabled */
 		profile->log_buffer = vmalloc(ADRENO_PROFILE_LOG_BUF_SIZE);
-		if (profile->log_buffer == NULL) {
-			mutex_unlock(&device->mutex);
+		if (profile->log_buffer == NULL)
 			return -ENOMEM;
-		}
 		profile->log_tail = profile->log_buffer;
 		profile->log_head = profile->log_buffer;
 	}
