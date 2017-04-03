@@ -677,7 +677,7 @@ CONFIG_STRICT_MEMORY_RWX=y
 ####  SunKernel Pedigree adjustments  ######
 ############################################
 
-CONFIG_LOCALVERSION="-14.1_5.8.2_I.4_7_t4"
+CONFIG_LOCALVERSION="-14.1_cr5.1_I.4_7_t4"
 CONFIG_LOCALVERSION_AUTO=n
 
 CONFIG_LOG_BUF_SHIFT=21
