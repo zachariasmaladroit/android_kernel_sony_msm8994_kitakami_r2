@@ -290,13 +290,6 @@ CONFIG_RCU_FAST_NO_HZ=y
 CONFIG_RCU_CPU_STALL_TIMEOUT=60
 CONFIG_RCU_CPU_STALL_VERBOSE=y
 
-# RCU Boosting: 
-# Enable RCU boost to avoid risk of priority-inversion
-# and memory leaks when readers are preempted.
-CONFIG_RCU_BOOST=y
-CONFIG_RCU_KTHREAD_PRIO=20
-CONFIG_RCU_BOOST_DELAY=331
-
 # interactivity, throughput compromise
 CONFIG_HZ=100
 
