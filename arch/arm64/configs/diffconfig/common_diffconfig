@@ -172,8 +172,12 @@ CONFIG_TSPP=y
 CONFIG_MOBICORE_SUPPORT=y
 CONFIG_MOBICORE_API=y
 CONFIG_CRYPTO_ANSI_CPRNG=y
-CONFIG_COREDUMP=y
-CONFIG_ELF_CORE=y
+
+
+# TBD
+# CONFIG_COREDUMP is not set
+# CONFIG_ELF_CORE is not set
+
 
 # Disable unwanted things
 # CONFIG_SECURITY_SONY_RIC is not set
@@ -290,6 +294,9 @@ CONFIG_RCU_CPU_STALL_VERBOSE=y
 
 # interactivity, throughput compromise
 CONFIG_HZ=100
+
+CONFIG_NLS_ISO8859_15=y
+CONFIG_NLS_CODEPAGE_852=y
 
 # Taking care of security fixes & independence from prebuilt-modules
 CONFIG_ECRYPT_FS=y
