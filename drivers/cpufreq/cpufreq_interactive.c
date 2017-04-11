@@ -508,6 +508,7 @@ static void cpufreq_interactive_timer(unsigned long data)
 	cpu_load = loadadjfreq / ppol->target_freq;
 	tunables->boosted = tunables->boost_val || now < tunables->boostpulse_endtime;
 	this_hispeed_freq = max(tunables->hispeed_freq, ppol->policy->min);
+	this_hispeed_freq = min(this_hispeed_freq, ppol->policy->max);
 
 	if (cpu_load >= tunables->go_hispeed_load || tunables->boosted) {
 		if (ppol->target_freq < this_hispeed_freq &&
