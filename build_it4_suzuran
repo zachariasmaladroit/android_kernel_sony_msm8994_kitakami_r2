@@ -9,8 +9,8 @@ export ARCH=arm64
 export PATH=~/android/z5_build-environment/arter97_linaro-64_6.2/bin/:$PATH
 export CROSS_COMPILE=aarch64-linux-android-
 
-#export KBUILD_DIFFCONFIG=suzuran_diffconfig
-make kitakami_suzuran_defconfig
+export KBUILD_DIFFCONFIG=suzuran_diffconfig
+make msm8994-perf_defconfig
 ###make oldconfig
 make -j8
 
