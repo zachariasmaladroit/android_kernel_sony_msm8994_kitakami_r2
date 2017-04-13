@@ -386,7 +386,6 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -fdevirtualize-speculatively \
 		   -fno-aggressive-loop-optimizations \
 		   -fno-var-tracking-assignments \
-		   -fno-aggressive-loop-optimizations \
 		   -fno-strict-overflow \
 		   -march=armv8-a+crc \
 		   -mtune=cortex-a57.cortex-a53 \
