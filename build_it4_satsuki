@@ -45,14 +45,14 @@ then
 		### Zip boot.img
 		cd ../final_files/
 		mv boot_E6853.img boot.img
-		zip -r Z5_SK_Enf_v.zip boot.img META-INF/
+		zip -r Z5Prem_SK_Enf_v.zip boot.img META-INF/
 		rm -f boot.img
 
 		echo " "
 		echo "Copying to z5-kernelbuild"
 		echo " "
 
-		cp ~/android/final_files/Z5_SK_Enf_v.zip ~/android/z5-kernelbuild/Z5_SK_Enf_v$version.zip
+		cp ~/android/final_files/Z5Prem_SK_Enf_v.zip ~/android/z5-kernelbuild/Z5Prem_SK_Enf_v$version.zip
 	
 	fi
 
@@ -65,14 +65,14 @@ then
 	### Zip boot.img
 	#cd ../final_files/
 	#mv boot_E6853_E.img boot.img
-	#zip -r Z5_SK_Enf_v.zip boot.img META-INF/
+	#zip -r Z5Prem_SK_Enf_v.zip boot.img META-INF/
 	#rm -f boot.img
 	#
 	#echo " "
 	#echo "Copying to z5-kernelbuild"
 	#echo " "
 	#
-	#cp ~/android/final_files/Z5_SK_Enf_v.zip ~/android/z5-kernelbuild/Z5_SK_Enf_v$version.zip
+	#cp ~/android/final_files/Z5Prem_SK_Enf_v.zip ~/android/z5-kernelbuild/Z5Prem_SK_Enf_v$version.zip
 	#
 	#fi
 
