@@ -458,7 +458,7 @@ static int _sendcache_pre(struct audio_client *ac)
 		err = -EINVAL;
 	if ((_depc_size == 0) || !_depc || (size == 0) ||
 		cmd == 0 || ((offset + size) > _depc_size) || (err != 0)) {
-		eagle_precache_err("%s: primary device %i cache index %i general error - cache size = %u, cache ptr = %pK, offset = %u, size = %u, cmd = %i",
+		eagle_precache_err("%s: primary device %i cache index %i general error - cache size = %u, cache ptr = %p, offset = %u, size = %u, cmd = %i",
 			__func__, _device_primary, cidx, _depc_size, _depc,
 			offset, size, cmd);
 		return -EINVAL;
@@ -538,7 +538,7 @@ NT_MODE_GOTO:
 		err = -EINVAL;
 	if ((_depc_size == 0) || !_depc || (err != 0) || (size == 0) ||
 		(cmd == 0) || (offset + size) > _depc_size) {
-		eagle_postcache_err("%s: primary device %i cache index %i port_id 0x%X general error - cache size = %u, cache ptr = %pK, offset = %u, size = %u, cmd = %i",
+		eagle_postcache_err("%s: primary device %i cache index %i port_id 0x%X general error - cache size = %u, cache ptr = %p, offset = %u, size = %u, cmd = %i",
 			__func__, _device_primary, cidx, port_id,
 			_depc_size, _depc, offset, size, cmd);
 		return -EINVAL;
