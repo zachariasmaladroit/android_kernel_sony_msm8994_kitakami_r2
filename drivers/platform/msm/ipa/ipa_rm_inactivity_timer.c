@@ -246,7 +246,8 @@ int ipa_rm_inactivity_timer_release_resource(
 	spin_unlock_irqrestore(&ipa_rm_it_handles[resource_name].lock, flags);
 
 	IPADBG("%s: setting delayed work\n", __func__);
-	schedule_delayed_work(&ipa_rm_it_handles[resource_name].work,
+	queue_delayed_work(system_power_efficient_wq,
+				  &ipa_rm_it_handles[resource_name].work,
 			      ipa_rm_it_handles[resource_name].jiffies);
 
 	return 0;
