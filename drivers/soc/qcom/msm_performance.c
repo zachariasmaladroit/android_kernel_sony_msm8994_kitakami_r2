@@ -280,7 +280,8 @@ static int set_max_cpus(const char *buf, const struct kernel_param *kp)
 								val);
 	}
 
-	schedule_delayed_work(&evaluate_hotplug_work, 0);
+	queue_delayed_work(system_power_efficient_wq,
+			&evaluate_hotplug_work, 0);
 
 	return 0;
 }
@@ -2539,7 +2540,8 @@ static int __ref msm_performance_cpu_callback(struct notifier_block *nfb,
 		 * brought online to meet the max_cpu_request requirement. This
 		 * work is delayed to account for CPU hotplug latencies
 		 */
-		if (schedule_delayed_work(&evaluate_hotplug_work, 0)) {
+		if (queue_delayed_work(system_power_efficient_wq,
+						&evaluate_hotplug_work, 0)) {
 			trace_reevaluate_hotplug(cpumask_bits(i_cl->cpus)[0],
 							i_cl->max_cpu_request);
 			pr_debug("msm_perf: Re-evaluation scheduled %d\n", cpu);
