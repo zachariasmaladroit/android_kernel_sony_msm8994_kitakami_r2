@@ -495,7 +495,8 @@ static void load_firmware(struct msm_vidc_core *core)
 	}
 	handler->core = core;
 	INIT_DELAYED_WORK(&handler->work, fw_load_handler);
-	schedule_delayed_work(&handler->work,
+	queue_delayed_work(system_power_efficient_wq,
+			&handler->work,
 			msecs_to_jiffies(EARLY_FIRMWARE_LOAD_DELAY));
 }
 

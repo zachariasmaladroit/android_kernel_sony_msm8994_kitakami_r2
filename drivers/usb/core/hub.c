@@ -2305,10 +2305,12 @@ out:
 		 * HNP polling.
 		 */
 		if (udev->bus->quick_hnp)
-			schedule_delayed_work(&udev->bus->hnp_polling,
+			queue_delayed_work(system_power_efficient_wq,
+				&udev->bus->hnp_polling,
 				msecs_to_jiffies(OTG_TTST_SUSP));
 		else
-			schedule_delayed_work(&udev->bus->hnp_polling,
+			queue_delayed_work(system_power_efficient_wq,
+				&udev->bus->hnp_polling,
 				msecs_to_jiffies(THOST_REQ_POLL));
 	}
 #endif
