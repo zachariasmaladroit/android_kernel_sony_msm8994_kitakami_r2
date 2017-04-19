@@ -1834,7 +1834,8 @@ static int msm_fb_pan_display_sub(struct fb_var_screeninfo *var,
 	up(&msm_fb_pan_sem);
 
 	if (unset_bl_level && !bl_updated)
-		schedule_delayed_work(&mfd->backlight_worker,
+		queue_delayed_work(system_power_efficient_wq,
+				&mfd->backlight_worker,
 				backlight_duration);
 
 	if (info->node == 0 && (mfd->cont_splash_done)) /* primary */
@@ -3035,7 +3036,8 @@ static int msmfb_overlay_play(struct fb_info *info, unsigned long *argp)
 	ret = mdp4_overlay_play(info, &req);
 
 	if (unset_bl_level && !bl_updated)
-		schedule_delayed_work(&mfd->backlight_worker,
+		queue_delayed_work(system_power_efficient_wq,
+				&mfd->backlight_worker,
 				backlight_duration);
 
 	if (info->node == 0 && (mfd->cont_splash_done)) /* primary */
