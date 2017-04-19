@@ -1390,7 +1390,8 @@ start_hnp:
 	goto out;
 
 reschedule:
-	schedule_delayed_work(&bus->hnp_polling,
+	queue_delayed_work(system_power_efficient_wq,
+		&bus->hnp_polling,
 		msecs_to_jiffies(THOST_REQ_POLL));
 out:
 	kfree(status);
