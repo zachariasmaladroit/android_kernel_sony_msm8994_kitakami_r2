@@ -108,7 +108,8 @@ static void dwc3_otg_start_no_device_work(struct dwc3_otg *dotg, bool start)
 	dev_dbg(dwc->dev, "%s: start = %d\n", __func__, start);
 
 	if (start)
-		schedule_delayed_work(&dotg->no_device_work,
+		queue_delayed_work(system_power_efficient_wq,
+				&dotg->no_device_work,
 				msecs_to_jiffies(no_device_timeout));
 	else
 		cancel_delayed_work(&dotg->no_device_work);
