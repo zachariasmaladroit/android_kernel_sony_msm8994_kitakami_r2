@@ -325,7 +325,8 @@ static void loopback_probe_worker(struct work_struct *work)
 	** the wait need to be done atmost once, using msleep
 	** doesn't degrade the performance. */
 	if (!is_modem_smsm_inited())
-		schedule_delayed_work(&loopback_work, msecs_to_jiffies(1000));
+		queue_delayed_work(system_power_efficient_wq,
+			  &loopback_work, msecs_to_jiffies(1000));
 	else
 		smsm_change_state(SMSM_APPS_STATE,
 			  0, SMSM_SMD_LOOPBACK);
@@ -783,7 +784,8 @@ static void ch_notify(void *priv, unsigned event)
 		/* put port into reset state */
 		clean_and_signal(smd_pkt_devp);
 		if (!strcmp(smd_pkt_devp->ch_name, "LOOPBACK"))
-			schedule_delayed_work(&loopback_work,
+			queue_delayed_work(system_power_efficient_wq,
+					&loopback_work,
 					msecs_to_jiffies(1000));
 		break;
 	}
@@ -1589,7 +1591,8 @@ static int __init smd_pkt_init(void)
 	}
 
 	INIT_DELAYED_WORK(&smdpkt_probe_work, smdpkt_probe_worker);
-	schedule_delayed_work(&smdpkt_probe_work,
+	queue_delayed_work(system_power_efficient_wq,
+				&smdpkt_probe_work,
 				msecs_to_jiffies(SMD_PKT_PROBE_WAIT_TIMEOUT));
 #ifdef CONFIG_IPC_LOGGING
 	smd_pkt_ilctxt = ipc_log_context_create(SMD_PKT_IPC_LOG_PAGE_CNT,
