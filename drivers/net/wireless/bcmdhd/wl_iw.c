@@ -3844,7 +3844,7 @@ void wl_iw_detach(void)
 		return;
 	if (iscan->sysioc_pid >= 0) {
 		KILL_PROC(iscan->sysioc_pid, SIGTERM);
-		wait_for_completion(&iscan->sysioc_exited);
+		wait_for_completion_interruptible(&iscan->sysioc_exited);
 	}
 
 	while (iscan->list_hdr) {
