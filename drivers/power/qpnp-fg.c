@@ -2226,7 +2226,9 @@ static int estimate_battery_age(struct fg_chip *chip, int *actual_capacity)
 	}
 
 	battery_soc = get_battery_soc_raw(chip) * 100 / FULL_PERCENT_3B;
-	if (battery_soc < 25 || battery_soc > 75) {
+	if (rc) {
+		goto error_done;
+	} else if (battery_soc < 25 || battery_soc > 75) {
 		if (fg_debug_mask & FG_AGING)
 			pr_info("Battery SoC (%d) out of range, aborting\n",
 					(int)battery_soc);
@@ -4045,7 +4047,6 @@ static int fg_batt_profile_init(struct fg_chip *chip)
 	const char *data, *batt_type_str;
 	bool tried_again = false, vbat_in_range, profiles_same;
 	u8 reg = 0;
-	old_batt_type = default_batt_type;
 
 wait:
 	fg_stay_awake(&chip->profile_wakeup_source);
@@ -5565,6 +5566,7 @@ static int fg_hw_init(struct fg_chip *chip)
 static int fg_setup_memif_offset(struct fg_chip *chip)
 {
 	int rc;
+	u8 dig_major;
 
 	rc = fg_read(chip, chip->revision, chip->mem_base + DIG_MINOR, 4);
 	if (rc) {
@@ -5578,7 +5580,7 @@ static int fg_setup_memif_offset(struct fg_chip *chip)
 		chip->offset = offset[0].address;
 		break;
 	default:
-		pr_err("Digital Major rev=%d not supported\n", chip->revision[DIG_MAJOR]);
+		pr_err("Digital Major rev=%d not supported\n", dig_major);
 		return -EINVAL;
 	}
 

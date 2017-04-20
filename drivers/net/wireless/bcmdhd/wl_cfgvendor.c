@@ -835,7 +835,6 @@ static int wl_cfgvendor_epno_cfg(struct wiphy *wiphy,
 
 	nla_for_each_attr(iter, data, len, tmp2) {
 		type = nla_type(iter);
-		found = true;
 		switch (type) {
 			case GSCAN_ATTRIBUTE_EPNO_SSID_LIST:
 				nla_for_each_nested(outer, iter, tmp) {
