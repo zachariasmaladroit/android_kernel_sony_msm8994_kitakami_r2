@@ -224,14 +224,14 @@ static void __ref cpu_all_ctrl(bool online) {
 	unsigned int cpu;
 
 	if (online) {
-		for_each_cpu_not(cpu, cpu_online_mask) {
-			if (cpu == 0)
+		for_each_possible_cpu(cpu) {
+			if (cpu_online(cpu))
 				continue;
 			cpu_up(cpu);
 		}
 	} else {
 		for_each_online_cpu(cpu) {
-			if (cpu == 0)
+			if (cpu == 0 || cpu == 4)
 				continue;
 			cpu_down(cpu);
 		}
@@ -320,7 +320,7 @@ static void unplug_cpu(int min_active_cpu)
 	for_each_online_cpu(cpu) {
 		l_nr_threshold =
 			cpu_nr_run_threshold << 1 / (num_online_cpus());
-		if (cpu == 0)
+		if (cpu == 0 || cpu == 4)
 			continue;
 		l_ip_info = &per_cpu(ip_info, cpu);
 		if (cpu > min_active_cpu)
