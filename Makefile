@@ -383,13 +383,23 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -Wno-format-security \
 		   -fno-delete-null-pointer-checks \
 		   -fdiagnostics-color=always \
-		   -fdevirtualize-speculatively \
 		   -fno-aggressive-loop-optimizations \
 		   -fno-var-tracking-assignments \
 		   -fno-strict-overflow \
 		   -march=armv8-a+crc \
 		   -mtune=cortex-a57.cortex-a53 \
-		   -std=gnu89 $(call cc-option,-fno-PIE)
+		   -std=gnu89 $(call cc-option,-fno-PIE) \
+		   -fisolate-erroneous-paths-dereference \
+		   -fdevirtualize -fdevirtualize-speculatively \
+		   -fthread-jumps -fcaller-saves -fcrossjumping -fcse-follow-jumps -fcse-skip-blocks \
+		   -foptimize-sibling-calls -foptimize-strlen \
+		   -fschedule-insns -fschedule-insns2 \
+		   -fsched-pressure -fschedule-insns -fno-tree-reassoc \
+		   -freorder-blocks -freorder-blocks-algorithm=stc -freorder-blocks-and-partition \
+		   -ftree-pre -ftree-partial-pre \
+		   -fno-tree-loop-im -fno-tree-pre \
+		   -fsplit-paths -ftree-vrp
+#		   -fdevirtualize-speculatively \
 #		   -fprefetch-loop-arrays
 #		   -mno-unaligned-access \
 #		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
