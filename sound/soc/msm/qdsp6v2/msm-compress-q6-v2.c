@@ -1289,7 +1289,7 @@ static int msm_compr_drain_buffer(struct msm_compr_audio *prtd,
 	prtd->drain_ready = 0;
 	spin_unlock_irqrestore(&prtd->lock, *flags);
 	pr_debug("%s: wait for buffer to be drained\n",  __func__);
-	wait_event(prtd->drain_wait,
+	wait_event_interruptible(prtd->drain_wait,
 		prtd->drain_ready ||
 		prtd->cmd_interrupt ||
 		atomic_read(&prtd->xrun) ||
