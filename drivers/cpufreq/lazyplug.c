@@ -27,9 +27,8 @@
  * playback, turning on all CPU cores is not battery friendly. So Lazyplug
  * *does* actually turns off CPU cores, but only when idle state is long
  * enough(to reduce the number of CPU core switchings) and when the device
- * has its screen off(determination is done via earlysuspend or
- * powersuspend because framebuffer API causes troubles on hotplugging CPU
- * cores).
+ * has its screen off(determination is done via powersuspend because
+ * framebuffer API causes troubles on hotplugging CPU cores).
  *
  * Basic methodology :
  * Lazyplug uses majority of the codes from intelli_plug by faux123 to
@@ -76,15 +75,11 @@
 #include <linux/powersuspend.h>
 #endif
 
-#ifdef CONFIG_HAS_EARLYSUSPEND
-#include <linux/earlysuspend.h>
-#endif
-
 //#define DEBUG_LAZYPLUG
 #undef DEBUG_LAZYPLUG
 
 #define LAZYPLUG_MAJOR_VERSION	1
-#define LAZYPLUG_MINOR_VERSION	0
+#define LAZYPLUG_MINOR_VERSION	3
 
 #define DEF_SAMPLING_MS			(268)
 #define DEF_IDLE_COUNT			(19) /* 268 * 19 = 5092, almost equals to 5 seconds */
@@ -243,6 +238,14 @@ static void __ref cpu_all_ctrl(bool online) {
 	}
 }
 
+static void cpu_all_up(struct work_struct *work);
+static DECLARE_WORK(cpu_all_up_work, cpu_all_up);
+
+static void cpu_all_up(struct work_struct *work)
+{
+	cpu_all_ctrl(true);
+}
+
 static unsigned int calculate_thread_stats(void)
 {
 	unsigned int avg_nr_run = avg_nr_running();
@@ -283,7 +286,7 @@ static unsigned int calculate_thread_stats(void)
 
 static void lazyplug_boost_fn(struct work_struct *work)
 {
-	cpu_all_ctrl(true);
+	schedule_work(&cpu_all_up_work);
 }
 
 /*
@@ -369,7 +372,7 @@ static void lazyplug_work_fn(struct work_struct *work)
 				}
 			} else {
 				idle_count = 0;
-				cpu_all_ctrl(true);
+				schedule_work(&cpu_all_up_work);
 #ifdef DEBUG_LAZYPLUG
 				online_state_count++;
 				if (previous_online_status == false) {
@@ -388,26 +391,8 @@ static void lazyplug_work_fn(struct work_struct *work)
 		msecs_to_jiffies(sampling_time));
 }
 
-static void wakeup_boost(void)
-{
-	unsigned int cpu;
-	struct cpufreq_policy *policy;
-	struct ip_cpu_info *l_ip_info;
-
-	for_each_online_cpu(cpu) {
-		policy = cpufreq_cpu_get(cpu);
-		l_ip_info = &per_cpu(ip_info, cpu);
-		policy->cur = l_ip_info->cur_max;
-		cpufreq_update_policy(cpu);
-	}
-}
-
-#if defined(CONFIG_POWERSUSPEND) || defined(CONFIG_HAS_EARLYSUSPEND)
 #ifdef CONFIG_POWERSUSPEND
 static void lazyplug_suspend(struct power_suspend *handler)
-#else
-static void lazyplug_suspend(struct early_suspend *handler)
-#endif
 {
 	if (lazyplug_active) {
 		pr_info("lazyplug: screen-off, turn off cores\n");
@@ -422,20 +407,7 @@ static void lazyplug_suspend(struct early_suspend *handler)
 	}
 }
 
-static void cpu_all_up(struct work_struct *work);
-static DECLARE_WORK(cpu_all_up_work, cpu_all_up);
-
-static void cpu_all_up(struct work_struct *work)
-{
-	cpu_all_ctrl(true);
-	wakeup_boost();
-}
-
-#ifdef CONFIG_POWERSUSPEND
 static void lazyplug_resume(struct power_suspend *handler)
-#else
-static void lazyplug_resume(struct early_suspend *handler)
-#endif
 {
 	if (lazyplug_active) {
 		pr_info("lazyplug: screen-on, turn on cores\n");
@@ -450,22 +422,12 @@ static void lazyplug_resume(struct early_suspend *handler)
 	queue_delayed_work_on(0, lazyplug_wq, &lazyplug_work,
 		msecs_to_jiffies(10));
 }
-#endif
 
-#ifdef CONFIG_POWERSUSPEND
 static struct power_suspend lazyplug_power_suspend_driver = {
 	.suspend = lazyplug_suspend,
 	.resume = lazyplug_resume,
 };
 #endif  /* CONFIG_POWERSUSPEND */
-
-#ifdef CONFIG_HAS_EARLYSUSPEND
-static struct early_suspend lazyplug_early_suspend_driver = {
-        .level = EARLY_SUSPEND_LEVEL_DISABLE_FB + 10,
-        .suspend = lazyplug_suspend,
-        .resume = lazyplug_resume,
-};
-#endif	/* CONFIG_HAS_EARLYSUSPEND */
 
 static unsigned int Lnr_run_profile_sel = 0;
 static unsigned int Ltouch_boost_active = true;
@@ -590,9 +552,6 @@ int __init lazyplug_init(void)
 
 #ifdef CONFIG_POWERSUSPEND
 	register_power_suspend(&lazyplug_power_suspend_driver);
-#endif
-#ifdef CONFIG_HAS_EARLYSUSPEND
-	register_early_suspend(&lazyplug_early_suspend_driver);
 #endif
 
 	lazyplug_wq = alloc_workqueue("lazyplug",
