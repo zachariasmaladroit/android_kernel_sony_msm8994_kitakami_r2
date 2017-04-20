@@ -347,7 +347,7 @@ int core_dts_eagle_set(int size, char *data)
 
 	pr_debug("DTS_EAGLE_CORE - %s\n", __func__);
 	if (size <= 0 || !data) {
-		pr_err("DTS_EAGLE_CORE - %s: invalid size %i or pointer %pK.\n",
+		pr_err("DTS_EAGLE_CORE - %s: invalid size %i or pointer %p.\n",
 			__func__, size, data);
 		return -EINVAL;
 	}
@@ -393,7 +393,7 @@ int core_dts_eagle_get(int id, int size, char *data)
 
 	pr_debug("DTS_EAGLE_CORE - %s\n", __func__);
 	if (size <= 0 || !data) {
-		pr_err("DTS_EAGLE_CORE - %s: invalid size %i or pointer %pK.\n",
+		pr_err("DTS_EAGLE_CORE - %s: invalid size %i or pointer %p.\n",
 			__func__, size, data);
 		return -EINVAL;
 	}
