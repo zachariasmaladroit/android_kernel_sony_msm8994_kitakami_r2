@@ -383,22 +383,30 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		           -Wno-declaration-after-statement -Wno-format-extra-args -Wno-int-conversion -Wno-discarded-qualifiers \
 		           -Wno-bool-compare -Wno-error=bool-compare \
 				   -fdiagnostics-color=always \
-				   -fdevirtualize-speculatively \
+				   -fdevirtualize -fdevirtualize-speculatively \
 				   -fno-var-tracking-assignments \
 				   -fno-strict-overflow \
-				   -fno-delete-null-pointer-checks \
+				   -fno-delete-null-pointer-checks -fisolate-erroneous-paths-dereference \
+				   -fthread-jumps -fcaller-saves -fcrossjumping -fcse-follow-jumps -fcse-skip-blocks -fexpensive-optimizations \
+				   -ftree-switch-conversion -ftree-tail-merge \
+				   -fhoist-adjacent-loads -finline-small-functions -findirect-inlining -fpartial-inlining \
+				   -fipa-cp -fipa-cp-alignment -fipa-sra -fipa-icf \
+				   -flra-remat -foptimize-sibling-calls -foptimize-strlen \
+				   -fschedule-insns -fschedule-insns2 \
+				   -ftree-builtin-call-dce \
+				   -fipa-ra \
 				   -freorder-blocks -freorder-blocks-algorithm=stc -freorder-blocks-and-partition \
 				   -fsched-pressure -fschedule-insns -fno-tree-reassoc \
-                   -fgcse -fgcse-after-reload \
+                   -fgcse -fgcse-after-reload -frerun-cse-after-loop \
  		           -fgcse-sm -fgcse-lm \
 		           -fmodulo-sched -fmodulo-sched-allow-regmoves \
 		           -fsched-spec-load \
 		           -ffast-math \
                    -fsingle-precision-constant \
 		           -funswitch-loops -fpredictive-commoning \
- 		           -ftree-partial-pre \
+ 		           -ftree-pre -ftree-partial-pre \
 		           -fno-tree-loop-im -fno-tree-pre \
-		           -fsplit-paths \
+		           -fsplit-paths -ftree-vrp \
  		           -ftree-loop-vectorize -ftree-loop-distribute-patterns -ftree-slp-vectorize -fvect-cost-model \
 		           -march=armv8-a+crc -mtune=cortex-a57.cortex-a53 -std=gnu89 $(call cc-option,-fno-PIE)
 
