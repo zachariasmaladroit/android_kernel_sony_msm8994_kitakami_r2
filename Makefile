@@ -382,6 +382,9 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
 		   -fno-delete-null-pointer-checks \
+		   -fisolate-erroneous-paths-dereference \
+		   -ftree-builtin-call-dce \
+		   -ftree-vrp \
 		   -fdiagnostics-color=always \
 		   -fdevirtualize-speculatively \
 		   -fno-aggressive-loop-optimizations \
