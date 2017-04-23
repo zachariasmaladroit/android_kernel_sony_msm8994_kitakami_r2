@@ -153,7 +153,7 @@ CONFIG_TOUCHSCREEN_CLEARPAD_RMI_DEV=y
 	SunKernel Nova
 ##########################
 
-CONFIG_LOCALVERSION="-N_2.33_Nova_I.2_8_3_IPI"
+CONFIG_LOCALVERSION="-N_2.33_Nova_I.2_8_4_reduce_rq_lock"
 CONFIG_LOCALVERSION_AUTO=n
 
 # CPU
