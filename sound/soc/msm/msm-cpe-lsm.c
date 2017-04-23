@@ -333,8 +333,10 @@ static int msm_cpe_lab_thread(void *data)
 	struct wcd_cpe_core *core = (struct wcd_cpe_core *)lab->core_handle;
 	struct snd_pcm_substream *substream = lab->substream;
 	struct cpe_priv *cpe = cpe_get_private_data(substream);
+	struct cpe_lsm_data *lsm_d = NULL;
 	struct wcd_cpe_lsm_ops *lsm_ops;
 	struct wcd_cpe_data_pcm_buf *cur_buf, *next_buf;
+	struct cpe_lsm_session *session = NULL;
 	int rc = 0;
 	u32 done_len = 0;
 	u32 buf_count = 1;
@@ -353,6 +355,8 @@ static int msm_cpe_lab_thread(void *data)
 	}
 
 	lsm_ops = &cpe->lsm_ops;
+	lsm_d = cpe_get_lsm_data(substream);
+	session = lsm_d->lsm_session;
 	memset(lab->pcm_buf[0].mem, 0, lab->pcm_size);
 
 	if (lsm_ops->lsm_lab_data_channel_read == NULL ||
