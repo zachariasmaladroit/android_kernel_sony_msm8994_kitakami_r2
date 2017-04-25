@@ -383,13 +383,15 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -Wno-format-security \
 		   -fno-delete-null-pointer-checks \
 		   -fdiagnostics-color=always \
-		   -fno-aggressive-loop-optimizations \
 		   -fno-var-tracking-assignments \
 		   -fno-strict-overflow \
-		   -march=armv8-a+crc \
-		   -mtune=cortex-a57.cortex-a53 \
+		   -fno-tree-reassoc \
+		   -pipe \
+		   -march=armv8-a \
+		   -mtune=cortex-a53 \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
 #		   -fdevirtualize-speculatively \
+		   -fno-aggressive-loop-optimizations \
 #		   -fprefetch-loop-arrays
 #		   -mno-unaligned-access \
 #		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
