@@ -374,7 +374,7 @@ CONFIG_ASN1=y
 
 # PM related (WG, etc.)
 CONFIG_WQ_POWER_EFFICIENT_DEFAULT=y
-# CONFIG_POWERSUSPEND is not set
+CONFIG_POWERSUSPEND=y
 CONFIG_QUICK_WAKEUP=y
 
 # more governors, not all included
