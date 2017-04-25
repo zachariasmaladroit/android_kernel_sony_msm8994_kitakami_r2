@@ -499,7 +499,7 @@ CONFIG_HZ=300
 #
 # Sony's "prebuilt" MHL driver
 #
-# CONFIG_FB_MSM_MDSS_MHL3 is not set
+CONFIG_FB_MSM_MDSS_MHL3=y
 #
 # other stuff
 #
@@ -509,9 +509,7 @@ CONFIG_HZ=300
 #
 # Sony's to be in-built MHL driver
 #
-CONFIG_MHL_SIMG_SONY=y
-CONFIG_MHL_DEVICE_ID=0x07
-CONFIG_MHL_BIST=y
+# CONFIG_MHL_SIMG_SONY is not set
 
 # FB related
 CONFIG_FB=y
