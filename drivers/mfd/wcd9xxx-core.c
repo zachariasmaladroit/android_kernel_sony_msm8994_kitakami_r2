@@ -1225,20 +1225,9 @@ static void wcd9xxx_release_supplies(struct wcd9xxx *wcd9xxx,
 				     struct wcd9xxx_pdata *pdata)
 {
 	int i;
-	int rc;
 
-	for (i = 0; i < wcd9xxx->num_of_supplies; i++) {
-		if (pdata->regulator[i].ondemand)
-			continue;
-		rc = regulator_disable(wcd9xxx->supplies[i].consumer);
-		if (rc) {
-			pr_err("%s: Failed to disable %s\n", __func__,
-				wcd9xxx->supplies[i].supply);
-		} else {
-			pr_debug("%s: Disabled regulator %s\n", __func__,
-				wcd9xxx->supplies[i].supply);
-		}
-	}
+	wcd9xxx_disable_supplies(wcd9xxx, pdata);
+
 	for (i = 0; i < wcd9xxx->num_of_supplies; i++) {
 		if (regulator_count_voltages(wcd9xxx->supplies[i].consumer) <=
 		    0)
