@@ -3200,7 +3200,7 @@ dhd_pno_get_for_batch(dhd_pub_t *dhd, char *buf, int bufsize, int reason)
 		params_batch->get_batch.reason = reason;
 		params_batch->get_batch.bytes_written = 0;
 		schedule_work(&_pno_state->work);
-		wait_for_completion_interruptible(&_pno_state->get_batch_done);
+		wait_for_completion(&_pno_state->get_batch_done);
 	}
 
 #ifdef GSCAN_SUPPORT
