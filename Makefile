@@ -384,6 +384,7 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -fdiagnostics-color=always \
 		   -fno-aggressive-loop-optimizations \
 		   -fno-delete-null-pointer-checks \
+		   -fisolate-erroneous-paths-dereference -fisolate-erroneous-paths-attribute \
 		   -fno-var-tracking-assignments \
 		   -march=armv8-a+crc \
 		   -mtune=cortex-a57.cortex-a53 \
