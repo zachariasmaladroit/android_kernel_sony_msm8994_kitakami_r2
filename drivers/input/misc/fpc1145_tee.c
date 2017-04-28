@@ -672,10 +672,11 @@ static irqreturn_t fpc1145_irq_handler(int irq, void *handle)
 	if (fpc1145->wakeup_enabled ) {
 		wake_lock_timeout(&fpc1145->ttw_wl, msecs_to_jiffies(FPC_TTW_HOLD_TIME));
 #ifdef CONFIG_MSM_HOTPLUG
-		msm_hotplug_fingerprint_called = true;
-
-		if (msm_enabled && msm_hotplug_scr_suspended)
+		if (msm_enabled && msm_hotplug_scr_suspended &&
+		   !msm_hotplug_fingerprint_called) {
+			msm_hotplug_fingerprint_called = true;
 			schedule_work(&msm_hotplug_resume_call_work);
+		}
 #endif
 	}
 	sysfs_notify(&fpc1145->dev->kobj, NULL, dev_attr_irq.attr.name);
