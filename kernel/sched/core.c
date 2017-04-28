@@ -6402,9 +6402,8 @@ SYSCALL_DEFINE3(sched_setattr, pid_t, pid, struct sched_attr __user *, uattr,
 	if (!uattr || pid < 0 || flags)
 		return -EINVAL;
 
-	retval = sched_copy_attr(uattr, &attr);
-	if (retval)
-		return retval;
+	if (sched_copy_attr(uattr, &attr))
+		return -EFAULT;
 
 	rcu_read_lock();
 	retval = -ESRCH;
