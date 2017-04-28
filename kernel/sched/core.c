@@ -6384,11 +6384,13 @@ static int sched_copy_attr(struct sched_attr __user *uattr,
 	 */
 	attr->sched_nice = clamp(attr->sched_nice, -20, 19);
 
-	return 0;
+out:
+	return ret;
 
 err_size:
 	put_user(sizeof(*attr), &uattr->size);
-	return -E2BIG;
+	ret = -E2BIG;
+	goto out;
 }
 
 /**
