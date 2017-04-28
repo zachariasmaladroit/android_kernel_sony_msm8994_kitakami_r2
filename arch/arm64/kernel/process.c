@@ -410,12 +410,6 @@ static void tls_thread_switch(struct task_struct *next)
 	"	msr	tpidrro_el0, %1"
 	: : "r" (tpidr), "r" (tpidrro));
 }
-static void tlb_flush_thread(struct task_struct *prev)
-{
-/* Flush the prev task&apos;s TLB entries */
-if (prev->mm)
-flush_tlb_mm(prev->mm);
-}
 
 /*
  * Thread switching.
@@ -429,7 +423,6 @@ struct task_struct *__switch_to(struct task_struct *prev,
 	tls_thread_switch(next);
 	hw_breakpoint_thread_switch(next);
 	contextidr_thread_switch(next);
-	tlb_flush_thread(prev);
 
 	/*
 	 * Complete any pending TLB or cache maintenance on this CPU in case
