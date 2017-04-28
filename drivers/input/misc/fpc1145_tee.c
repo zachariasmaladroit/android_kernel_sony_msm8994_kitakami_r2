@@ -669,7 +669,7 @@ static irqreturn_t fpc1145_irq_handler(int irq, void *handle)
 	/* Make sure 'wakeup_enabled' is updated before using it
 	** since this is interrupt context (other thread...) */
 	smp_rmb();
-	if (fpc1145->wakeup_enabled ) {
+	if (!is_display_on() && fpc1145->wakeup_enabled ) {
 		wake_lock_timeout(&fpc1145->ttw_wl, msecs_to_jiffies(FPC_TTW_HOLD_TIME));
 #ifdef CONFIG_MSM_HOTPLUG
 		if (msm_enabled && msm_hotplug_scr_suspended &&
