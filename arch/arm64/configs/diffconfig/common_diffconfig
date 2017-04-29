@@ -291,6 +291,14 @@ CONFIG_RCU_FAST_NO_HZ=y
 # RCU additional tweaks
 CONFIG_RCU_CPU_STALL_TIMEOUT=60
 CONFIG_RCU_CPU_STALL_VERBOSE=y
+CONFIG_RCU_CPU_STALL_INFO=y
+
+# debug and other useful information
+# only enable for debugging purposes (causes log spamming, stalls, etc.)
+# CONFIG_DEBUG_PREEMPT is not set
+
+# debug, stability & troubleshooting
+CONFIG_PANIC_ON_DATA_CORRUPTION=y
 
 # interactivity, throughput compromise
 CONFIG_HZ=100
@@ -367,6 +375,7 @@ CONFIG_DEBUG_SET_MODULE_RONX=y
 
 # raise kernel logs
 CONFIG_LOG_BUF_SHIFT=21
+CONFIG_OOPS_LOG_BUF_SHIFT=17
 
 # zram & other mm related
 CONFIG_Z3FOLD=y
