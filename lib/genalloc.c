@@ -37,7 +37,6 @@
 #include <linux/of_address.h>
 #include <linux/of_device.h>
 #include <linux/vmalloc.h>
-#include <asm/relaxed.h>
 
 static inline size_t chunk_size(const struct gen_pool_chunk *chunk)
 {
@@ -49,17 +48,13 @@ static int set_bits_ll(unsigned long *addr, unsigned long mask_to_set)
 	unsigned long val, nval;
 
 	nval = *addr;
-	val = nval;
-	if (val & mask_to_set)
-		return -EBUSY;
-	cpu_relax();
-	while ((nval = cmpxchg(addr, val, val | mask_to_set)) != val) {
-		cpu_relaxed_read_long(addr);
+	do {
 		val = nval;
 		if (val & mask_to_set)
 			return -EBUSY;
-		cpu_read_relax();
-	}
+		cpu_relax();
+	} while ((nval = cmpxchg(addr, val, val | mask_to_set)) != val);
+
 	return 0;
 }
 
@@ -68,17 +63,13 @@ static int clear_bits_ll(unsigned long *addr, unsigned long mask_to_clear)
 	unsigned long val, nval;
 
 	nval = *addr;
-	val = nval;
-	if ((val & mask_to_clear) != mask_to_clear)
-		return -EBUSY;
-	cpu_relax();
-	while ((nval = cmpxchg(addr, val, val & ~mask_to_clear)) != val) {
-		cpu_relaxed_read_long(addr);
+	do {
 		val = nval;
 		if ((val & mask_to_clear) != mask_to_clear)
 			return -EBUSY;
-		cpu_read_relax();
-	}
+		cpu_relax();
+	} while ((nval = cmpxchg(addr, val, val & ~mask_to_clear)) != val);
+
 	return 0;
 }
 
