@@ -478,24 +478,24 @@ static void wakeup_source_deactivate(struct wakeup_source *ws)
 
 static bool wakeup_source_blocker(struct wakeup_source *ws)
 {
-	unsigned int wslen = 0;
+//	unsigned int wslen = 0;
 
-	if (ws) {
-		wslen = strlen(ws->name);
+//	if (ws) {
+//		wslen = strlen(ws->name);
 
-		if ((!enable_ipa_ws && !strncmp(ws->name, "IPA_WS", wslen)) ||
+		if ((!enable_ipa_ws && !strncmp(ws->name, "IPA_WS", 6)) ||
 			(!enable_wlan_rx_wake_ws &&
-				!strncmp(ws->name, "wlan_rx_wake", wslen)) ||
+				!strncmp(ws->name, "wlan_rx_wake", 12)) ||
 			(!enable_wlan_ctrl_wake_ws &&
-				!strncmp(ws->name, "wlan_ctrl_wake", wslen)) ||
+				!strncmp(ws->name, "wlan_ctrl_wake", 14)) ||
 			(!enable_wlan_wake_ws &&
-				!strncmp(ws->name, "wlan_wake", wslen)) ||
+				!strncmp(ws->name, "wlan_wake", 9)) ||
 			(!enable_bluedroid_timer_ws &&
-				!strncmp(ws->name, "bluedroid_timer", wslen)) ||
+				!strncmp(ws->name, "bluedroid_timer", 15)) ||
 			(!enable_timerfd_ws &&
-				!strncmp(ws->name, "[timerfd]", wslen)) ||
+				!strncmp(ws->name, "[timerfd]", 9)) ||
 			(!enable_netlink_ws &&
-				!strncmp(ws->name, "NETLINK", wslen))) {
+				!strncmp(ws->name, "NETLINK", 7))) {
 			if (ws->active) {
 				wakeup_source_deactivate(ws);
 				pr_info("forcefully deactivate wakeup source: %s\n",
@@ -504,7 +504,7 @@ static bool wakeup_source_blocker(struct wakeup_source *ws)
 
 			return true;
 		}
-	}
+//	}
 
 	return false;
 }
