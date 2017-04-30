@@ -383,6 +383,7 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -Wno-format-security \
 		   -fdiagnostics-color=always \
 		   -fno-var-tracking-assignments \
+		   -Werror=null-dereference \
 		   -pipe \
 		   -march=armv8-a+crc \
 		   -mtune=cortex-a57.cortex-a53 \
