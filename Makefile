@@ -395,7 +395,7 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -fcse-follow-jumps  -fcse-skip-blocks \
 		   -finline-small-functions -fpartial-inlining -findirect-inlining \
 		   -foptimize-sibling-calls \
-		   -fsched-interblock -fsched-spec -fschedule-insns -fschedule-insns2 \
+		   -fsched-interblock -fsched-spec -fno-schedule-insns -fschedule-insns2 \
 		   -march=armv8-a+crc \
 		   -mtune=cortex-a57.cortex-a53 \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
@@ -403,6 +403,7 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 #		   -fno-delete-null-pointer-checks \
 #		   -fisolate-erroneous-paths-dereference -fisolate-erroneous-paths-attribute \
 #		   -fdevirtualize-speculatively \
+# BUG:		   -fschedule-insns
 #		   -fprefetch-loop-arrays
 #		   -mno-unaligned-access \
 #		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
