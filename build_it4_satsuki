@@ -1,5 +1,5 @@
 ### GCC 4.9.x
-### I'm using Google 4.9 TC https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9
+### I'm using mdalexca 4.9 Linaro TC
 
 export USE_CCACHE=1
 

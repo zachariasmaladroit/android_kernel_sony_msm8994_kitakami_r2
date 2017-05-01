@@ -1,5 +1,5 @@
 ### GCC 4.9.x
-### I'm using UBERTC https://bitbucket.org/UBERTC/aarch64-linux-android-4.9-kernel
+### I'm using mdalexca 4.9 Linaro TC
 
 export USE_CCACHE=1
 
