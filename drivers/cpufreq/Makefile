@@ -98,5 +98,5 @@ obj-$(CONFIG_UNICORE32)			+= unicore2-cpufreq.o
 obj-$(CONFIG_CPU_FREQ_STAT)		+= cpufreq_persistent_stats.o
 
 obj-$(CONFIG_LAZYPLUG)			+= lazyplug.o
-CFLAGS_lazyplug.o			+= -finline-functions
+CFLAGS_lazyplug.o			+= -finline-functions -funroll-loops
 obj-$(CONFIG_ASMP) 		+= autosmp.o
