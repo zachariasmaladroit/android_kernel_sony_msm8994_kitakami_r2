@@ -396,6 +396,7 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -finline-small-functions -fpartial-inlining -findirect-inlining \
 		   -foptimize-sibling-calls \
 		   -fsched-interblock -fsched-spec -fno-schedule-insns -fschedule-insns2 \
+		   -fsched-pressure -fno-tree-reassoc -fmodulo-sched -fmodulo-sched-allow-regmoves \
    		   -ftracer \
 		   -fivopts \
 		   -march=armv8-a+crc \
