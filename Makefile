@@ -392,13 +392,20 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -fdevirtualize -fdevirtualize-speculatively \
 		   -fexpensive-optimizations \
 		   -fgcse -fgcse-lm -fgcse-after-reload -frerun-cse-after-loop \
-		   -fcse-follow-jumps  -fcse-skip-blocks \
+		   -fcse-follow-jumps -fcse-skip-blocks \
 		   -finline-small-functions -fpartial-inlining -findirect-inlining \
 		   -foptimize-sibling-calls \
 		   -fsched-interblock -fsched-spec -fno-schedule-insns -fschedule-insns2 \
+   		   -ftracer \
+		   -fivopts \
 		   -march=armv8-a+crc \
 		   -mtune=cortex-a57.cortex-a53 \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
+# floating-point stuff:
+#		   -mfpu=neon-fp-armv8 -mfloat-abi=hard \
+#		   -ffast-math
+#		   -fivopts -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
+#
 #		   -fno-aggressive-loop-optimizations \
 #		   -fno-delete-null-pointer-checks \
 #		   -fisolate-erroneous-paths-dereference -fisolate-erroneous-paths-attribute \
