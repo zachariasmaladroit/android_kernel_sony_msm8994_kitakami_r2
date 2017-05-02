@@ -1232,7 +1232,7 @@ static void mdss_dsi_panel_poll_worker_scheduling(
 	if (pinfo->dsi_master == pinfo->pdest) {
 		if (polling->enable && display_onoff_state) {
 			polling->ctrl_pdata = ctrl_pdata;
-			schedule_delayed_work(
+			queue_delayed_work(system_power_efficient_wq,
 				&polling->poll_working,
 				msecs_to_jiffies(polling->intervals));
 		}
