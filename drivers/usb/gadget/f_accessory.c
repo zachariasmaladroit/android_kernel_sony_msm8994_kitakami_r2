@@ -867,7 +867,7 @@ static int acc_ctrlrequest(struct usb_composite_dev *cdev,
 	if (b_requestType == (USB_DIR_OUT | USB_TYPE_VENDOR)) {
 		if (b_request == ACCESSORY_START) {
 			dev->start_requested = 1;
-			schedule_delayed_work(
+			queue_delayed_work(system_power_efficient_wq,
 				&dev->start_work,
 				msecs_to_jiffies(50 +
 					WAIT_TIME_BEFORE_SENDING_CONFIGURED));
