@@ -132,7 +132,8 @@ static void poll_panel_status(struct work_struct *work)
 		send_panel_on_seq(ctl,
 				polling->ctrl_pdata);
 	else
-		schedule_delayed_work(&polling->poll_working,
+		queue_delayed_work(system_power_efficient_wq,
+				&polling->poll_working,
 				msecs_to_jiffies(polling->intervals));
 }
 
@@ -252,7 +253,8 @@ static int fb_event_callback(struct notifier_block *self,
 
 		switch (*blank) {
 		case FB_BLANK_UNBLANK:
-			schedule_delayed_work(&pdata->check_status,
+			queue_delayed_work(system_power_efficient_wq,
+				&pdata->check_status,
 				msecs_to_jiffies(interval));
 			break;
 		case FB_BLANK_POWERDOWN:
