@@ -488,7 +488,8 @@ flash_error:
 		if (!is_hw_strobe(data)) {
 			data->scheduled = true;
 			INIT_DELAYED_WORK(&data->dwork, flash_turn_off_delayed);
-			schedule_delayed_work(&data->dwork,
+			queue_delayed_work(system_power_efficient_wq,
+				&data->dwork,
 				msecs_to_jiffies(data->turn_off_delay_ms));
 		}
 		break;
