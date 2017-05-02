@@ -334,7 +334,8 @@ static void lmh_poll(struct work_struct *work)
 	if (lmh_dat->intr_state != LMH_ISR_POLLING)
 		goto poll_exit;
 	lmh_read_and_notify(lmh_dat);
-	schedule_delayed_work(&lmh_dat->poll_work,
+	queue_delayed_work(system_power_efficient_wq,
+			&lmh_dat->poll_work,
 			msecs_to_jiffies(lmh_poll_interval));
 
 poll_exit:
@@ -391,7 +392,8 @@ static void lmh_notify(struct work_struct *work)
 
 notify_exit:
 	if (lmh_dat->intr_state == LMH_ISR_POLLING)
-		schedule_delayed_work(&lmh_dat->poll_work,
+		queue_delayed_work(system_power_efficient_wq,
+			&lmh_dat->poll_work,
 			msecs_to_jiffies(lmh_poll_interval));
 	else
 		enable_irq(lmh_dat->irq_num);
