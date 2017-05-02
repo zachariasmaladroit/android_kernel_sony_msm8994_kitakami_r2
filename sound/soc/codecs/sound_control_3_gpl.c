@@ -32,7 +32,7 @@
 extern struct snd_soc_codec *fauxsound_codec_ptr;
 extern int wcd9xxx_hw_revision;
 
-static int snd_ctrl_locked = 1;
+static int snd_ctrl_locked = 0;
 static int snd_rec_ctrl_locked = 1;
 
 unsigned int tomtom_read(struct snd_soc_codec *codec, unsigned int reg);
