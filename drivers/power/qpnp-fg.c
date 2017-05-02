@@ -1883,13 +1883,13 @@ out:
 
 resched:
 #ifdef CONFIG_QPNP_FG_EXTENSION
-	schedule_delayed_work(
+	queue_delayed_work(system_power_efficient_wq,
 		&chip->update_temp_work,
 		msecs_to_jiffies(chip->somc_params.period_update_ms ?
 			chip->somc_params.period_update_ms :
 			TEMP_PERIOD_UPDATE_MS));
 #else
-	schedule_delayed_work(
+	queue_delayed_work(system_power_efficient_wq,
 		&chip->update_temp_work,
 		msecs_to_jiffies(TEMP_PERIOD_UPDATE_MS));
 #endif
@@ -5946,7 +5946,7 @@ static void check_and_update_sram_data(struct fg_chip *chip)
 	else
 		time_left = 0;
 
-	schedule_delayed_work(
+	queue_delayed_work(system_power_efficient_wq,
 		&chip->update_temp_work, msecs_to_jiffies(time_left * 1000));
 
 #ifdef CONFIG_QPNP_FG_EXTENSION
@@ -5964,7 +5964,7 @@ static void check_and_update_sram_data(struct fg_chip *chip)
 	else
 		time_left = 0;
 
-	schedule_delayed_work(
+	queue_delayed_work(system_power_efficient_wq,
 		&chip->update_sram_data, msecs_to_jiffies(time_left * 1000));
 }
 
