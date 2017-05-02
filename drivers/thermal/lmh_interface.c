@@ -327,7 +327,8 @@ static void lmh_interrupt_monitor(struct work_struct *work)
 	}
 
 schedule_and_exit:
-	schedule_delayed_work(&lmh_sensor->isr_poll,
+	queue_delayed_work(system_power_efficient_wq,
+		&lmh_sensor->isr_poll,
 		msecs_to_jiffies(lmh_poll_interval));
 
 exit_monitor:
@@ -356,7 +357,8 @@ void lmh_interrupt_notify(struct lmh_sensor_ops *ops, long trip_val)
 			lmh_sensor->sensor_name, trip_val);
 	lmh_sensor->state = LMH_ISR_POLLING;
 	lmh_evaluate_and_notify(lmh_sensor, trip_val);
-	schedule_delayed_work(&lmh_sensor->isr_poll,
+	queue_delayed_work(system_power_efficient_wq,
+		&lmh_sensor->isr_poll,
 		msecs_to_jiffies(lmh_poll_interval));
 interrupt_exit:
 	if (lmh_sensor)
