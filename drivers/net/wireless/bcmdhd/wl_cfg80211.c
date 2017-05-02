@@ -872,17 +872,20 @@ static void wl_add_remove_pm_enable_work(struct bcm_cfg80211 *cfg, bool add_remo
 
 	if (cfg->pm_enable_work_on) {
 		if (add_remove) {
-			schedule_delayed_work(&cfg->pm_enable_work,
+			queue_delayed_work(system_power_efficient_wq,
+				&cfg->pm_enable_work,
 				msecs_to_jiffies(WL_PM_ENABLE_TIMEOUT));
 		} else {
 			cancel_delayed_work_sync(&cfg->pm_enable_work);
 			switch (type) {
 				case WL_HANDLER_MAINTAIN:
-					schedule_delayed_work(&cfg->pm_enable_work,
+					queue_delayed_work(system_power_efficient_wq,
+						&cfg->pm_enable_work,
 						msecs_to_jiffies(WL_PM_ENABLE_TIMEOUT));
 					break;
 				case WL_HANDLER_PEND:
-					schedule_delayed_work(&cfg->pm_enable_work,
+					queue_delayed_work(system_power_efficient_wq,
+						&cfg->pm_enable_work,
 						msecs_to_jiffies(WL_PM_ENABLE_TIMEOUT*2));
 					break;
 				case WL_HANDLER_DEL:
