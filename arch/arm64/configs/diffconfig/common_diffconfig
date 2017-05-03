@@ -150,7 +150,7 @@ CONFIG_TOUCHSCREEN_CLEARPAD_I2C=y
 CONFIG_TOUCHSCREEN_CLEARPAD_RMI_DEV=y
 
 ##########################
-	SunKernel Nova
+	SunKernel Flares
 ##########################
 
 CONFIG_LOCALVERSION="-MM_5.11_Flares_II.3_5_lazy"
@@ -201,7 +201,6 @@ CONFIG_TOUCHSCREEN_ATMEL_MAXTOUCH_TS=y
 CONFIG_TI_DRV2667=y
 # CONFIG_QCOM_LIQUID_DOCK is not set
 # CONFIG_PCI_QUIRKS is not set
-CONFIG_SYSRQ_SCHED_DEBUG=y
 
 # DM related for Nougat LaOS, etc. | non-stock, enable the 3 following
 # CONFIG_DM_BUFIO is not set
@@ -495,3 +494,13 @@ CONFIG_CRYPTO_AES_ARM64_NEON_BLK=y
 CONFIG_CRYPTO_SHA256_ARM64=y
 CONFIG_CRYPTO_SHA512_ARM64=y
 CONFIG_CRYPTO_CRC32_ARM64=y
+
+# stability, timeouts, watchdog
+#
+#    CONFIG_SYSRQ_SCHED_DEBUG results in verbose printk output when the
+#    "show-task-states(T)" or "show-blocked-tasks(W)" sysrq triggers
+#    are invoked. Because this can increase the chances of a watchdog
+#    bark when the system is under heavy load, disable these debug
+#    prints by default.
+#
+# CONFIG_SYSRQ_SCHED_DEBUG is not set
