@@ -1167,8 +1167,6 @@ static int mdss_dsi_unblank(struct mdss_panel_data *pdata)
 #else
 		mdss_dsi_set_tear_on(ctrl_pdata);
 #endif	/* CONFIG_FB_MSM_MDSS_SPECIFIC_PANEL */
-		if (mdss_dsi_is_te_based_esd(ctrl_pdata))
-			enable_irq(gpio_to_irq(ctrl_pdata->disp_te_gpio));
 	}
 
 error:
@@ -1231,11 +1229,6 @@ static int mdss_dsi_blank(struct mdss_panel_data *pdata, int power_state)
 
 	if ((pdata->panel_info.type == MIPI_CMD_PANEL) &&
 		mipi->vsync_enable && mipi->hw_vsync_mode) {
-		if (mdss_dsi_is_te_based_esd(ctrl_pdata)) {
-				disable_irq(gpio_to_irq(
-					ctrl_pdata->disp_te_gpio));
-				atomic_dec(&ctrl_pdata->te_irq_ready);
-		}
 #ifdef CONFIG_FB_MSM_MDSS_SPECIFIC_PANEL
 		if (pdata->panel_info.dsi_master == pdata->panel_info.pdest)
 			mdss_dsi_set_tear_off(ctrl_pdata);
@@ -2130,7 +2123,7 @@ static int mdss_dsi_ctrl_probe(struct platform_device *pdev)
 	if (mdss_dsi_is_te_based_esd(ctrl_pdata)) {
 		rc = devm_request_irq(&pdev->dev,
 			gpio_to_irq(ctrl_pdata->disp_te_gpio),
-			hw_vsync_handler, IRQF_TRIGGER_FALLING,
+			hw_vsync_handler, IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
 			"VSYNC_GPIO", ctrl_pdata);
 		if (rc) {
 			pr_err("TE request_irq failed.\n");
