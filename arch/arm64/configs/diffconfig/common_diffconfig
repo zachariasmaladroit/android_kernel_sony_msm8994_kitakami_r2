@@ -306,8 +306,9 @@ CONFIG_NLS_ISO8859_15=y
 CONFIG_NLS_CODEPAGE_852=y
 
 # Taking care of security fixes & independence from prebuilt-modules
+# according to upstream FS_MESSAGING is NOT set
 CONFIG_ECRYPT_FS=y
-CONFIG_ECRYPT_FS_MESSAGING=y
+# CONFIG_ECRYPT_FS_MESSAGING is not set
 
 # advanced congestion control algorithms
 CONFIG_TCP_CONG_ADVANCED=y
