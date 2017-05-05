@@ -503,7 +503,7 @@ CONFIG_CRYPTO_CRC32_ARM64=y
 #    bark when the system is under heavy load, disable these debug
 #    prints by default.
 #
-# CONFIG_SYSRQ_SCHED_DEBUG is not set
+CONFIG_SYSRQ_SCHED_DEBUG=y
 
 # Faux Sound Control
 # nope:
