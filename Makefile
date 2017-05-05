@@ -381,29 +381,40 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -fno-strict-aliasing -fno-common \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
+		   -fno-delete-null-pointer-checks \
+		   -fisolate-erroneous-paths-dereference \
+		   -fno-aggressive-loop-optimizations \
 		   -fdiagnostics-color=always \
 		   -fno-var-tracking-assignments \
 		   -pipe \
-		   -fdelete-null-pointer-checks -ftree-vrp \
-		   -fisolate-erroneous-paths-dereference \
-		   -fcaller-saves \
-		   -fipa-cp -fipa-cp-clone \
-		   -freorder-blocks -freorder-blocks-and-partition -freorder-functions \
-		   -fdevirtualize -fdevirtualize-speculatively \
-		   -fexpensive-optimizations \
-		   -fgcse -fgcse-lm -fgcse-after-reload -frerun-cse-after-loop \
-		   -fcse-follow-jumps -fcse-skip-blocks \
-		   -finline-small-functions -fpartial-inlining -findirect-inlining \
-		   -foptimize-sibling-calls \
-		   -fsched-interblock -fsched-spec -fno-schedule-insns -fschedule-insns2 \
-		   -fsched-pressure -fno-tree-reassoc -fmodulo-sched -fmodulo-sched-allow-regmoves \
-   		   -ftracer \
-		   -fivopts \
-		   -ffast-math \
-		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
 		   -march=armv8-a+crc \
 		   -mtune=cortex-a57.cortex-a53 \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
+
+#		   -fdiagnostics-color=always \
+#		   -fno-var-tracking-assignments \
+#		   -pipe \
+#		   -fdelete-null-pointer-checks -ftree-vrp \
+#		   -fisolate-erroneous-paths-dereference \
+#		   -fcaller-saves \
+#		   -fipa-cp -fipa-cp-clone \
+#		   -freorder-blocks -freorder-blocks-and-partition -freorder-functions \
+#		   -fdevirtualize -fdevirtualize-speculatively \
+#		   -fexpensive-optimizations \
+#		   -fgcse -fgcse-lm -fgcse-after-reload -frerun-cse-after-loop \
+#		   -fcse-follow-jumps -fcse-skip-blocks \
+#		   -finline-small-functions -fpartial-inlining -findirect-inlining \
+#		   -foptimize-sibling-calls \
+#		   -fsched-interblock -fsched-spec -fno-schedule-insns -fschedule-insns2 \
+#		   -fsched-pressure -fno-tree-reassoc -fmodulo-sched -fmodulo-sched-allow-regmoves \
+#  		   -ftracer \
+#		   -fivopts \
+#		   -ffast-math \
+#		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
+#		   -march=armv8-a+crc \
+#		   -mtune=cortex-a57.cortex-a53 \
+#		   -std=gnu89 $(call cc-option,-fno-PIE)
+#		   
 # floating-point stuff:
 #		   -mfpu=neon-fp-armv8 -mfloat-abi=hard \
 #		   -ffast-math \
@@ -648,10 +659,13 @@ KBUILD_AFLAGS += $(call cc-option, -fno-pie)
 KBUILD_CPPFLAGS += $(call cc-option, -fno-pie)
 
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
-KBUILD_CFLAGS	+= -Os $(call cc-disable-warning,maybe-uninitialized,)
+KBUILD_CFLAGS	+= -Os
 else
-KBUILD_CFLAGS  += -O2 $(call cc-disable-warning,maybe-uninitialized,)
+KBUILD_CFLAGS  += -O2
 endif
+KBUILD_CFLAGS	+= $(call cc-disable-warning,maybe-uninitialized,)
+KBUILD_CFLAGS	+= $(call cc-disable-warning,unused-function)
+KBUILD_CFLAGS	+= $(call cc-disable-warning,unused-variable)
 
 include $(srctree)/arch/$(SRCARCH)/Makefile
 
