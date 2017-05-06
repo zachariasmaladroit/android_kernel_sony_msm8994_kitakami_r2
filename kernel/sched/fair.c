@@ -6586,8 +6586,9 @@ static int detach_tasks(struct lb_env *env)
 		if (sched_feat(LB_MIN) && load < 16 && !env->sd->nr_balance_failed)
 			goto next;
 
-		if ((load / 2) > env->imbalance)
-			goto next;
+		if (env->idle != CPU_NEWLY_IDLE)
+			if ((load / 2) > env->imbalance)
+				goto next;
 
 		detach_task(p, env);
 		list_add(&p->se.group_node, &env->tasks);
