@@ -402,12 +402,12 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -fivopts \
 		   -ffast-math \
 		   -fsingle-precision-constant \
-		   -mlow-precision-recip-sqrt \
 		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
 		   -march=armv8-a+crc \
 		   -mtune=cortex-a57.cortex-a53 \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
 
+#		   -mlow-precision-recip-sqrt \
 #		   -mpc-relative-literal-loads \
 #		   -fdiagnostics-color=always \
 #		   -fno-var-tracking-assignments \
