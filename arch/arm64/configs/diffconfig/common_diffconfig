@@ -437,6 +437,9 @@ CONFIG_WQ_POWER_EFFICIENT_DEFAULT=y
 # powersuspend PM driver
 CONFIG_POWERSUSPEND=y
 
+# NA after upstream changes
+# CONFIG_WAKEUP_IRQ_DEBUG is not set
+
 # Hotplug support
 # CONFIG_MSM_CORE_CTL_HELPER is not set
 # CONFIG_MSM_CORE_CTL is not set
