@@ -381,12 +381,28 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -fno-strict-aliasing -fno-common \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
-		   -fno-delete-null-pointer-checks \
-		   -fisolate-erroneous-paths-dereference \
-		   -fno-aggressive-loop-optimizations \
 		   -fdiagnostics-color=always \
 		   -fno-var-tracking-assignments \
 		   -pipe \
+		   -fno-aggressive-loop-optimizations \
+		   -fdelete-null-pointer-checks -ftree-vrp \
+		   -fisolate-erroneous-paths-dereference \
+		   -fcaller-saves \
+		   -fipa-cp -fipa-cp-clone \
+		   -freorder-blocks -freorder-blocks-and-partition -freorder-functions \
+		   -fdevirtualize -fdevirtualize-speculatively \
+		   -fexpensive-optimizations \
+		   -fgcse -fgcse-lm -fgcse-after-reload -frerun-cse-after-loop \
+		   -fcse-follow-jumps -fcse-skip-blocks \
+		   -finline-small-functions -fpartial-inlining -findirect-inlining \
+		   -foptimize-sibling-calls \
+		   -fsched-interblock -fsched-spec -fno-schedule-insns -fschedule-insns2 \
+		   -fsched-pressure -fno-tree-reassoc -fmodulo-sched -fmodulo-sched-allow-regmoves \
+  		   -ftracer \
+		   -fivopts \
+		   -ffast-math \
+		   -fsingle-precision-constant \
+		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
 		   -march=armv8-a+crc \
 		   -mtune=cortex-a57.cortex-a53 \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
