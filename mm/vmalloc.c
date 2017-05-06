@@ -1370,15 +1370,19 @@ void unmap_kernel_range(unsigned long addr, unsigned long size)
 	flush_tlb_kernel_range(addr, end);
 }
 
-int map_vm_area(struct vm_struct *area, pgprot_t prot, struct page **pages)
+int map_vm_area(struct vm_struct *area, pgprot_t prot, struct page ***pages)
 {
 	unsigned long addr = (unsigned long)area->addr;
 	unsigned long end = addr + get_vm_area_size(area);
 	int err;
 
-	err = vmap_page_range(addr, end, prot, pages);
+	err = vmap_page_range(addr, end, prot, *pages);
+	if (err > 0) {
+		*pages += err;
+		err = 0;
+	}
 
-	return err > 0 ? 0 : err;
+	return err;
 }
 EXPORT_SYMBOL_GPL(map_vm_area);
 
@@ -1681,7 +1685,7 @@ void *vmap(struct page **pages, unsigned int count,
 	if (!area)
 		return NULL;
 
-	if (map_vm_area(area, prot, pages)) {
+	if (map_vm_area(area, prot, &pages)) {
 		vunmap(area->addr);
 		return NULL;
 	}
@@ -1739,7 +1743,7 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
 			cond_resched();
 	}
 
-	if (map_vm_area(area, prot, pages))
+	if (map_vm_area(area, prot, &pages))
 		goto fail;
 	return area->addr;
 
