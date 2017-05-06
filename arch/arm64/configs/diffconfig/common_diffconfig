@@ -434,6 +434,9 @@ CONFIG_DEFAULT_IOSCHED="bfq"
 # Power efficiency
 CONFIG_WQ_POWER_EFFICIENT_DEFAULT=y
 
+# powersuspend PM driver
+CONFIG_POWERSUSPEND=y
+
 # Hotplug support
 # CONFIG_MSM_CORE_CTL_HELPER is not set
 # CONFIG_MSM_CORE_CTL is not set
