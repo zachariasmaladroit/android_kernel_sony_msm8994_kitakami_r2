@@ -3252,7 +3252,7 @@ int dhd_prot_ioctl(dhd_pub_t *dhd, int ifidx, wl_ioctl_t * ioc, void * buf, int 
 
 #ifdef DHD_USE_IDLECOUNT
 	if (!bus_wake(dhd->bus)) {
-		DHD_ERROR(("%s : bus_wake returns 0\n", __FUNCTION__));
+//		DHD_ERROR(("%s : bus_wake returns 0\n", __FUNCTION__));
 	}
 #endif /* DHD_USE_IDLECOUNT */
 
