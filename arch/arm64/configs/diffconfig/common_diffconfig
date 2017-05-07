@@ -378,7 +378,14 @@ CONFIG_LOG_BUF_SHIFT=21
 CONFIG_OOPS_LOG_BUF_SHIFT=17
 
 # zram & other mm related
+CONFIG_ZRAM=y
+CONFIG_ZRAM_LZ4_COMPRESS=y
+# CONFIG_ZRAM_DEBUG is not set
+
+# zpool & backends
 CONFIG_Z3FOLD=y
+CONFIG_ZPOOL=y
+CONFIG_ZSMALLOC=y
 
 # in production, disabled
 # CONFIG_POWERKEY_FORCECRASH is not set
