@@ -436,7 +436,7 @@ static struct zram_meta *zram_meta_alloc(int device_id, u64 disksize)
 	}
 
 	snprintf(pool_name, sizeof(pool_name), "zram%d", device_id);
-	backend = strlen(backend_param_buf) ? backend_param_buf : "zsmalloc";
+	backend = strlen(backend_param_buf) ? backend_param_buf : "z3fold";
 	meta->mem_pool = zpool_create_pool(backend, pool_name,
 			GFP_NOIO | __GFP_NOWARN, NULL);
 	if (!meta->mem_pool) {
