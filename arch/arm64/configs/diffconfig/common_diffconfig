@@ -534,6 +534,16 @@ CONFIG_IP_NF_SECURITY=y
 # IPv6 Netfilter
 CONFIG_IP6_NF_MATCH_RPFILTER=y
 
+# zram & other mm related
+CONFIG_ZRAM=y
+CONFIG_ZRAM_LZ4_COMPRESS=y
+# CONFIG_ZRAM_DEBUG is not set
+
+# zpool & backends
+CONFIG_Z3FOLD=y
+CONFIG_ZPOOL=y
+CONFIG_ZSMALLOC=y
+
 # misc
 CONFIG_UID_STAT=y
 # NFC
