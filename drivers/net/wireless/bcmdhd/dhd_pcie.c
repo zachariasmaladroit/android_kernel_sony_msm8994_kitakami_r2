@@ -913,12 +913,12 @@ bool dhd_bus_watchdog(dhd_pub_t *dhd)
 		}
 
 		atomic_set(&bus->runtime_suspend, 1);
-		DHD_ERROR(("%s: DHD Idle state!! -  idletime :%d, wdtick :%d \n",
-			__FUNCTION__, bus->idletime, dhd_watchdog_ms));
+//		DHD_ERROR(("%s: DHD Idle state!! -  idletime :%d, wdtick :%d \n",
+//			__FUNCTION__, bus->idletime, dhd_watchdog_ms));
 
 		/* if device suspended, wd needs to turn off */
 		if (dhdpcie_set_suspend_resume(bus->dev, TRUE)) {
-			DHD_ERROR(("%s: runtime suspend failed \n", __FUNCTION__));
+//			DHD_ERROR(("%s: runtime suspend failed \n", __FUNCTION__));
 			atomic_set(&bus->runtime_suspend, 0);
 			return FALSE;
 		}
@@ -3485,8 +3485,8 @@ dhdpcie_bus_suspend(struct dhd_bus *bus, bool state)
 		DHD_GENERAL_LOCK(bus->dhd, flags);
 		/* Atomically check we can suspend and flag suspend, set busstate */
 		if (!bus->force_suspend && dhd_os_check_wakelock_all(bus->dhd)) {
-			DHD_ERROR(("Suspend failed because of wakelock "
-				"before sending D3_INFORM\n"));
+//			DHD_ERROR(("Suspend failed because of wakelock "
+//				"before sending D3_INFORM\n"));
 #ifdef DHD_USE_IDLECOUNT
 			if (bus->host_suspend == TRUE) {
 				bus->host_suspend = FALSE;
@@ -3544,8 +3544,8 @@ dhdpcie_bus_suspend(struct dhd_bus *bus, bool state)
 			/* Got D3 Ack. Suspend the bus */
 			DHD_GENERAL_LOCK(bus->dhd, flags);
 			if (!bus->force_suspend && dhd_os_check_wakelock_all(bus->dhd)) {
-				DHD_ERROR(("%s():Suspend failed because of wakelock "
-					"restoring Dongle to D0\n", __FUNCTION__));
+//				DHD_ERROR(("%s():Suspend failed because of wakelock "
+//					"restoring Dongle to D0\n", __FUNCTION__));
 
 				/*
 				 * Dongle still thinks that it has to be in D3 state until
