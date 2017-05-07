@@ -174,8 +174,6 @@ static ssize_t sel_write_enforce(struct file *file, const char __user *buf,
 	new_value = 1;
 #elif defined(CONFIG_SECURITY_SELINUX_NEVER_ENFORCE)
 	new_value = 0;
-#else
-	new_value = selinux_enforcing;	
 #endif
 
 	if (new_value != selinux_enforcing) {
