@@ -211,6 +211,9 @@ int update_devfreq(struct devfreq *devfreq)
 
 	/* Reevaluate the proper frequency */
 	if (devfreq->do_wake_boost) {
+		pr_debug_ratelimited("%s is configured for wake boost",
+                            dev_name(&devfreq->dev));
+
 		/* Use the max freq when the screen is turned on */
 		freq = UINT_MAX;
 	} else {
@@ -232,6 +235,8 @@ int update_devfreq(struct devfreq *devfreq)
 		flags &= ~DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use GLB */
 	}
 	if (devfreq->max_freq && freq > devfreq->max_freq) {
+		pr_debug_ratelimited("Setting frequency of %s to %lu",
+                            dev_name(&devfreq->dev), devfreq->max_freq);
 		freq = devfreq->max_freq;
 		flags |= DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use LUB */
 	}
