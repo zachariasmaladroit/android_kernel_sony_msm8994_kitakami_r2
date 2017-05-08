@@ -969,6 +969,8 @@ static irqreturn_t msm_async_irq(int irq, void *data)
 			atomic_set(&mhcd->pm_usage_cnt, 1);
 	}
 
+	pm_relax(mhcd->dev);
+
 	return IRQ_HANDLED;
 }
 
@@ -994,6 +996,8 @@ static irqreturn_t msm_ehci_host_wakeup_irq(int irq, void *data)
 		atomic_set(&mhcd->pm_usage_cnt, 1);
 		pm_runtime_get(mhcd->dev);
 	}
+
+	pm_relax(mhcd->dev);
 
 	return IRQ_HANDLED;
 }
@@ -1223,6 +1227,8 @@ static irqreturn_t msm_hsusb_wakeup_irq(int irq, void *data)
 			atomic_set(&mhcd->pm_usage_cnt, 1);
 		}
 	}
+
+	pm_relax(mhcd->dev);
 
 	return IRQ_HANDLED;
 }
