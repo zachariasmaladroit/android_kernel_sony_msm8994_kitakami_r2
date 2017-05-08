@@ -676,7 +676,7 @@ static int camera_v4l2_close(struct file *filep)
 		/* This should take care of both normal close
 		 * and application crashes */
 		msm_destroy_session(pvdev->vdev->num);
-		pm_relax(&pvdev->vdev->dev);
+
 	} else {
 		camera_pack_event(filep, MSM_CAMERA_SET_PARM,
 			MSM_CAMERA_PRIV_DEL_STREAM, -1, &event);
@@ -688,6 +688,8 @@ static int camera_v4l2_close(struct file *filep)
 
 		msm_delete_stream(pvdev->vdev->num, sp->stream_id);
 	}
+	
+	pm_relax(&pvdev->vdev->dev);
 
 	camera_v4l2_vb2_q_release(filep);
 	camera_v4l2_fh_release(filep);
