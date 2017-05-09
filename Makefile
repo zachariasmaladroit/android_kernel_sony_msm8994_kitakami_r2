@@ -400,13 +400,16 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -fsched-pressure -fno-tree-reassoc -fmodulo-sched -fmodulo-sched-allow-regmoves \
   		   -ftracer \
 		   -fivopts \
-		   -ffast-math \
-		   -fsingle-precision-constant \
-		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
 		   -march=armv8-a+crc \
 		   -mtune=cortex-a57.cortex-a53 \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
-
+#
+#			pessimistic:
+#		
+#		   -ffast-math \
+#		   -fsingle-precision-constant \
+#		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
+#			#		   
 #		   -mlow-precision-recip-sqrt \
 #		   -mpc-relative-literal-loads \
 #		   -fdiagnostics-color=always \
