@@ -388,7 +388,7 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -fdelete-null-pointer-checks -ftree-vrp \
 		   -fisolate-erroneous-paths-dereference \
 		   -fcaller-saves \
-		   -fipa-cp -fipa-cp-clone \
+		   -fipa-cp \
 		   -freorder-blocks -freorder-blocks-and-partition -freorder-functions \
 		   -fdevirtualize -fdevirtualize-speculatively \
 		   -fexpensive-optimizations \
@@ -400,6 +400,8 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -fsched-pressure -fno-tree-reassoc -fmodulo-sched -fmodulo-sched-allow-regmoves \
   		   -ftracer \
 		   -fivopts \
+		   -ffast-math \
+		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
 		   -march=armv8-a+crc \
 		   -mtune=cortex-a57.cortex-a53 \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
@@ -409,7 +411,11 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 #		   -ffast-math \
 #		   -fsingle-precision-constant \
 #		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
-#			#		   
+#			#
+#			too much size:
+#
+#		   -fipa-cp-clone
+#			#
 #		   -mlow-precision-recip-sqrt \
 #		   -mpc-relative-literal-loads \
 #		   -fdiagnostics-color=always \
