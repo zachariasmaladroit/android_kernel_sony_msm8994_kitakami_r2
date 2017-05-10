@@ -401,9 +401,12 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
   		   -ftracer \
 		   -fivopts \
 		   -ffast-math \
+		   -g0 -DNDEBUG \
+		   -fomit-frame-pointer \
 		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
 		   -march=armv8-a+crc \
 		   -mtune=cortex-a57.cortex-a53 \
+		   -fno-pic \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
 #
 #			pessimistic:
@@ -416,6 +419,14 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 #
 #		   -fipa-cp-clone
 #			#
+#		   	GCC6
+#
+#		   -Wno-unused-const-variable -Wno-misleading-indentation \
+#		   -Wno-memset-transposed-args  -Wno-bool-compare -Wno-logical-not-parentheses \
+#		   -Wno-switch-bool \
+#		   -Wno-bool-operation -Wno-nonnull -Wno-switch-unreachable -Wno-format-truncation -Wno-format-overflow -Wno-duplicate-decl-specifier -Wno-memset-elt-size -Wno-int-in-bool-context \
+#
+#
 #		   -mlow-precision-recip-sqrt \
 #		   -mpc-relative-literal-loads \
 #		   -fdiagnostics-color=always \
@@ -487,7 +498,7 @@ KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
 KBUILD_AFLAGS   := -D__ASSEMBLY__
 KBUILD_AFLAGS_MODULE  := -DMODULE
-KBUILD_CFLAGS_MODULE  := -DMODULE
+KBUILD_CFLAGS_MODULE  := -DMODULE -fno-pic
 KBUILD_LDFLAGS_MODULE := -T $(srctree)/scripts/module-common.lds
 
 # Read KERNELRELEASE from include/config/kernel.release (if it exists)
