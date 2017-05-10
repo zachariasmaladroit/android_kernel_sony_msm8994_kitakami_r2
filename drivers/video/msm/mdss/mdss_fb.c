@@ -76,6 +76,8 @@
 #define BLANK_FLAG_LP	FB_BLANK_VSYNC_SUSPEND
 #define BLANK_FLAG_ULP	FB_BLANK_NORMAL
 
+#define CONFIG_SOMC_FEATURE_EARLY_UNBLANK
+
 #ifdef CONFIG_SOMC_FEATURE_EARLY_UNBLANK
 #include <linux/input.h>
 /* with a define we avoid modifying fb.h's FB-enum */
