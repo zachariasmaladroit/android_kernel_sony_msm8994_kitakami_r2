@@ -383,33 +383,18 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 		   -Wno-format-security \
 		   -fdiagnostics-color=always \
 		   -fno-var-tracking-assignments \
-		   -pipe \
+		   -fno-delete-null-pointer-checks \
 		   -fno-aggressive-loop-optimizations \
-		   -fdelete-null-pointer-checks -ftree-vrp \
-		   -fisolate-erroneous-paths-dereference \
-		   -fcaller-saves \
-		   -fipa-cp \
-		   -freorder-blocks -freorder-blocks-and-partition -freorder-functions \
-		   -fdevirtualize -fdevirtualize-speculatively \
-		   -fexpensive-optimizations \
-		   -fgcse -fgcse-lm -fgcse-after-reload -frerun-cse-after-loop \
-		   -fcse-follow-jumps -fcse-skip-blocks \
-		   -finline-small-functions -fpartial-inlining -findirect-inlining \
-		   -foptimize-sibling-calls \
-		   -fsched-interblock -fsched-spec -fno-schedule-insns -fschedule-insns2 \
-		   -fsched-pressure -fno-tree-reassoc -fmodulo-sched -fmodulo-sched-allow-regmoves \
-  		   -ftracer \
-		   -fivopts \
-		   -ffast-math \
-		   -g0 -DNDEBUG \
+		   -pipe \
 		   -fomit-frame-pointer \
-		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
 		   -march=armv8-a+crc \
 		   -mtune=cortex-a57.cortex-a53 \
 		   -fno-pic \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
 #
 #			pessimistic:
+#
+#		   -g0 -DNDEBUG \
 #		
 #		   -ffast-math \
 #		   -fsingle-precision-constant \
@@ -493,6 +478,28 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 #		   -freorder-blocks \
 #		   -fno-strict-overflow \
 #		   -mfpu=neon-fp-armv8 \
+#
+#
+#		  previous:
+#		   -fno-aggressive-loop-optimizations \
+#		   -fdelete-null-pointer-checks -ftree-vrp \
+#		   -fisolate-erroneous-paths-dereference \
+#		   -fcaller-saves \
+#		   -fipa-cp \
+#		   -freorder-blocks -freorder-blocks-and-partition -freorder-functions \
+#		   -fdevirtualize -fdevirtualize-speculatively \
+#		   -fexpensive-optimizations \
+#		   -fgcse -fgcse-lm -fgcse-after-reload -frerun-cse-after-loop \
+#		   -fcse-follow-jumps -fcse-skip-blocks \
+#		   -finline-small-functions -fpartial-inlining -findirect-inlining \
+#		   -foptimize-sibling-calls \
+#		   -fsched-interblock -fsched-spec -fno-schedule-insns -fschedule-insns2 \
+#		   -fsched-pressure -fno-tree-reassoc -fmodulo-sched -fmodulo-sched-allow-regmoves \
+# 		   -ftracer \
+#		   -fivopts \
+#		   -ffast-math \
+#		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
+
 
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
