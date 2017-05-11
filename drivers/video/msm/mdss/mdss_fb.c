@@ -76,11 +76,11 @@
 #define BLANK_FLAG_LP	FB_BLANK_VSYNC_SUSPEND
 #define BLANK_FLAG_ULP	FB_BLANK_NORMAL
 
-#ifdef CONFIG_SOMC_FEATURE_EARLY_UNBLANK
+#ifdef SOMC_FEATURE_EARLY_UNBLANK
 #include <linux/input.h>
 /* with a define we avoid modifying fb.h's FB-enum */
 #define FB_EARLY_UNBLANK 0xC0FFEE
-#endif /* CONFIG_SOMC_FEATURE_EARLY_UNBLANK */
+#endif /* SOMC_FEATURE_EARLY_UNBLANK */
 
 static struct fb_info *fbi_list[MAX_FBI_LIST];
 static int fbi_list_index;
@@ -125,7 +125,7 @@ static void mdss_fb_set_mdp_sync_pt_threshold(struct msm_fb_data_type *mfd,
 static void mdss_panelinfo_to_fb_var(struct mdss_panel_info *pinfo,
 					struct fb_var_screeninfo *var);
 
-#ifdef CONFIG_SOMC_FEATURE_EARLY_UNBLANK
+#ifdef SOMC_FEATURE_EARLY_UNBLANK
 static void mdss_background_unblank(struct work_struct *ws);
 
 static int pwr_pressed;
@@ -223,7 +223,7 @@ static struct input_handler mdss_input_handler = {
 	.name		= "mdss_fb",
 	.id_table	= mdss_ids,
 };
-#endif /* CONFIG_SOMC_FEATURE_EARLY_UNBLANK */
+#endif /* SOMC_FEATURE_EARLY_UNBLANK */
 
 void mdss_fb_no_update_notify_timer_cb(unsigned long data)
 {
@@ -1086,11 +1086,11 @@ static int mdss_fb_probe(struct platform_device *pdev)
 	}
 
 	INIT_LIST_HEAD(&mfd->proc_list);
-#ifdef CONFIG_SOMC_FEATURE_EARLY_UNBLANK
+#ifdef SOMC_FEATURE_EARLY_UNBLANK
 	mfd->early_unblank_completed = false;
 	mfd->unblank_kworker = NULL;
 	INIT_WORK(&mfd->unblank_work, mdss_background_unblank);
-#endif /* CONFIG_SOMC_FEATURE_EARLY_UNBLANK */
+#endif /* SOMC_FEATURE_EARLY_UNBLANK */
 
 	mutex_init(&mfd->bl_lock);
 	mutex_init(&mfd->switch_lock);
@@ -1163,14 +1163,14 @@ static int mdss_fb_probe(struct platform_device *pdev)
 	mfd->suspend_avoided = false;
 #endif
 
-#ifdef CONFIG_SOMC_FEATURE_EARLY_UNBLANK
+#ifdef SOMC_FEATURE_EARLY_UNBLANK
 	if (mfd->index == 0) {
 		/* only the primary panel, index 0, uses this kworker */
 		mfd->unblank_kworker =
 			create_singlethread_workqueue("unblanker");
 
 	}
-#endif /* CONFIG_SOMC_FEATURE_EARLY_UNBLANK */
+#endif /* SOMC_FEATURE_EARLY_UNBLANK */
 
 	return rc;
 }
@@ -1260,9 +1260,9 @@ static int mdss_fb_suspend_sub(struct msm_fb_data_type *mfd)
 		return 0;
 
 	pr_debug("mdss_fb suspend index=%d\n", mfd->index);
-#ifdef CONFIG_SOMC_FEATURE_EARLY_UNBLANK
+#ifdef SOMC_FEATURE_EARLY_UNBLANK
 	mdss_ensure_kworker_done(mfd->unblank_kworker);
-#endif /* CONFIG_SOMC_FEATURE_EARLY_UNBLANK */
+#endif /* SOMC_FEATURE_EARLY_UNBLANK */
 
 	ret = mdss_fb_pan_idle(mfd);
 	if (ret) {
@@ -1287,7 +1287,7 @@ static int mdss_fb_suspend_sub(struct msm_fb_data_type *mfd)
 		 * as a fall back option, enter ulp state to leave the display
 		 * on, but turn off all interface clocks.
 		 */
-#ifdef CONFIG_SOMC_FEATURE_EARLY_UNBLANK
+#ifdef SOMC_FEATURE_EARLY_UNBLANK
 		/* Check if Early Unblank has done an early power on of
 		 * the panel, but got no request from layers above to do so.
 		 * If that is the case (for instance when a smart cover is
@@ -1305,7 +1305,7 @@ static int mdss_fb_suspend_sub(struct msm_fb_data_type *mfd)
 			}
 			mfd->suspend.panel_power_state = mfd->panel_power_state;
 		} else
-#endif /* CONFIG_SOMC_FEATURE_EARLY_UNBLANK */
+#endif /* SOMC_FEATURE_EARLY_UNBLANK */
 		if (mdss_fb_is_power_on(mfd)) {
 			ret = mdss_fb_blank_sub(BLANK_FLAG_ULP, mfd->fbi,
 					mfd->suspend.op_enable);
@@ -1318,9 +1318,9 @@ static int mdss_fb_suspend_sub(struct msm_fb_data_type *mfd)
 		fb_set_suspend(mfd->fbi, FBINFO_STATE_SUSPENDED);
 	}
 
-#ifdef CONFIG_SOMC_FEATURE_EARLY_UNBLANK
+#ifdef SOMC_FEATURE_EARLY_UNBLANK
 	pwr_pressed = false;
-#endif /* CONFIG_SOMC_FEATURE_EARLY_UNBLANK */
+#endif /* SOMC_FEATURE_EARLY_UNBLANK */
 
 exit:
 	return ret;
@@ -1359,7 +1359,7 @@ static int mdss_fb_resume_sub(struct msm_fb_data_type *mfd)
 	 * flag. If fb was in ulp state when entering suspend, then nothing
 	 * needs to be done.
 	 */
-#ifdef CONFIG_SOMC_FEATURE_EARLY_UNBLANK
+#ifdef SOMC_FEATURE_EARLY_UNBLANK
 	if (mfd->unblank_kworker && pwr_pressed &&
 	    !mdss_panel_is_power_on_ulp(mfd->suspend.panel_power_state)) {
 		pr_debug("starting unblank async from resume");
@@ -1369,7 +1369,7 @@ static int mdss_fb_resume_sub(struct msm_fb_data_type *mfd)
 #else
 	if (mdss_panel_is_power_on(mfd->suspend.panel_power_state) &&
 		!mdss_panel_is_power_on_ulp(mfd->suspend.panel_power_state)) {
-#endif /* CONFIG_SOMC_FEATURE_EARLY_UNBLANK */
+#endif /* SOMC_FEATURE_EARLY_UNBLANK */
 		int unblank_flag = mdss_panel_is_power_on_interactive(
 			mfd->suspend.panel_power_state) ? FB_BLANK_UNBLANK :
 			BLANK_FLAG_LP;
@@ -1898,14 +1898,14 @@ static int mdss_fb_blank_sub(int blank_mode, struct fb_info *info,
 
 	switch (blank_mode) {
 	case FB_BLANK_UNBLANK:
-#ifdef CONFIG_SOMC_FEATURE_EARLY_UNBLANK
+#ifdef SOMC_FEATURE_EARLY_UNBLANK
 		mdss_ensure_kworker_done(mfd->unblank_kworker);
 		mdss_fb_update_early_unblank_completed(mfd, false);
 		/* if kworker was successful we are done...
 		 * but let's check and retry if not. fall through!
 		 */
 	case FB_EARLY_UNBLANK:
-#endif /* CONFIG_SOMC_FEATURE_EARLY_UNBLANK */
+#endif /* SOMC_FEATURE_EARLY_UNBLANK */
 		pr_debug("unblank called. cur pwr state=%d\n", cur_power_state);
 		ret = mdss_fb_blank_unblank(mfd);
 		break;
@@ -1953,7 +1953,7 @@ static int mdss_fb_blank_sub(int blank_mode, struct fb_info *info,
 	return ret;
 }
 
-#ifdef CONFIG_SOMC_FEATURE_EARLY_UNBLANK
+#ifdef SOMC_FEATURE_EARLY_UNBLANK
 static void mdss_background_unblank(struct work_struct *ws)
 {
 	int ret;
@@ -1972,7 +1972,7 @@ static void mdss_background_unblank(struct work_struct *ws)
 		fb_set_suspend(mfd->fbi, FBINFO_STATE_RUNNING);
 	}
 }
-#endif /* CONFIG_SOMC_FEATURE_EARLY_UNBLANK */
+#endif /* SOMC_FEATURE_EARLY_UNBLANK */
 
 static int mdss_fb_blank(int blank_mode, struct fb_info *info)
 {
@@ -2870,10 +2870,10 @@ static int mdss_fb_release_all(struct fb_info *info, bool release_all)
 									ad_ret);
 		}
 
-#ifdef CONFIG_SOMC_FEATURE_EARLY_UNBLANK
+#ifdef SOMC_FEATURE_EARLY_UNBLANK
 		mdss_ensure_kworker_done(mfd->unblank_kworker);
 		mdss_fb_update_early_unblank_completed(mfd, false);
-#endif /* CONFIG_SOMC_FEATURE_EARLY_UNBLANK */
+#endif /* SOMC_FEATURE_EARLY_UNBLANK */
 
 		ret = mdss_fb_blank_sub(FB_BLANK_POWERDOWN, info,
 			mfd->op_enable);
@@ -4492,10 +4492,10 @@ int __init mdss_fb_init(void)
 	if (platform_driver_register(&mdss_fb_driver))
 		return rc;
 
-#ifdef CONFIG_SOMC_FEATURE_EARLY_UNBLANK
+#ifdef SOMC_FEATURE_EARLY_UNBLANK
 	if (input_register_handler(&mdss_input_handler))
 		return rc;
-#endif /* CONFIG_SOMC_FEATURE_EARLY_UNBLANK */
+#endif /* SOMC_FEATURE_EARLY_UNBLANK */
 
 	return 0;
 }
