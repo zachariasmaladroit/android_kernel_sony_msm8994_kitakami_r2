@@ -1187,11 +1187,15 @@ static int check_version(Elf_Shdr *sechdrs,
 	if(!strncmp("mhl-sii8620", mod->name, 11))
 		return 1;
 
+//  invalidate the following modules:
+
 	if(!strncmp("core_ctl", mod->name, 8))
 		return 0;
 
 	if(!strncmp("ecryptfs", mod->name, 8))
 		return 0;
+		
+// end.
 
 	/* Exporting module didn't supply crcs?  OK, we're already tainted. */
 	if (!crc)
