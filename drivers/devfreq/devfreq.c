@@ -52,7 +52,7 @@ static const char *boost_devices[] = {
 	NULL
 };
 
-#define WAKE_BOOST_DURATION_MS (7000)
+#define WAKE_BOOST_DURATION_MS (10000)
 static struct delayed_work wake_unboost_work;
 static struct work_struct wake_boost_work;
 
