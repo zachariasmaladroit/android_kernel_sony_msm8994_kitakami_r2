@@ -82,7 +82,7 @@ struct cpufreq_policy {
 					 * called, but you're in IRQ context */
 
 	struct cpufreq_real_policy	user_policy;
-
+	struct cpufreq_frequency_table	*freq_table;
 	struct list_head        policy_list;
 	struct kobject		kobj;
 	struct completion	kobj_unregister;

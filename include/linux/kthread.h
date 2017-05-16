@@ -75,6 +75,8 @@ struct kthread_work {
 	kthread_work_func_t	func;
 	wait_queue_head_t	done;
 	struct kthread_worker	*worker;
+	/* Number of canceling calls that are running at the moment. */
+	int			canceling;
 };
 
 #define KTHREAD_WORKER_INIT(worker)	{				\

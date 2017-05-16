@@ -1191,7 +1191,7 @@ struct sched_avg {
 	 * is runnable on a rq. It is based on both runnable_avg_sum and the
 	 * weight of the task.
 	 */
-	unsigned long load_avg_contrib, utilization_avg_contrib;
+	unsigned long load_avg_contrib, utilization_avg_contrib, util_avg;
  	/*
  	 * These sums represent an infinite geometric series and so are bound
  	 * above by 1024/(1-y).  Thus we only need a u32 to store them for all
