@@ -1181,7 +1181,7 @@ static void sdhci_finish_data(struct sdhci_host *host)
 		tasklet_schedule(&host->finish_tasklet);
 }
 
-#define SDHCI_REQUEST_TIMEOUT	10 /* Default request timeout in seconds */
+#define SDHCI_REQUEST_TIMEOUT	8 /* Default request timeout in seconds */
 
 static void sdhci_send_command(struct sdhci_host *host, struct mmc_command *cmd)
 {
@@ -1216,11 +1216,26 @@ static void sdhci_send_command(struct sdhci_host *host, struct mmc_command *cmd)
 		udelay(1);
 	}
 
-	mod_timer(&host->timer, jiffies + SDHCI_REQUEST_TIMEOUT * HZ);
+	/*
+	 * Set the controller catch-all timer to:
+	 *  - 20s for quirky cards
+	 * otherwise:
+	 *  - 500ms for CMD13
+	 *  - 8s for everything else
+	 */
+	if ((host->mmc->card) && (host->mmc->card->quirks & MMC_QUIRK_INAND_DATA_TIMEOUT))
+		timeout = 20000;
+	else {
+		if (cmd->opcode == MMC_SEND_STATUS)
+			timeout = 500;
+		else
+			timeout = SDHCI_REQUEST_TIMEOUT * MSEC_PER_SEC;
+	}
 
-	if (cmd->cmd_timeout_ms > SDHCI_REQUEST_TIMEOUT * MSEC_PER_SEC)
-		mod_timer(&host->timer, jiffies +
-				(msecs_to_jiffies(cmd->cmd_timeout_ms * 2)));
+	if (timeout < cmd->cmd_timeout_ms * 2)
+		timeout = cmd->cmd_timeout_ms * 2;
+
+	mod_timer(&host->timer, jiffies + msecs_to_jiffies(timeout));
 
 	host->cmd = cmd;
 
@@ -2934,7 +2949,8 @@ static void sdhci_cmd_irq(struct sdhci_host *host, u32 intmask)
 		if (host->cmd->error == -EILSEQ &&
 		    (command != MMC_SEND_TUNING_BLOCK_HS400) &&
 		    (command != MMC_SEND_TUNING_BLOCK_HS200) &&
-		    (command != MMC_SEND_TUNING_BLOCK))
+		    (command != MMC_SEND_TUNING_BLOCK) &&
+		    (command != MMC_SEND_STATUS))
 				host->flags |= SDHCI_NEEDS_RETUNING;
 		tasklet_schedule(&host->finish_tasklet);
 		return;
@@ -3001,7 +3017,7 @@ static void sdhci_show_adma_error(struct sdhci_host *host)
 static void sdhci_data_irq(struct sdhci_host *host, u32 intmask)
 {
 	u32 command;
-	bool pr_msg = false;
+	bool pr_msg = true;
 	BUG_ON(intmask == 0);
 
 	command = SDHCI_GET_CMD(sdhci_readw(host, SDHCI_COMMAND));
@@ -3047,9 +3063,10 @@ static void sdhci_data_irq(struct sdhci_host *host, u32 intmask)
 	else if (intmask & SDHCI_INT_DATA_END_BIT)
 		host->data->error = -EILSEQ;
 	else if ((intmask & SDHCI_INT_DATA_CRC) &&
-		(command != MMC_BUS_TEST_R))
+		 (command != MMC_BUS_TEST_R)) {
 		host->data->error = -EILSEQ;
-	else if (intmask & SDHCI_INT_ADMA_ERROR) {
+		pr_msg = false;
+	} else if (intmask & SDHCI_INT_ADMA_ERROR) {
 		pr_err("%s: ADMA error\n", mmc_hostname(host->mmc));
 		sdhci_show_adma_error(host);
 		host->data->error = -EIO;
@@ -3061,12 +3078,10 @@ static void sdhci_data_irq(struct sdhci_host *host, u32 intmask)
 			if ((command != MMC_SEND_TUNING_BLOCK_HS400) &&
 			    (command != MMC_SEND_TUNING_BLOCK_HS200) &&
 			    (command != MMC_SEND_TUNING_BLOCK)) {
-				pr_msg = true;
 				if (intmask & SDHCI_INT_DATA_CRC)
 					host->flags |= SDHCI_NEEDS_RETUNING;
-			}
-		} else {
-			pr_msg = true;
+			} else
+				pr_msg = false;
 		}
 		if (pr_msg && __ratelimit(&host->dbg_dump_rs)) {
 			pr_err("%s: data txfr (0x%08x) error: %d after %lld ms\n",
