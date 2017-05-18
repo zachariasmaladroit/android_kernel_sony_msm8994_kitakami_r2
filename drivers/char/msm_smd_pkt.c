@@ -513,7 +513,7 @@ wait_for_packet:
 		}
 		bytes_read += r;
 		if (pkt_size != bytes_read)
-			wait_event(smd_pkt_devp->ch_read_wait_queue,
+			wait_event_interruptible(smd_pkt_devp->ch_read_wait_queue,
 				   smd_read_avail(smd_pkt_devp->ch) ||
 				   smd_pkt_devp->has_reset);
 		if (smd_pkt_devp->has_reset) {

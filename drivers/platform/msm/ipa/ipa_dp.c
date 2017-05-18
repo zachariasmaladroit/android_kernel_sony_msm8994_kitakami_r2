@@ -596,7 +596,7 @@ int ipa_send_cmd(u16 num_desc, struct ipa_desc *descr)
 			result = -EFAULT;
 			goto bail;
 		}
-		wait_for_completion(&descr->xfer_done);
+		wait_for_completion_interruptible(&descr->xfer_done);
 	} else {
 		desc = &descr[num_desc - 1];
 		init_completion(&desc->xfer_done);
@@ -611,7 +611,7 @@ int ipa_send_cmd(u16 num_desc, struct ipa_desc *descr)
 			result = -EFAULT;
 			goto bail;
 		}
-		wait_for_completion(&desc->xfer_done);
+		wait_for_completion_interruptible(&desc->xfer_done);
 	}
 
 bail:
