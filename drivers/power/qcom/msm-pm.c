@@ -428,7 +428,7 @@ bool msm_cpu_pm_enter_sleep(enum msm_pm_sleep_mode mode, bool from_idle)
 
 	if ((!from_idle  && cpu_online(cpu))
 			|| (MSM_PM_DEBUG_IDLE & msm_pm_debug_mask))
-		pr_info("CPU%u:%s mode:%d during %s\n", cpu, __func__,
+		pr_debug("CPU%u:%s mode:%d during %s\n", cpu, __func__,
 				mode, from_idle ? "idle" : "suspend");
 
 	if (execute[mode])
@@ -810,7 +810,7 @@ static int msm_pm_clk_init(struct platform_device *pdev)
 	for_each_possible_cpu(cpu) {
 		struct clk *clk;
 		snprintf(clk_name, sizeof(clk_name), "cpu%d_clk", cpu);
-		clk = devm_clk_get(&pdev->dev, clk_name);
+		clk = clk_get(&pdev->dev, clk_name);
 		if (IS_ERR(clk)) {
 			if (cpu && synced_clocks)
 				return 0;
@@ -823,7 +823,7 @@ static int msm_pm_clk_init(struct platform_device *pdev)
 	if (synced_clocks)
 		return 0;
 
-	l2_clk = devm_clk_get(&pdev->dev, "l2_clk");
+	l2_clk = clk_get(&pdev->dev, "l2_clk");
 	if (IS_ERR(l2_clk))
 		pr_warn("%s: Could not get l2_clk (-%ld)\n", __func__,
 			PTR_ERR(l2_clk));
