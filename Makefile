@@ -377,20 +377,32 @@ LINUXINCLUDE    := \
 
 KBUILD_CPPFLAGS := -D__KERNEL__
 
-KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+
+KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-strict-aliasing -fno-common \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
 		   -fdiagnostics-color=always \
-		   -fno-var-tracking-assignments \
 		   -fno-delete-null-pointer-checks \
 		   -fno-aggressive-loop-optimizations \
-		   -pipe \
-		   -fomit-frame-pointer \
-		   -march=armv8-a+crc \
-		   -mtune=cortex-a57.cortex-a53 \
 		   -fno-pic \
+		   -mtune=cortex-a57.cortex-a53 \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
+		   
+#KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+#		   -fno-strict-aliasing -fno-common \
+#		   -Werror-implicit-function-declaration \
+#		   -Wno-format-security \
+#		   -fdiagnostics-color=always \
+#		   -fno-var-tracking-assignments \
+#		   -fno-delete-null-pointer-checks \
+#		   -fno-aggressive-loop-optimizations \
+#		   -pipe \
+#		   -fomit-frame-pointer \
+#		   -march=armv8-a+crc \
+#		   -mtune=cortex-a57.cortex-a53 \
+#		   -fno-pic \
+#		   -std=gnu89 $(call cc-option,-fno-PIE)
 #
 #			pessimistic:
 #
