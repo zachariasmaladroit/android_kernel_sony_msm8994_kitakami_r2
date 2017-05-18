@@ -45,7 +45,7 @@
 /* Globals */
 static int zram_major;
 static struct zram *zram_devices;
-static const char *default_compressor = "lzo";
+static const char *default_compressor = "lz4";
 #define BACKEND_PARAM_BUF_SIZE	32
 static char backend_param_buf[BACKEND_PARAM_BUF_SIZE];
 
@@ -436,7 +436,7 @@ static struct zram_meta *zram_meta_alloc(int device_id, u64 disksize)
 	}
 
 	snprintf(pool_name, sizeof(pool_name), "zram%d", device_id);
-	backend = strlen(backend_param_buf) ? backend_param_buf : "zsmalloc";
+	backend = strlen(backend_param_buf) ? backend_param_buf : "z3fold";
 	meta->mem_pool = zpool_create_pool(backend, pool_name,
 			GFP_NOIO | __GFP_NOWARN, NULL);
 	if (!meta->mem_pool) {
@@ -547,14 +547,14 @@ static int zram_decompress_page(struct zram *zram, char *mem, u32 index)
 	size = zram_get_obj_size(meta, index);
 
 	if (!handle || zram_test_flag(meta, index, ZRAM_ZERO)) {
-		clear_page(mem);
 		bit_spin_unlock(ZRAM_ACCESS, &meta->table[index].value);
+		memset(mem, 0, PAGE_SIZE);
 		return 0;
 	}
 
 	cmem = zpool_map_handle(meta->mem_pool, handle, ZPOOL_MM_RO);
 	if (size == PAGE_SIZE)
-		copy_page(mem, cmem);
+		memcpy(mem, cmem, PAGE_SIZE);
 	else
 		ret = zcomp_decompress(zram->comp, cmem, size, mem);
 	zpool_unmap_handle(meta->mem_pool, handle);
@@ -740,7 +740,7 @@ static int zram_bvec_write(struct zram *zram, struct bio_vec *bvec, u32 index,
 
 	if ((clen == PAGE_SIZE) && !is_partial_io(bvec)) {
 		src = kmap_atomic(page);
-		copy_page(cmem, src);
+		memcpy(cmem, src, PAGE_SIZE);
 		kunmap_atomic(src);
 	} else {
 		memcpy(cmem, src, clen);
@@ -867,7 +867,7 @@ static void zram_reset_device(struct zram *zram)
 	/* Reset stats */
 	memset(&zram->stats, 0, sizeof(zram->stats));
 	zram->disksize = 0;
-	zram->max_comp_streams = 1;
+	zram->max_comp_streams = 4;
 
 	set_capacity(zram->disk, 0);
 	part_stat_set_all(&zram->disk->part0, 0);
@@ -1220,6 +1220,7 @@ static int create_device(struct zram *zram, int device_id)
 	set_capacity(zram->disk, 0);
 	/* zram devices sort of resembles non-rotational disks */
 	queue_flag_set_unlocked(QUEUE_FLAG_NONROT, zram->disk->queue);
+	queue_flag_clear_unlocked(QUEUE_FLAG_ADD_RANDOM, zram->disk->queue);
 	/*
 	 * To ensure that we always get PAGE_SIZE aligned
 	 * and n*PAGE_SIZED sized I/O requests.
@@ -1255,7 +1256,7 @@ static int create_device(struct zram *zram, int device_id)
 	}
 	strlcpy(zram->compressor, default_compressor, sizeof(zram->compressor));
 	zram->meta = NULL;
-	zram->max_comp_streams = 1;
+	zram->max_comp_streams = 4;
 	return 0;
 
 out_free_disk:
