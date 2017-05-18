@@ -450,7 +450,7 @@ int ipa_dma_sync_memcpy(phys_addr_t dest, phys_addr_t src, int len)
 	/* in case we are not the head of the list, wait for head to wake us */
 	if (xfer_descr != head_descr) {
 		mutex_unlock(&ipa_dma_ctx->sync_lock);
-		wait_for_completion_interruptible(&xfer_descr->xfer_done);
+		wait_for_completion(&xfer_descr->xfer_done);
 		mutex_lock(&ipa_dma_ctx->sync_lock);
 		head_descr = list_first_entry(&cons_sys->head_desc_list,
 					struct ipa_dma_xfer_wrapper, link);
@@ -670,7 +670,7 @@ void ipa_dma_destroy(void)
 	if (ipa_dma_work_pending()) {
 		ipa_dma_ctx->destroy_pending = true;
 		IPADMA_DBG("There are pending memcpy, wait for completion\n");
-		wait_for_completion_interruptible(&ipa_dma_ctx->done);
+		wait_for_completion(&ipa_dma_ctx->done);
 	}
 
 	res = ipa_teardown_sys_pipe(ipa_dma_ctx->ipa_dma_async_cons_hdl);
