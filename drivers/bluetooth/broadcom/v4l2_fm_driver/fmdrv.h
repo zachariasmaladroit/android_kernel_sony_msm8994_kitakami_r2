@@ -49,7 +49,7 @@
 /* Flag info */
 #define FM_CORE_READY                 3
 
-#define FM_DRV_TX_TIMEOUT       (5*HZ)  /* 5 sec */
+#define FM_DRV_TX_TIMEOUT       (1*HZ)  /* 1 sec */
 #define FM_DRV_RX_SEEK_TIMEOUT       (20*HZ)  /* 20 sec */
 
 #define NO_OF_ENTRIES_IN_ARRAY(array) (sizeof(array) / sizeof(array[0]))
@@ -218,15 +218,12 @@ struct fmdrv_ops {
 
     long flag;                         /*  FM driver state machine info */
     struct sk_buff_head rx_q;          /* RX queue */
-#ifdef TASKLET_SUPPORT
-    struct tasklet_struct rx_task;  /* RX Tasklet */
-    struct tasklet_struct tx_task;  /* TX Tasklet */
-#else
+
     struct workqueue_struct *tx_wq;     /* Fm workqueue */
     struct work_struct tx_workqueue;    /* Tx work queue */
     struct workqueue_struct *rx_wq;     /* Fm workqueue */
     struct work_struct rx_workqueue;    /* Rx work queue */
-#endif
+
     struct sk_buff_head tx_q;          /* TX queue */
 
     unsigned long last_tx_jiffies;  /* Timestamp of last pkt sent */
