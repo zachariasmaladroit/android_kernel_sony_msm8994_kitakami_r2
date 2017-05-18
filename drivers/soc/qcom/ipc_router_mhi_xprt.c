@@ -259,7 +259,7 @@ static int ipc_router_mhi_write_skb(struct ipc_router_mhi_xprt *mhi_xprtp,
 	dma_addr_t dma_addr;
 
 	while (offset < skb->len) {
-		wait_event_interruptible(mhi_xprtp->write_wait_q,
+		wait_event(mhi_xprtp->write_wait_q,
 			   mhi_get_free_desc(mhi_xprtp->ch_hndl.out_handle) ||
 			   !mhi_xprtp->ch_hndl.out_chan_enabled);
 		mutex_lock(&mhi_xprtp->ch_hndl.state_lock);
@@ -331,7 +331,7 @@ static int ipc_router_mhi_write(void *data,
 		}
 	}
 
-	wait_event_interruptible(mhi_xprtp->write_wait_q, !mhi_xprtp->ch_hndl.bytes_to_tx);
+	wait_event(mhi_xprtp->write_wait_q, !mhi_xprtp->ch_hndl.bytes_to_tx);
 	if (rc < 0)
 		return rc;
 	else
