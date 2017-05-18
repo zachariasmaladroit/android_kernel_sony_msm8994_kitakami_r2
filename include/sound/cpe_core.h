@@ -68,6 +68,7 @@ struct wcd_cpe_lsm_lab {
 	struct wcd_cpe_data_pcm_buf *pcm_buf;
 	wait_queue_head_t period_wait;
 	struct completion thread_complete;
+	bool is_lab_enabled;
 };
 
 struct cpe_lsm_session {
@@ -170,6 +171,12 @@ struct wcd_cpe_lsm_ops {
 			struct cpe_lsm_session *session,
 			enum lsm_detection_mode detect_mode,
 			bool detect_failure);
+//	int (*lsm_set_fmt_cfg)(void *core_handle,
+//			struct cpe_lsm_session *session);
+	int (*lsm_cdc_start_lab)(void *core_handle);
+	int (*lsm_lab_buf_cntl)(void *core_handle,
+			struct cpe_lsm_session *session,
+			bool alloc, u32 bufsz, u32 bufcnt);
 };
 
 int wcd_cpe_get_lsm_ops(struct wcd_cpe_lsm_ops *);
