@@ -8831,7 +8831,7 @@ sched_set_cpu_cstate(int cpu, int cstate, struct cpuidle_state *cpuidle,
 	    (cstate == 4 && cpu < 4 && wakeup_energy == 46400 && wakeup_latency == 480) ||
 	    (cstate == 4 && cpu >= 4 && wakeup_energy == 192156 && wakeup_latency == 636)) {
 	} else {
-		pr_info("TJK: CPU%d ->cstate=%d  nrg=%d latency=%d\n", cpu, cstate, wakeup_energy, wakeup_latency);
+		pr_debug("TJK: CPU%d ->cstate=%d  nrg=%d latency=%d\n", cpu, cstate, wakeup_energy, wakeup_latency);
 	}
 }
 
