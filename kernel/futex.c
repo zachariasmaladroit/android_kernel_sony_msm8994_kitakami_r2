@@ -63,7 +63,6 @@
 #include <linux/sched/rt.h>
 #include <linux/freezer.h>
 #include <linux/hugetlb.h>
-#include <linux/freezer.h>
 
 #include <asm/futex.h>
 
