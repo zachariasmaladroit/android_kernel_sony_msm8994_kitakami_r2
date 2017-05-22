@@ -386,6 +386,26 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-delete-null-pointer-checks \
 		   -fno-aggressive-loop-optimizations \
 		   -fno-pic \
+		   -fdelete-null-pointer-checks -ftree-vrp \
+		   -fisolate-erroneous-paths-dereference \
+		   -fcaller-saves \
+		   -fipa-cp -fipa-cp-clone \
+		   -freorder-blocks -freorder-blocks-and-partition -freorder-functions \
+		   -fdevirtualize -fdevirtualize-speculatively \
+		   -fexpensive-optimizations \
+		   -fgcse -fgcse-lm -fgcse-after-reload -frerun-cse-after-loop \
+		   -fcse-follow-jumps -fcse-skip-blocks \
+		   -finline-small-functions -fpartial-inlining -findirect-inlining \
+		   -foptimize-sibling-calls \
+		   -fsched-interblock -fsched-spec -fno-schedule-insns -fschedule-insns2 \
+		   -fsched-pressure -fno-tree-reassoc -fmodulo-sched -fmodulo-sched-allow-regmoves \
+  		   -ftracer \
+		   -fivopts \
+		   -mpc-relative-literal-loads \
+		   -Wno-unused-const-variable -Wno-misleading-indentation \
+		   -Wno-memset-transposed-args  -Wno-bool-compare -Wno-logical-not-parentheses \
+		   -Wno-switch-bool \
+		   -Wno-bool-operation -Wno-nonnull -Wno-switch-unreachable -Wno-format-truncation -Wno-format-overflow -Wno-duplicate-decl-specifier -Wno-memset-elt-size -Wno-int-in-bool-context \
 		   -mtune=cortex-a57.cortex-a53 \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
 		   
