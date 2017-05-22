@@ -715,6 +715,7 @@ CONFIG_DEBUG_SET_MODULE_RONX=y
 # CONFIG_PPS is not set
 # CONFIG_PTP_1588_CLOCK is not set
 # CONFIG_WIL6210 is not set
+# CONFIG_ETHERNET is not set
 
 # disable logging
 # CONFIG_ARCH_WANTS_CTXSW_LOGGING is not set
