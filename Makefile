@@ -383,7 +383,6 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
 		   -fdiagnostics-color=always \
-		   -fno-var-tracking-assignments \
 		   -fno-delete-null-pointer-checks \
 		   -fno-aggressive-loop-optimizations \
 		   -fno-pic \
