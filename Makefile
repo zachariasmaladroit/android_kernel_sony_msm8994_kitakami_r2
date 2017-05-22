@@ -383,7 +383,6 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
 		   -fdiagnostics-color=always \
-		   -fno-delete-null-pointer-checks \
 		   -fno-aggressive-loop-optimizations \
 		   -fno-pic \
 		   -fdelete-null-pointer-checks -ftree-vrp \
@@ -401,6 +400,9 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fsched-pressure -fno-tree-reassoc -fmodulo-sched -fmodulo-sched-allow-regmoves \
   		   -ftracer \
 		   -fivopts \
+		   -ffast-math \
+		   -fsingle-precision-constant \
+		   -mlow-precision-recip-sqrt \
 		   -mpc-relative-literal-loads \
 		   -Wno-unused-const-variable -Wno-misleading-indentation \
 		   -Wno-memset-transposed-args  -Wno-bool-compare -Wno-logical-not-parentheses \
