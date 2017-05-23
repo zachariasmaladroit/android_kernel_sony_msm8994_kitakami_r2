@@ -400,6 +400,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -ftree-loop-ivcanon \
 		   -ftree-loop-im -funswitch-loops \
 		   -fno-pic \
+		   -fsingle-precision-constant -funsafe-math-optimizations \
 		   -mtune=cortex-a57.cortex-a53 \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
 
