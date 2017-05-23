@@ -383,12 +383,28 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
 		   -fdiagnostics-color=always \
-		   -fno-delete-null-pointer-checks \
+		   -fdelete-null-pointer-checks -ftree-vrp \
+		   -fisolate-erroneous-paths-dereference \
+		   -fcaller-saves \
 		   -fno-aggressive-loop-optimizations \
+		   -fgcse -fgcse-lm -fgcse-after-reload -frerun-cse-after-loop \
+		   -fgcse-sm -fgcse-las \
+		   -fcse-follow-jumps -fcse-skip-blocks \
+		   -fsched-pressure -fno-tree-reassoc \
+		   -finline-small-functions -fpartial-inlining -findirect-inlining \
+		   -foptimize-sibling-calls \
+		   -fsched-spec -fno-schedule-insns -fschedule-insns2 \
+		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
+  		   -ftracer \
+		   -fivopts \
+		   -ftree-loop-ivcanon \
+		   -ftree-loop-im -funswitch-loops \
 		   -fno-pic \
 		   -mtune=cortex-a57.cortex-a53 \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
-		   
+
+#		   -fschedule-insns
+#		   -fsched-interblock 
 #KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 #		   -fno-strict-aliasing -fno-common \
 #		   -Werror-implicit-function-declaration \
@@ -465,8 +481,6 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 #		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
 #		   -freorder-blocks -freorder-blocks-and-partition \
 #		   -ftree-loop-im -funswitch-loops -fpredictive-commoning -fgcse -fgcse-after-reload \
-#		   -fno-tree-pre \
-#		   -fno-sched-pressure \
 #		   -fsched-pressure -fschedule-insns -fno-tree-reassoc \
 #		   -fno-tree-pre \
 #		   -fno-sched-pressure \
