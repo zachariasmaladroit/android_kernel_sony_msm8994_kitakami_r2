@@ -800,7 +800,7 @@ CONFIG_RCU_CPU_STALL_INFO=y
 # CONFIG_DEBUG_PREEMPT is not set
 
 # debug, stability & troubleshooting
-CONFIG_PANIC_ON_DATA_CORRUPTION=y
+# CONFIG_PANIC_ON_DATA_CORRUPTION is not set
 
 # interactivity, throughput compromise
 CONFIG_HZ=100
