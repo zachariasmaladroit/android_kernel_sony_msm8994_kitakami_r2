@@ -5,7 +5,6 @@
 
 #include "sched.h"
 
-#include <linux/interrupt.h>
 #include <linux/slab.h>
 #ifdef CONFIG_MTPROF
 #include "mt_sched_mon.h"
@@ -1310,25 +1309,11 @@ static void yield_task_rt(struct rq *rq)
 #ifdef CONFIG_SMP
 static int find_lowest_rq(struct task_struct *task);
 
-/*
- * Return whether the task on the given cpu is currently non-preemptible
- * while handling a softirq or is likely to block preemptions soon because
- * it is a ksoftirq thread.
- */
-bool
-task_may_not_preempt(struct task_struct *task, int cpu)
-{
-	struct task_struct *cpu_ksoftirqd = per_cpu(ksoftirqd, cpu);
-	return (task_thread_info(task)->preempt_count & SOFTIRQ_MASK) ||
-	       task == cpu_ksoftirqd;
-}
-
 static int
 select_task_rq_rt(struct task_struct *p, int cpu, int sd_flag, int flags)
 {
 	struct task_struct *curr;
 	struct rq *rq;
-	bool may_not_preempt;
 
 	if (p->nr_cpus_allowed == 1)
 		goto out;
@@ -1343,12 +1328,7 @@ select_task_rq_rt(struct task_struct *p, int cpu, int sd_flag, int flags)
 	curr = READ_ONCE(rq->curr); /* unlocked access */
 
 	/*
-	 * If the current task on @p's runqueue is a softirq task,
-	 * it may run without preemption for a time that is
-	 * ill-suited for a waiting RT task. Therefore, try to
-	 * wake this RT task on another runqueue.
-	 *
-	 * Also, if the current task on @p's runqueue is an RT task, then
+	 * If the current task on @p's runqueue is an RT task, then
 	 * try to see if we can wake this RT task up on another
 	 * runqueue. Otherwise simply start this RT task
 	 * on its current runqueue.
@@ -1369,21 +1349,17 @@ select_task_rq_rt(struct task_struct *p, int cpu, int sd_flag, int flags)
 	 * This test is optimistic, if we get it wrong the load-balancer
 	 * will have to sort it out.
 	 */
-	may_not_preempt = task_may_not_preempt(curr, cpu);
-	if (curr && (may_not_preempt ||
-		     (unlikely(rt_task(curr)) &&
-		      (curr->nr_cpus_allowed < 2 ||
-		       curr->prio <= p->prio)))) {
+	if (curr && unlikely(rt_task(curr)) &&
+	    (curr->nr_cpus_allowed < 2 ||
+	     curr->prio <= p->prio)) {
 		int target = find_lowest_rq(p);
- 		/*
-		 * If cpu is non-preemptible, prefer remote cpu
-		 * even if it's running a higher-prio task.
- 		 * Otherwise: Possible race. Don't bother moving it if the
+
+		/*
+		 * Possible race. Don't bother moving it if the
 		 * destination CPU is not running a lower priority task.
- 		 */
-		if (target != -1 &&
-		    (may_not_preempt ||
-		     p->prio < cpu_rq(target)->rt.highest_prio.curr))
+		 */
+                if (target != -1 &&
+                    p->prio < cpu_rq(target)->rt.highest_prio.curr)
 			cpu = target;
 	}
 	rcu_read_unlock();

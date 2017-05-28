@@ -1684,7 +1684,6 @@ static inline void account_reset_rq(struct rq *rq)
  * task_may_not_preempt - check whether a task may not be preemptible soon
  */
 extern bool task_may_not_preempt(struct task_struct *task, int cpu);
-
 #ifdef CONFIG_CPU_FREQ
 DECLARE_PER_CPU(struct update_util_data *, cpufreq_update_util_data);
 /**
@@ -1732,3 +1731,4 @@ static inline void cpufreq_update_this_cpu(struct rq *rq, unsigned int flags) {}
 #else /* arch_scale_freq_capacity */
 #define arch_scale_freq_invariant()     (false)
 #endif
+
