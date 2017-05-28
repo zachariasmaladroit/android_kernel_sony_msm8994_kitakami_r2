@@ -37,10 +37,10 @@
 #define CREATE_TRACE_POINTS
 #include <trace/events/cpufreq_interactive.h>
 
-#ifndef TJK_HMP
+/*#ifndef TJK_HMP
 ATOMIC_NOTIFIER_HEAD(migration_notifier_head);
 ATOMIC_NOTIFIER_HEAD(load_alert_notifier_head);
-#endif
+#endif*/
 
 struct cpufreq_interactive_policyinfo {
 	struct timer_list policy_timer;
