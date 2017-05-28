@@ -59,9 +59,9 @@ static inline void sched_info_reset_dequeued(struct task_struct *t)
  * from dequeue_task() to account for possible rq->clock skew across cpus. The
  * delta taken on each cpu would annul the skew.
  */
-static inline void sched_info_dequeued(struct rq *rq, struct task_struct *t)
+static inline void sched_info_dequeued(struct task_struct *t)
 {
-	unsigned long long now = rq_clock(rq), delta = 0;
+	unsigned long long now = task_rq(t)->clock, delta = 0;
 
 	if (unlikely(sched_info_on()))
 		if (t->sched_info.last_queued)
@@ -69,7 +69,7 @@ static inline void sched_info_dequeued(struct rq *rq, struct task_struct *t)
 	sched_info_reset_dequeued(t);
 	t->sched_info.run_delay += delta;
 
-	rq_sched_info_dequeued(rq, delta);
+	rq_sched_info_dequeued(task_rq(t), delta);
 }
 
 /*
@@ -77,9 +77,9 @@ static inline void sched_info_dequeued(struct rq *rq, struct task_struct *t)
  * long it was waiting to run.  We also note when it began so that we
  * can keep stats on how long its timeslice is.
  */
-static void sched_info_arrive(struct rq *rq, struct task_struct *t)
+static void sched_info_arrive(struct task_struct *t)
 {
-	unsigned long long now = rq_clock(rq), delta = 0;
+	unsigned long long now = task_rq(t)->clock, delta = 0;
 
 	if (t->sched_info.last_queued)
 		delta = now - t->sched_info.last_queued;
@@ -88,7 +88,7 @@ static void sched_info_arrive(struct rq *rq, struct task_struct *t)
 	t->sched_info.last_arrival = now;
 	t->sched_info.pcount++;
 
-	rq_sched_info_arrive(rq, delta);
+	rq_sched_info_arrive(task_rq(t), delta);
 }
 
 /*
@@ -96,30 +96,29 @@ static void sched_info_arrive(struct rq *rq, struct task_struct *t)
  * the timestamp if it is already not set.  It's assumed that
  * sched_info_dequeued() will clear that stamp when appropriate.
  */
-static inline void sched_info_queued(struct rq *rq, struct task_struct *t)
+static inline void sched_info_queued(struct task_struct *t)
 {
 	if (unlikely(sched_info_on()))
 		if (!t->sched_info.last_queued)
-			t->sched_info.last_queued = rq_clock(rq);
+			t->sched_info.last_queued = task_rq(t)->clock;
 }
 
 /*
- * Called when a process ceases being the active-running process involuntarily
- * due, typically, to expiring its time slice (this may also be called when
- * switching to the idle task).  Now we can calculate how long we ran.
+ * Called when a process ceases being the active-running process, either
+ * voluntarily or involuntarily.  Now we can calculate how long we ran.
  * Also, if the process is still in the TASK_RUNNING state, call
  * sched_info_queued() to mark that it has now again started waiting on
  * the runqueue.
  */
-static inline void sched_info_depart(struct rq *rq, struct task_struct *t)
+static inline void sched_info_depart(struct task_struct *t)
 {
-	unsigned long long delta = rq_clock(rq) -
+	unsigned long long delta = task_rq(t)->clock -
 					t->sched_info.last_arrival;
 
-	rq_sched_info_depart(rq, delta);
+	rq_sched_info_depart(task_rq(t), delta);
 
 	if (t->state == TASK_RUNNING)
-		sched_info_queued(rq, t);
+		sched_info_queued(t);
 }
 
 /*
@@ -128,34 +127,32 @@ static inline void sched_info_depart(struct rq *rq, struct task_struct *t)
  * the idle task.)  We are only called when prev != next.
  */
 static inline void
-__sched_info_switch(struct rq *rq,
-		    struct task_struct *prev, struct task_struct *next)
+__sched_info_switch(struct task_struct *prev, struct task_struct *next)
 {
+	struct rq *rq = task_rq(prev);
+
 	/*
 	 * prev now departs the cpu.  It's not interesting to record
 	 * stats about how efficient we were at scheduling the idle
 	 * process, however.
 	 */
 	if (prev != rq->idle)
-		sched_info_depart(rq, prev);
+		sched_info_depart(prev);
 
 	if (next != rq->idle)
-		sched_info_arrive(rq, next);
+		sched_info_arrive(next);
 }
 static inline void
-sched_info_switch(struct rq *rq,
-		  struct task_struct *prev, struct task_struct *next)
+sched_info_switch(struct task_struct *prev, struct task_struct *next)
 {
 	if (unlikely(sched_info_on()))
-		__sched_info_switch(rq, prev, next);
+		__sched_info_switch(prev, next);
 }
 #else
-#define sched_info_queued(rq, t)		do { } while (0)
+#define sched_info_queued(t)			do { } while (0)
 #define sched_info_reset_dequeued(t)	do { } while (0)
-#define sched_info_dequeued(rq, t)		do { } while (0)
-#define sched_info_depart(rq, t)		do { } while (0)
-#define sched_info_arrive(rq, next)		do { } while (0)
-#define sched_info_switch(rq, t, next)		do { } while (0)
+#define sched_info_dequeued(t)			do { } while (0)
+#define sched_info_switch(t, next)		do { } while (0)
 #endif /* CONFIG_SCHEDSTATS || CONFIG_TASK_DELAY_ACCT */
 
 /*
@@ -163,39 +160,6 @@ sched_info_switch(struct rq *rq,
  * These functions are generally called at the timer tick.  None of this depends
  * on CONFIG_SCHEDSTATS.
  */
-
-/**
- * cputimer_running - return true if cputimer is running
- *
- * @tsk:	Pointer to target task.
- */
-static inline bool cputimer_running(struct task_struct *tsk)
-
-{
-	struct thread_group_cputimer *cputimer = &tsk->signal->cputimer;
-
-	if (!cputimer->running)
-		return false;
-
-	/*
-	 * After we flush the task's sum_exec_runtime to sig->sum_sched_runtime
-	 * in __exit_signal(), we won't account to the signal struct further
-	 * cputime consumed by that task, even though the task can still be
-	 * ticking after __exit_signal().
-	 *
-	 * In order to keep a consistent behaviour between thread group cputime
-	 * and thread group cputimer accounting, lets also ignore the cputime
-	 * elapsing after __exit_signal() in any thread group timer running.
-	 *
-	 * This makes sure that POSIX CPU clocks and timers are synchronized, so
-	 * that a POSIX CPU timer won't expire while the corresponding POSIX CPU
-	 * clock delta is behind the expiring timer value.
-	 */
-	if (unlikely(!tsk->sighand))
-		return false;
-
-	return true;
-}
 
 /**
  * account_group_user_time - Maintain utime for a thread group.
@@ -212,7 +176,7 @@ static inline void account_group_user_time(struct task_struct *tsk,
 {
 	struct thread_group_cputimer *cputimer = &tsk->signal->cputimer;
 
-	if (!cputimer_running(tsk))
+	if (!cputimer->running)
 		return;
 
 	raw_spin_lock(&cputimer->lock);
@@ -235,7 +199,7 @@ static inline void account_group_system_time(struct task_struct *tsk,
 {
 	struct thread_group_cputimer *cputimer = &tsk->signal->cputimer;
 
-	if (!cputimer_running(tsk))
+	if (!cputimer->running)
 		return;
 
 	raw_spin_lock(&cputimer->lock);
@@ -258,7 +222,7 @@ static inline void account_group_exec_runtime(struct task_struct *tsk,
 {
 	struct thread_group_cputimer *cputimer = &tsk->signal->cputimer;
 
-	if (!cputimer_running(tsk))
+	if (!cputimer->running)
 		return;
 
 	raw_spin_lock(&cputimer->lock);
