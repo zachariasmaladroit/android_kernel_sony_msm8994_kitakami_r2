@@ -1,12 +1,12 @@
-### GCC 4.9.x
-### I'm using Linaro 4.9 by mdalexca TC bitbucket.org/mdalexca/
+### GCC 6.3.1
+### I'm using Linaro 6.3.1
 
 export USE_CCACHE=1
 
 export CACHE_DIR=~/.ccache
 
 export ARCH=arm64
-export PATH=~/android/z5_build-environment/mdalexca-aarch64-linux-android-4.9-kernel-linaro-09c6758022e7/bin/:$PATH
+export PATH=~/android/z5_build-environment/aarch64-linux-android-6.3.1/bin/:$PATH
 export CROSS_COMPILE=aarch64-linux-android-
 
 #export KBUILD_DIFFCONFIG=sumire_diffconfig
