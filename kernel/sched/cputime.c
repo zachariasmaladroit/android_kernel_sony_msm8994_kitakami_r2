@@ -560,24 +560,6 @@ drop_precision:
 	return (__force cputime_t) scaled;
 }
 
-// unused, added by 'sched, timer: Convert usages of ACCESS_ONCE() in the scheduler to READ_ONCE()/WRITE_ONCE()'
-/*
- * Atomically advance counter to the new value. Interrupts, vcpu
- * scheduling, and scaling inaccuracies can cause cputime_advance
- * to be occasionally called with a new value smaller than counter.
- * Let's enforce atomicity.
- *
- * Normally a caller will only go through this loop once, or not
- * at all in case a previous caller updated counter the same jiffy.
- */
-static void cputime_advance(cputime_t *counter, cputime_t new)
-{
-	cputime_t old;
-
-	while (new > (old = READ_ONCE(*counter)))
-		cmpxchg_cputime(counter, old, new);
-}
-
 /*
  * Adjust tick based cputime random precision against scheduler
  * runtime accounting.
