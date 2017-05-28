@@ -275,7 +275,7 @@ restart:
 
 
 	__this_cpu_write(active_softirqs, 0);
-	rcu_bh_qs();
+//	rcu_bh_qs();
 	local_irq_disable();
 
 	pending = local_softirq_pending();
