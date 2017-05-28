@@ -570,13 +570,13 @@ drop_precision:
  * Normally a caller will only go through this loop once, or not
  * at all in case a previous caller updated counter the same jiffy.
  */
-/*static void cputime_advance(cputime_t *counter, cputime_t new)
+static void cputime_advance(cputime_t *counter, cputime_t new)
 {
 	cputime_t old;
 
 	while (new > (old = READ_ONCE(*counter)))
 		cmpxchg_cputime(counter, old, new);
-}*/
+}
 
 /*
  * Adjust tick based cputime random precision against scheduler
