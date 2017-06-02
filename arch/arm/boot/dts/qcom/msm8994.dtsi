@@ -941,7 +941,6 @@
 		interrupts = <0 3 0>, <0 4 0>;
 		qcom,bark-time = <11000>;
 		qcom,pet-time = <10000>;
-		qcom,ipi-ping;
 	};
 
 	qcom,msm-rtb {
