@@ -250,32 +250,6 @@ struct zz_dbs_tuners {
 	unsigned int afs_threshold4;
 };
 
-struct ex_dbs_tuners {
-	unsigned int ignore_nice_load;
-	unsigned int sampling_rate;
-	unsigned int up_threshold;
-	unsigned int down_differential;
-	unsigned int active_floor_freq;
-	unsigned int sampling_down_factor;
-	unsigned int powersave;
-};
-
-struct zz_dbs_tuners {
-	unsigned int ignore_nice_load;
-	unsigned int sampling_rate;
-	unsigned int sampling_down_factor;
-	unsigned int up_threshold;
-	unsigned int down_threshold;
-	unsigned int smooth_up;
-	unsigned int scaling_proportional;
-	unsigned int fast_scaling_up;
-	unsigned int fast_scaling_down;
-	unsigned int afs_threshold1;
-	unsigned int afs_threshold2;
-	unsigned int afs_threshold3;
-	unsigned int afs_threshold4;
-};
-
 struct ac_dbs_tuners {
 	unsigned int ignore_nice_load;
 	unsigned int sampling_rate;
