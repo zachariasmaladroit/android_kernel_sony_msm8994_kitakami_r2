@@ -18,4 +18,3 @@ ifeq ($(CONFIG_SND),y)
 endif
 
 soundcore-objs  := sound_core.o
-include sound/soundopt.mk
