@@ -133,7 +133,7 @@ module_param(uhqa_mode_pdesireaudio, int,
 				S_IRUGO | S_IWUSR | S_IWGRP);
 MODULE_PARM_DESC(uhqa_mode_pdesireaudio, "PDesireAudio UHQA Audio output switch");
 
-static int pdesireaudio_static_mode = 1;
+static int pdesireaudio_static_mode;
 module_param(pdesireaudio_static_mode, int,
 			S_IRUGO | S_IWUSR | S_IWGRP);
 MODULE_PARM_DESC(pdesireaudio_static_mode, "Set PDesireAudio to static mode, so User can just control via kernelspace without changes due dynamic changes");
