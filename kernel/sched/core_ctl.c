@@ -697,38 +697,14 @@ static void core_ctl_timer_func(unsigned long cpu)
 
 }
 
-static int core_ctl_online_core(unsigned int cpu)
+static int __ref core_ctl_online_core(unsigned int cpu)
 {
-	int ret;
-	struct device *dev;
-
-	lock_device_hotplug();
-	dev = get_cpu_device(cpu);
-	if (!dev) {
-		pr_err("%s: failed to get cpu%d device\n", __func__, cpu);
-		ret = -ENODEV;
-	} else {
-		ret = device_online(dev);
-	}
-	unlock_device_hotplug();
-	return ret;
+	return cpu_up(cpu);
 }
 
-static int core_ctl_offline_core(unsigned int cpu)
+static int __ref core_ctl_offline_core(unsigned int cpu)
 {
-	int ret;
-	struct device *dev;
-
-	lock_device_hotplug();
-	dev = get_cpu_device(cpu);
-	if (!dev) {
-		pr_err("%s: failed to get cpu%d device\n", __func__, cpu);
-		ret = -ENODEV;
-	} else {
-		ret = device_offline(dev);
-	}
-	unlock_device_hotplug();
-	return ret;
+	return cpu_down(cpu);
 }
 
 static void update_lru(struct cpu_data *f)
