@@ -4701,6 +4701,7 @@ int kgsl_device_platform_probe(struct kgsl_device *device)
 		device->reg_virt);
 
 	rwlock_init(&device->context_lock);
+	spin_lock_init(&device->submit_lock);
 
 	result = kgsl_drm_init(device->pdev);
 	if (result)
