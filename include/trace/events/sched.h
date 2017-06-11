@@ -305,6 +305,7 @@ TRACE_EVENT(sched_update_history,
 	TP_STRUCT__entry(
 		__array(	char,	comm,   TASK_COMM_LEN	)
 		__field(	pid_t,	pid			)
+		__field( int,   cpu                             )
 		__field(unsigned int,	runtime			)
 		__field(	 int,	samples			)
 		__field(enum task_event,	evt		)
@@ -318,6 +319,7 @@ TRACE_EVENT(sched_update_history,
 	TP_fast_assign(
 		memcpy(__entry->comm, p->comm, TASK_COMM_LEN);
 		__entry->pid            = p->pid;
+		__entry->cpu            = task_cpu(tsk);
 		__entry->runtime        = runtime;
 		__entry->samples        = samples;
 		__entry->evt            = evt;
@@ -330,7 +332,8 @@ TRACE_EVENT(sched_update_history,
 	),
 
 	TP_printk("%d (%s): runtime %u samples %d event %s demand %u (hist: %u %u %u %u %u) cpu %d nr_big %u nr_small %u",
-		__entry->pid, __entry->comm,
+		__entry->comm, __entry->pid, __entry->cpu,
+        __entry->load, __entry->utilization,
 		__entry->runtime, __entry->samples,
 		task_event_names[__entry->evt],
 		__entry->demand, __entry->hist[0],
