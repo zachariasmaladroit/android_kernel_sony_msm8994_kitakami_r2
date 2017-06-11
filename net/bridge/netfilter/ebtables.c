@@ -327,7 +327,10 @@ find_inlist_lock_noload(struct list_head *head, const char *name, int *error,
 		char name[EBT_FUNCTION_MAXNAMELEN];
 	} *e;
 
-	mutex_lock(mutex);
+	*error = mutex_lock_interruptible(mutex);
+	if (*error != 0)
+		return NULL;
+
 	list_for_each_entry(e, head, list) {
 		if (strcmp(e->name, name) == 0)
 			return e;
@@ -1200,7 +1203,10 @@ ebt_register_table(struct net *net, const struct ebt_table *input_table)
 
 	table->private = newinfo;
 	rwlock_init(&table->lock);
-	mutex_lock(&ebt_mutex);
+	ret = mutex_lock_interruptible(&ebt_mutex);
+	if (ret != 0)
+		goto free_chainstack;
+
 	list_for_each_entry(t, &net->xt.tables[NFPROTO_BRIDGE], list) {
 		if (strcmp(t->name, table->name) == 0) {
 			ret = -EEXIST;
