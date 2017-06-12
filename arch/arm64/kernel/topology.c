@@ -21,6 +21,7 @@
 #include <linux/sched.h>
 #include <linux/slab.h>
 #include <linux/sched_energy.h>
+#include <linux/sched.h>
 
 #include <asm/cputype.h>
 #include <asm/smp_plat.h>
@@ -37,7 +38,7 @@
  * rebalance_domains for all idle cores and the cpu_power can be updated
  * during this sequence.
  */
-static DEFINE_PER_CPU(unsigned long, cpu_scale);
+static DEFINE_PER_CPU(unsigned long, cpu_scale) = SCHED_CAPACITY_SCALE;
 
 unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
 {
