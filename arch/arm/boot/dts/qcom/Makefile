@@ -317,6 +317,8 @@ targets += $(addprefix ../, $(dtb-y))
 $(obj)/../%.dtb: $(src)/%.dts FORCE
 	$(call if_changed_dep,dtc)
 
+.PHONY: dtbs
 dtbs: $(addprefix $(obj)/../,$(DTB_LIST))
 endif
+
 clean-files := *.dtb
