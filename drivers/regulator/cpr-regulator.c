@@ -840,7 +840,7 @@ static void cpr_scale(struct cpr_regulator *cpr_vreg,
 			      "Down: cpr status = 0x%08x (error_steps=%d)\n",
 			      reg_val, error_steps);
 
-		if (last_volt <= (cpr_vreg->floor_volt[corner] - 75000)) {
+		if (last_volt <= cpr_vreg->floor_volt[corner]) {
 			cpr_debug_irq(cpr_vreg,
 			"[corn:%d, fuse_corner:%d] @ floor: %d <= %d: NACK\n",
 				corner, fuse_corner, last_volt,
@@ -872,12 +872,12 @@ static void cpr_scale(struct cpr_regulator *cpr_vreg,
 
 		/* Calculte new voltage */
 		new_volt = last_volt - (error_steps * cpr_vreg->step_volt);
-		if (new_volt < (cpr_vreg->floor_volt[corner] - 75000)) {
+		if (new_volt < cpr_vreg->floor_volt[corner]) {
 			cpr_debug_irq(cpr_vreg,
 				      "new_volt(%d) < floor(%d): Clamp\n",
 				      new_volt,
 				      cpr_vreg->floor_volt[corner]);
-			new_volt = cpr_vreg->floor_volt[corner] - 75000;
+			new_volt = cpr_vreg->floor_volt[corner];
 		}
 
 		if (cpr_scale_voltage(cpr_vreg, corner, new_volt, dir)) {
