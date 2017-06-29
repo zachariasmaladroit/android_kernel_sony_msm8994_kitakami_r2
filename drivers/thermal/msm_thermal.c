@@ -52,6 +52,9 @@
 #include <linux/suspend.h>
 #include <linux/fb.h>
 
+#include <asm-generic/cputime.h>
+#include <linux/hrtimer.h>
+
 #define CREATE_TRACE_POINTS
 #define TRACE_MSM_THERMAL
 #include <trace/trace_thermal.h>
@@ -88,6 +91,7 @@ struct notifier_block msm_thermal_fb_notif;
 static int big_core_start;
 static unsigned int current_poll_ms;
 static bool scr_suspended = false;
+static s64 time_pre = 0;
 
 /*
  * Tunable options
@@ -119,6 +123,7 @@ static bool scr_suspended = false;
  * temp_count_max_little_with_big_off - If this value is 2 and the temp is above 'temp_threshold' and below
  * 					'temp_big_off_threshold', LITTLE's max frequency will decrease 1 to 2 steps.
  * temp_count_max_big - If this value is 5, big's max frequency will decrease 1 to 5 steps.
+ * threshold_delay_ms - Frequency will not be limited immediately. It will be limited to lower index after this time.
  */
 #define DEFAULT_POLL_MS_COOL			1000
 #define DEFAULT_POLL_MS_COOL_SCREEN_OFF		5000
@@ -135,6 +140,7 @@ unsigned int freq_step_big = 1;
 unsigned int temp_count_max_little = 3;
 unsigned int temp_count_max_little_with_big_off = 2;
 unsigned int temp_count_max_big = 10;
+unsigned int threshold_delay_ms = 4000;
 module_param(poll_ms, int, 0644);
 module_param(poll_ms_cool, int, 0644);
 module_param(poll_ms_cool_screen_off, int, 0644);
@@ -148,6 +154,7 @@ module_param(freq_step_big, int, 0644);
 module_param(temp_count_max_little, int, 0644);
 module_param(temp_count_max_little_with_big_off, int, 0644);
 module_param(temp_count_max_big, int, 0644);
+module_param(threshold_delay_ms, int, 0644);
 
 // Debug
 unsigned int debug_core_control = 0;
@@ -3084,10 +3091,13 @@ static void do_freq_control(long temp)
 	put_online_cpus();
 }
 
+static long temp_max = 0;
+
 static void check_temp(struct work_struct *work)
 {
 	long temp = 0;
 	int ret = 0;
+	s64 time_diff = 0;
 
 	if (!msm_thermal_probed)
 		return;
@@ -3100,6 +3110,18 @@ static void check_temp(struct work_struct *work)
 				msm_thermal_info.sensor_id, ret);
 		goto reschedule;
 	}
+
+	if (temp > temp_max) {
+		temp_max = temp;
+		time_diff = ktime_to_ms(ktime_get()) - time_pre;
+		if (time_diff >= threshold_delay_ms)
+			time_pre = ktime_to_ms(ktime_get());
+		else
+			goto reschedule;
+	} else {
+		time_pre = ktime_to_ms(ktime_get());
+	}
+
 	do_core_control(temp);
 	do_vdd_mx();
 	do_psm();
