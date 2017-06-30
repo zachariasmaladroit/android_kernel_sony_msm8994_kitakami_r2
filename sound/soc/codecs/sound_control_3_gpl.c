@@ -295,18 +295,14 @@ static ssize_t headphone_gain_store(struct kobject *kobj,
 	return count;
 }
 
-static ssize_t hph_perf_show(struct device *dev,
-                struct device_attribute *attr, char *buf)
+static ssize_t hph_perf_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
 {
-        size_t count = 0;
-
-        count += sprintf(buf, "%d\n", high_perf_mode);
-
-        return count;
+        return sprintf(buf, "%d\n", high_perf_mode);
 }
 
-static ssize_t hph_perf_store(struct device *dev,
-                struct device_attribute *attr, const char *buf, size_t count)
+static ssize_t hph_perf_store(struct kobject *kobj,
+		struct kobj_attribute *attr, const char *buf, size_t count)
 {
         if (buf[0] >= '0' && buf[0] <= '1' && buf[1] == '\n')
                 if (high_perf_mode != buf[0] - '0')
