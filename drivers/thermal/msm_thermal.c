@@ -2567,7 +2567,7 @@ static void __ref do_core_control(long temp)
 		}
 
 		if (offlined_little_cpus < little_off_cpus) { // Little offline
-			for (i = 0; i < big_core_start; i++) {
+			for (i = 1; i < big_core_start; i++) { // Skip cpu0
 				if (offlined_little_cpus == little_off_cpus)
 					break;
 				if (!(msm_thermal_info.core_control_mask & BIT(i)))
@@ -2590,7 +2590,7 @@ static void __ref do_core_control(long temp)
 				offlined_little_cpus++;
 			}
 		} else { // Little online
-			for (i = 0; i < big_core_start; i++) {
+			for (i = 1; i < big_core_start; i++) { // Skip cpu0
 				if (offlined_little_cpus == little_off_cpus)
 					break;
 				if (!(cpus_offlined & BIT(i)))
