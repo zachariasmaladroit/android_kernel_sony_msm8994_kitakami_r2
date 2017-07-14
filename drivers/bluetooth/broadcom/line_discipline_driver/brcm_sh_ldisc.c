@@ -1715,9 +1715,10 @@ long brcm_sh_ldisc_stop(struct hci_uart *hu, bool btsleep_open)
 
     INIT_COMPLETION(hu->ldisc_installed);
 
-    if(btsleep_open)
+/*    if(btsleep_open)
         brcm_btsleep_stop(sleep);
-    hu->ldisc_install = V4L2_STATUS_OFF;
+    hu->ldisc_install = V4L2_STATUS_OFF;*/
+    hu->ldisc_install = 0;
 
     /* send uninstall notification to UIM */
     sysfs_notify(&hu->brcm_pdev->dev.kobj, NULL, "install");
@@ -1725,6 +1726,10 @@ long brcm_sh_ldisc_stop(struct hci_uart *hu, bool btsleep_open)
     /* wait for ldisc to be un-installed */
     err = wait_for_completion_timeout(&hu->ldisc_installed,
             msecs_to_jiffies(LDISC_TIME));
+            
+    BT_LDISC_DBG(V4L2_DBG_INIT, "btsleep stop called");
+    brcm_btsleep_stop(sleep);
+
     if (!err) {     /* timeout */
         BT_LDISC_ERR(" timed out waiting for ldisc to be un-installed");
         return -ETIMEDOUT;
