@@ -458,7 +458,7 @@ static int _sendcache_pre(struct audio_client *ac)
 	if (offset > (UINT_MAX - size))
 		err = -EINVAL;
 	if ((_depc_size == 0) || !_depc || (size == 0) ||
-		cmd == 0 || ((offset + size) >= _depc_size) || (err != 0)) {
+		cmd == 0 || ((offset + size) > _depc_size) || (err != 0)) {
 		eagle_precache_err("%s: primary device %i cache index %i general error - cache size = %u, cache ptr = %pK, offset = %u, size = %u, cmd = %i",
 			__func__, _device_primary, cidx, _depc_size, _depc,
 			offset, size, cmd);
@@ -538,7 +538,7 @@ NT_MODE_GOTO:
 	if (offset > (UINT_MAX - size))
 		err = -EINVAL;
 	if ((_depc_size == 0) || !_depc || (err != 0) || (size == 0) ||
-		(cmd == 0) || (offset + size) >= _depc_size) {
+		(cmd == 0) || (offset + size) > _depc_size) {
 		eagle_postcache_err("%s: primary device %i cache index %i port_id 0x%X general error - cache size = %u, cache ptr = %pK, offset = %u, size = %u, cmd = %i",
 			__func__, _device_primary, cidx, port_id,
 			_depc_size, _depc, offset, size, cmd);
@@ -741,7 +741,7 @@ int msm_dts_eagle_set_stream_gain(struct audio_client *ac, int lgain, int rgain)
 		/* check for integer overflow */
 		if (val > (UINT_MAX - _vol_cmds[i][1]))
 			err = -EINVAL;
-		if ((err != 0) || ((val + _vol_cmds[i][1]) >= _depc_size)) {
+		if ((err != 0) || ((val + _vol_cmds[i][1]) > _depc_size)) {
 			eagle_vol_err("%s: volume size (%u) + offset (%i) out of bounds %i",
 				__func__, val, _vol_cmds[i][1], _depc_size);
 			return -EINVAL;
@@ -840,7 +840,7 @@ int msm_dts_eagle_handle_asm(struct dts_eagle_param_desc *depd, char *buf,
 			/* check for integer overflow */
 			if (offset > (UINT_MAX - depd->size))
 				err = -EINVAL;
-			if ((err != 0) || (offset + depd->size) >= _depc_size) {
+			if ((err != 0) || (offset + depd->size) > _depc_size) {
 				eagle_asm_err("%s: invalid size %u and/or offset %u",
 					__func__, depd->size, offset);
 				return -EINVAL;
@@ -878,7 +878,7 @@ DTS_EAGLE_IOCTL_GET_PARAM_PRE_EXIT:
 		/* check for integer overflow */
 		if (offset > (UINT_MAX - depd->size))
 			err = -EINVAL;
-		if ((err != 0) || ((offset + depd->size) >= _depc_size)) {
+		if ((err != 0) || ((offset + depd->size) > _depc_size)) {
 			eagle_asm_err("%s: invalid size %u and/or offset %u for parameter (cache is size %u)",
 				__func__, depd->size, offset, _depc_size);
 			return -EINVAL;
@@ -1085,7 +1085,7 @@ int msm_dts_eagle_ioctl(unsigned int cmd, unsigned long arg)
 			if (offset > (UINT_MAX - depd.size))
 				err = -EINVAL;
 			if ((err != 0) ||
-			    ((offset + depd.size) >= _depc_size)) {
+			    ((offset + depd.size) > _depc_size)) {
 				eagle_ioctl_err("%s: invalid size %u and/or offset %u",
 					__func__, depd.size, offset);
 				return -EINVAL;
@@ -1135,7 +1135,7 @@ int msm_dts_eagle_ioctl(unsigned int cmd, unsigned long arg)
 		/* check for integer overflow */
 		if (offset > (UINT_MAX - depd.size))
 			err = -EINVAL;
-		if ((err != 0) || ((offset + depd.size) >= _depc_size)) {
+		if ((err != 0) || ((offset + depd.size) > _depc_size)) {
 			eagle_ioctl_err("%s: invalid size %u and/or offset %u for parameter (target cache block %i with offset %i, global cache is size %u)",
 				__func__, depd.size, offset, tgt,
 				_c_bl[tgt][CBD_OFFSG], _depc_size);
