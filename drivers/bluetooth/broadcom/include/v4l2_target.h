@@ -45,9 +45,9 @@
 #endif
 
 /* set this to FALSE to disable HCI snooping for production release */
-//#ifndef V4L2_SNOOP_ENABLE
-#define V4L2_SNOOP_ENABLE FALSE
-//#endif
+#ifndef V4L2_SNOOP_ENABLE
+#define V4L2_SNOOP_ENABLE TRUE
+#endif
 
 #ifndef V4L2_ANT
 #define V4L2_ANT TRUE
