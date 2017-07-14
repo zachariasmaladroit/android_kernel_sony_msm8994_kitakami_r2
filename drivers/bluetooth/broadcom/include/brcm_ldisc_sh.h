@@ -33,9 +33,6 @@
 #include <linux/skbuff.h>
 #define CONFIG_BT_HCIUART_BRCM
 
-#define LPM_BLUESLEEP
-#define LPM_BLUESLEEP TRUE
-
 /*******************************************************************************
 **  Constants
 *******************************************************************************/
