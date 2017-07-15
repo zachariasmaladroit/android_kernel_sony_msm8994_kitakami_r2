@@ -1770,14 +1770,14 @@ long brcm_sh_ldisc_start(struct hci_uart *hu)
         err = wait_for_completion_timeout(&hu->ldisc_installed,
                 msecs_to_jiffies(LDISC_TIME));
         if (!err) { /* timeout */
-            pr_err("line disc installation (start, install) timed out ");
+            pr_err("line disc installation timed out ");
             INIT_COMPLETION(hu->tty_close_complete);
             err = brcm_sh_ldisc_stop(hu, 1);
-//            cl_err = wait_for_completion_timeout(&hu->tty_close_complete,
-//                    msecs_to_jiffies(TTY_CLOSE_TIME));
-//            if (!cl_err) { /* timeout */
-//                pr_err("tty close timed out");
-//                break;
+            cl_err = wait_for_completion_timeout(&hu->tty_close_complete,
+                    msecs_to_jiffies(TTY_CLOSE_TIME));
+            if (!cl_err) { /* timeout */
+                pr_err("tty close timed out");
+                break;
             }
             continue;
         } else {
@@ -1791,7 +1791,7 @@ long brcm_sh_ldisc_start(struct hci_uart *hu)
                 cl_err = wait_for_completion_timeout(&hu->tty_close_complete,
                         msecs_to_jiffies(TTY_CLOSE_TIME));
                 if (!cl_err) { /* timeout */
-                    pr_err("tty close timed out (patchram download)");
+                    pr_err("tty close timed out");
                     break;
                 }
                 continue;
