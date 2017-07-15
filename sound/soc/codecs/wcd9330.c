@@ -6409,9 +6409,9 @@ static struct snd_soc_dai_driver tomtom_dai[] = {
 		.capture = {
 			.stream_name = "AIF4 MAD TX",
 			.rates = SNDRV_PCM_RATE_16000,
-			.formats = TOMTOM_FORMATS_S16_S24_LE,
+			.formats = TOMTOM_FORMATS,
 			.rate_min = 16000,
-			.rate_max = 44100,
+			.rate_max = 16000,
 			.channels_min = 1,
 			.channels_max = 1,
 		},
