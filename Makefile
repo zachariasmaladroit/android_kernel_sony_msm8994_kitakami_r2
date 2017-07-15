@@ -377,20 +377,90 @@ LINUXINCLUDE    := \
 
 KBUILD_CPPFLAGS := -D__KERNEL__
 
-KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-strict-aliasing -fno-common \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
-		   -fno-delete-null-pointer-checks \
 		   -fdiagnostics-color=always \
-		   -fdevirtualize-speculatively \
-		   -fno-aggressive-loop-optimizations \
-		   -fno-var-tracking-assignments \
-		   -fno-aggressive-loop-optimizations \
-		   -fno-strict-overflow \
-		   -march=armv8-a+crc \
+		   -fno-delete-null-pointer-checks \
+		   -fdelete-null-pointer-checks -ftree-vrp \
+		   -fisolate-erroneous-paths-dereference \
+		   -fisolate-erroneous-paths-attribute \
+		   -fno-pic \
 		   -mtune=cortex-a57.cortex-a53 \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
+		   
+#KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+#		   -fno-strict-aliasing -fno-common \
+#		   -Werror-implicit-function-declaration \
+#		   -Wno-format-security \
+#		   -fdiagnostics-color=always \
+#		   -fno-var-tracking-assignments \
+#		   -fno-delete-null-pointer-checks \
+#		   -fno-aggressive-loop-optimizations \
+#		   -pipe \
+#		   -fomit-frame-pointer \
+#		   -march=armv8-a+crc \
+#		   -mtune=cortex-a57.cortex-a53 \
+#		   -fno-pic \
+#		   -std=gnu89 $(call cc-option,-fno-PIE)
+#
+#			pessimistic:
+#
+#		   -g0 -DNDEBUG \
+#		
+#		   -ffast-math \
+#		   -fsingle-precision-constant \
+#		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
+#			#
+#			too much size:
+#
+#		   -fipa-cp-clone
+#			#
+#		   	GCC6
+#
+#		   -Wno-unused-const-variable -Wno-misleading-indentation \
+#		   -Wno-memset-transposed-args  -Wno-bool-compare -Wno-logical-not-parentheses \
+#		   -Wno-switch-bool \
+#		   -Wno-bool-operation -Wno-nonnull -Wno-switch-unreachable -Wno-format-truncation -Wno-format-overflow -Wno-duplicate-decl-specifier -Wno-memset-elt-size -Wno-int-in-bool-context \
+#
+#
+#		   -mlow-precision-recip-sqrt \
+#		   -mpc-relative-literal-loads \
+#		   -fdiagnostics-color=always \
+#		   -fno-var-tracking-assignments \
+#		   -pipe \
+#		   -fdelete-null-pointer-checks -ftree-vrp \
+#		   -fisolate-erroneous-paths-dereference \
+#		   -fcaller-saves \
+#		   -fipa-cp -fipa-cp-clone \
+#		   -freorder-blocks -freorder-blocks-and-partition -freorder-functions \
+#		   -fdevirtualize -fdevirtualize-speculatively \
+#		   -fexpensive-optimizations \
+#		   -fgcse -fgcse-lm -fgcse-after-reload -frerun-cse-after-loop \
+#		   -fcse-follow-jumps -fcse-skip-blocks \
+#		   -finline-small-functions -fpartial-inlining -findirect-inlining \
+#		   -foptimize-sibling-calls \
+#		   -fsched-interblock -fsched-spec -fno-schedule-insns -fschedule-insns2 \
+#		   -fsched-pressure -fno-tree-reassoc -fmodulo-sched -fmodulo-sched-allow-regmoves \
+#  		   -ftracer \
+#		   -fivopts \
+#		   -ffast-math \
+#		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
+#		   -march=armv8-a+crc \
+#		   -mtune=cortex-a57.cortex-a53 \
+#		   -std=gnu89 $(call cc-option,-fno-PIE)
+#		   
+# floating-point stuff:
+#		   -mfpu=neon-fp-armv8 -mfloat-abi=hard \
+#		   -ffast-math \
+#		   -fivopts -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
+#
+#		   -fno-aggressive-loop-optimizations \
+#		   -fno-delete-null-pointer-checks \
+#		   -fisolate-erroneous-paths-dereference -fisolate-erroneous-paths-attribute \
+#		   -fdevirtualize-speculatively \
+# BUG:		   -fschedule-insns
 #		   -fprefetch-loop-arrays
 #		   -mno-unaligned-access \
 #		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
@@ -419,7 +489,29 @@ KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs 
 #		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
 #		   -fprefetch-loop-arrays \
 #		   -freorder-blocks \
+#		   -fno-strict-overflow \
 #		   -mfpu=neon-fp-armv8 \
+#
+#
+#		  previous:
+#		   -fno-aggressive-loop-optimizations \
+#		   -fdelete-null-pointer-checks -ftree-vrp \
+#		   -fisolate-erroneous-paths-dereference \
+#		   -fcaller-saves \
+#		   -fipa-cp \
+#		   -freorder-blocks -freorder-blocks-and-partition -freorder-functions \
+#		   -fdevirtualize -fdevirtualize-speculatively \
+#		   -fexpensive-optimizations \
+#		   -fgcse -fgcse-lm -fgcse-after-reload -frerun-cse-after-loop \
+#		   -fcse-follow-jumps -fcse-skip-blocks \
+#		   -finline-small-functions -fpartial-inlining -findirect-inlining \
+#		   -foptimize-sibling-calls \
+#		   -fsched-interblock -fsched-spec -fno-schedule-insns -fschedule-insns2 \
+#		   -fsched-pressure -fno-tree-reassoc -fmodulo-sched -fmodulo-sched-allow-regmoves \
+# 		   -ftracer \
+#		   -fivopts \
+#		   -ffast-math \
+#		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
 
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
