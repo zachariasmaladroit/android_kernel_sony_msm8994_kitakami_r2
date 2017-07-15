@@ -1813,9 +1813,9 @@ long brcm_sh_ldisc_start(struct hci_uart *hu)
 
             if(hu->tty == NULL) {
 				pr_err("hu->tty == NULL");
-//            }
             continue;
-        } else {
+            }
+//        } else {
             /* ldisc installed now */
             BT_LDISC_DBG(V4L2_DBG_INIT, " line discipline installed (now) ");
             err = download_patchram(hu);
