@@ -1771,7 +1771,7 @@ long brcm_sh_ldisc_start(struct hci_uart *hu)
                 msecs_to_jiffies(LDISC_TIME));
         if (!err) { /* timeout */
             pr_err("line disc installation (start, install) timed out ");
-//            INIT_COMPLETION(hu->tty_close_complete);
+            INIT_COMPLETION(hu->tty_close_complete);
 
             do {
             err = brcm_sh_ldisc_stop(hu, 1);
