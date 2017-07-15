@@ -1772,17 +1772,52 @@ long brcm_sh_ldisc_start(struct hci_uart *hu)
         if (!err) { /* timeout */
             pr_err("line disc installation (start, install) timed out ");
             INIT_COMPLETION(hu->tty_close_complete);
+
+            do {
             err = brcm_sh_ldisc_stop(hu, 1);
 //            cl_err = wait_for_completion_timeout(&hu->tty_close_complete,
 //                    msecs_to_jiffies(TTY_CLOSE_TIME));
 //            if (!cl_err) { /* timeout */
 //                pr_err("tty close timed out");
 //                break;
+                if(err > 0 && hu->tty == NULL) {
+                    pr_err("Stop Complete");
+                    break;
+                } else {
+                    // Print Status
+                    if (!err) {
+                        pr_err("line disc stop timed out");
+                    } else if (err > 0 && hu->tty != NULL) {
+                        pr_err("(err > 0 && hu->tty != NULL)");
+                    } else if (err < 0 && hu->tty == NULL){
+                        pr_err("(err < 0 && hu->tty == NULL)");
+                    } else if (err < 0 && hu->tty != NULL) {
+                        pr_err("(err < 0 && hu->tty != NULL)");
+                    } else {
+                        pr_err("unknown error");
+                    }
+
+                    continue;
+                }
+            } while(retry--);
+
+            if(retry > 0){
+                pr_err("GOTO RETRY");
+            } else {
+                err = -1;
+                pr_err("END RETRY");
+                break;
             }
+
+        } else {
+
+            if(hu->tty == NULL) {
+				pr_err("hu->tty == NULL");
+//            }
             continue;
         } else {
             /* ldisc installed now */
-            BT_LDISC_DBG(V4L2_DBG_INIT, " line discipline installed ");
+            BT_LDISC_DBG(V4L2_DBG_INIT, " line discipline installed (now) ");
             err = download_patchram(hu);
             if (err != 0) {
                 pr_err("patchram download failed");
