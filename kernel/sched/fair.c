@@ -5486,6 +5486,7 @@ static inline int find_best_target(struct task_struct *p)
 	for_each_cpu(i, tsk_cpus_allowed(p)) {
 
 		int cur_capacity = capacity_curr_of(i);
+		unsigned long capacity_orig = capacity_orig_of(i);
 
 		/*
 		 * p's blocked utilization is still accounted for on prev_cpu
@@ -5496,6 +5497,10 @@ static inline int find_best_target(struct task_struct *p)
 
 		if (new_util > capacity_orig_of(i))
 			continue;
+
+		if ((new_util * sysctl_sched_capacity_margin) > \
+			(capacity_orig * SCHED_CAPACITY_SCALE))
+				continue;
 
 		if (new_util < cur_capacity) {
 			
