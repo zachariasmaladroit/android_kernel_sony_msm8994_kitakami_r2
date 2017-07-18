@@ -1,5 +1,4 @@
 CONFIG_ANDROID_LOW_MEMORY_KILLER_CONSIDER_SWAP=y
-# CONFIG_BCMDHD_PCIE is not set
 CONFIG_BUILD_ARM64_APPENDED_DTB_IMAGE_NAMES="msm8994-v2.0-kitakami_suzuran_generic msm8994-v2.1-kitakami_suzuran_generic"
 CONFIG_FPC1145_TEE=y
 
@@ -23,3 +22,7 @@ CONFIG_SOMC_WIFI_CONTROL=y
 CONFIG_BCM43455=y
 CONFIG_BCMDHD_FW_PATH="/system/etc/firmware/wlan/bcmdhd/fw_bcmdhd.bin"
 CONFIG_BCMDHD_NVRAM_PATH="/system/etc/firmware/wlan/bcmdhd/bcmdhd.cal"
+
+# CONFIG_BCMDHD_PCIE is not set
+# CONFIG_BCMDHD is not set
+# CONFIG_BCM4356 is not set
