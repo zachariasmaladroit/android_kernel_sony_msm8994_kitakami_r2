@@ -552,7 +552,6 @@ static struct mux_clk a53_hf_mux = {
 	.base = &vbases[ALIAS0_GLB_BASE],
 	.c = {
 		.dbg_name = "a53_hf_mux",
-		.flags = CLKFLAG_NO_RATE_CACHE,
 		.ops = &clk_ops_gen_mux,
 		CLK_INIT(a53_hf_mux.c),
 	},
@@ -595,7 +594,6 @@ static struct mux_clk a57_hf_mux = {
 	.base = &vbases[ALIAS1_GLB_BASE],
 	.c = {
 		.dbg_name = "a57_hf_mux",
-		.flags = CLKFLAG_NO_RATE_CACHE,
 		.ops = &clk_ops_gen_mux,
 		CLK_INIT(a57_hf_mux.c),
 	},
@@ -797,7 +795,6 @@ static struct mux_clk a57_hf_mux_v2 = {
 	.base = &vbases[ALIAS1_GLB_BASE],
 	.c = {
 		.dbg_name = "a57_hf_mux_v2",
-		.flags = CLKFLAG_NO_RATE_CACHE,
 		.ops = &clk_ops_gen_mux,
 		CLK_INIT(a57_hf_mux_v2.c),
 	},
@@ -1037,7 +1034,6 @@ static struct mux_clk a53_debug_mux = {
 	.base = &vbases[ALIAS0_GLB_BASE],
 	.c = {
 		.dbg_name = "a53_debug_mux",
-		.flags = CLKFLAG_NO_RATE_CACHE,
 		.ops = &clk_ops_gen_mux,
 		CLK_INIT(a53_debug_mux.c),
 	},
@@ -1061,7 +1057,6 @@ static struct mux_clk a57_debug_mux = {
 	.base = &vbases[ALIAS1_GLB_BASE],
 	.c = {
 		.dbg_name = "a57_debug_mux",
-		.flags = CLKFLAG_NO_RATE_CACHE,
 		.ops = &clk_ops_gen_mux,
 		CLK_INIT(a57_debug_mux.c),
 	},
@@ -1084,7 +1079,6 @@ static struct mux_clk cpu_debug_mux = {
 	.base = &vbases[CCI_BASE],
 	.c = {
 		.dbg_name = "cpu_debug_mux",
-		.flags = CLKFLAG_NO_RATE_CACHE,
 		.ops = &clk_ops_gen_mux,
 		CLK_INIT(cpu_debug_mux.c),
 	},
