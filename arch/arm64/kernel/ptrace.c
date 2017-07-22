@@ -1183,13 +1183,7 @@ asmlinkage int syscall_trace_enter(struct pt_regs *regs)
 
 asmlinkage void syscall_trace_exit(struct pt_regs *regs)
 {
-<<<<<<< HEAD
-	if (test_thread_flag(TIF_SYSCALL_TRACEPOINT))
-=======
-	audit_syscall_exit(regs);
-
 	if (test_thread_flag_relaxed(TIF_SYSCALL_TRACEPOINT))
->>>>>>> faff83eb2b00e... arm64: use the new *_relaxed macros for lower power usage
 		trace_sys_exit(regs, regs_return_value(regs));
 
 	if (test_thread_flag_relaxed(TIF_SYSCALL_TRACE))

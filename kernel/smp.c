@@ -12,12 +12,10 @@
 #include <linux/gfp.h>
 #include <linux/smp.h>
 #include <linux/cpu.h>
-<<<<<<< HEAD
 #include <linux/cpufreq.h>
 #include <linux/sched.h>
-=======
 #include <asm/relaxed.h>
->>>>>>> faff83eb2b00e... arm64: use the new *_relaxed macros for lower power usage
+
 
 #include "smpboot.h"
 
