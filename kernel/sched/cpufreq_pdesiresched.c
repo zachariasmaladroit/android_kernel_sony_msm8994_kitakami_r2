@@ -61,7 +61,7 @@ static struct irq_work irq_work;
 
 static int sched_priority = 50; 
 
-static unsigned int screen_off_max_freq = 384000;
+static unsigned int screen_off_max_freq = 1248000;
 
 static unsigned int previous_freq = 0;
 
