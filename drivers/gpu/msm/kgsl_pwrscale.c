@@ -420,8 +420,6 @@ static int popp_trans2(struct kgsl_device *device, int level)
 		/* Try a more aggressive mitigation */
 		psc->popp_level--;
 		level++;
-		/* Update the stable timestamp */
-		device->pwrscale.freq_change_time = ktime_to_ms(ktime_get());
 		break;
 	case POPP_MAX:
 	default:
@@ -675,7 +673,6 @@ int kgsl_busmon_target(struct device *dev, unsigned long *freq, u32 flags)
 	struct kgsl_pwrlevel *pwr_level;
 	int  level, b;
 	u32 bus_flag;
-	unsigned long ab_mbytes;
 
 	if (device == NULL)
 		return -ENODEV;
@@ -694,7 +691,6 @@ int kgsl_busmon_target(struct device *dev, unsigned long *freq, u32 flags)
 	pwr_level = &pwr->pwrlevels[level];
 	bus_flag = device->pwrscale.bus_profile.flag;
 	device->pwrscale.bus_profile.flag = 0;
-	ab_mbytes = device->pwrscale.bus_profile.ab_mbytes;
 
 	/*
 	 * Bus devfreq governor has calculated its recomendations
@@ -715,10 +711,8 @@ int kgsl_busmon_target(struct device *dev, unsigned long *freq, u32 flags)
 		((pwr_level->bus_freq + pwr->bus_mod) > pwr_level->bus_min))
 			pwr->bus_mod--;
 
-	/* Update bus vote if AB or IB is modified */
-	if ((pwr->bus_mod != b) || (pwr->bus_ab_mbytes != ab_mbytes)) {
+	if (pwr->bus_mod != b) {
 		pwr->bus_percent_ab = device->pwrscale.bus_profile.percent_ab;
-		pwr->bus_ab_mbytes = ab_mbytes;
 		kgsl_pwrctrl_buslevel_update(device, true);
 	}
 
@@ -743,7 +737,6 @@ int kgsl_pwrscale_init(struct device *dev, const char *governor)
 {
 	struct kgsl_device *device;
 	struct kgsl_pwrscale *pwrscale;
-	struct kgsl_device_platform_data *pdata;
 	struct kgsl_pwrctrl *pwr;
 	struct devfreq *devfreq;
 	struct devfreq *bus_devfreq;
@@ -757,7 +750,6 @@ int kgsl_pwrscale_init(struct device *dev, const char *governor)
 	if (device == NULL)
 		return -ENODEV;
 
-	pdata = dev_get_platdata(&device->pdev->dev);
 	pwrscale = &device->pwrscale;
 	pwr = &device->pwrctrl;
 	gpu_profile = &pwrscale->gpu_profile;
@@ -803,7 +795,6 @@ int kgsl_pwrscale_init(struct device *dev, const char *governor)
 		data->bus.num = out;
 		data->bus.ib = &pwr->bus_ib[0];
 		data->bus.index = &pwr->bus_index[0];
-		data->bus.width = pwr->bus_width;
 	} else
 		data->bus.num = 0;
 
@@ -847,13 +838,6 @@ int kgsl_pwrscale_init(struct device *dev, const char *governor)
 				sizeof(struct kgsl_pwr_event), GFP_KERNEL);
 		pwrscale->history[i].type = i;
 	}
-
-	/*
-	 * Enable POPP feature if target supports it, by default
-	 * it is disabled.
-	 */
-	if (pdata->popp_enable)
-		set_bit(POPP_ON, &pwrscale->popp_state);
 
 	return 0;
 }

@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2015,2017 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2013-2015, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -359,7 +359,7 @@ static struct kgsl_cmdbatch *_get_cmdbatch(struct adreno_context *drawctxt)
 		 * it hasn't already been started
 		 */
 		if (!cmdbatch->timeout_jiffies) {
-			cmdbatch->timeout_jiffies = jiffies + msecs_to_jiffies(5000);
+			cmdbatch->timeout_jiffies = jiffies + 5 * HZ;
 			mod_timer(&cmdbatch->timer, cmdbatch->timeout_jiffies);
 		}
 
@@ -1024,13 +1024,6 @@ int adreno_dispatcher_queue_cmd(struct adreno_device *adreno_dev,
 
 	if (drawctxt->base.flags & KGSL_CONTEXT_NO_FAULT_TOLERANCE)
 		set_bit(KGSL_FT_DISABLE, &cmdbatch->fault_policy);
-	/*
-	 *  Set the fault tolerance policy to FT_REPLAY - As context wants
-	 *  to invalidate it after a replay attempt fails. This doesn't
-	 *  require to execute the default FT policy.
-	 */
-	else if (drawctxt->base.flags & KGSL_CONTEXT_INVALIDATE_ON_FAULT)
-		set_bit(KGSL_FT_REPLAY, &cmdbatch->fault_policy);
 	else
 		cmdbatch->fault_policy = adreno_dev->ft_policy;
 
@@ -1927,11 +1920,16 @@ static void adreno_dispatcher_work(struct kthread_work *work)
 		&(adreno_dev->cur_rb->dispatch_q),
 		adreno_dev->long_ib_detect);
 
-	kgsl_process_event_groups(device);
-
 	/* Check if gpu fault occurred */
 	if (dispatcher_do_fault(device))
 		goto done;
+
+	/*
+	 * If inflight went to 0, queue back up the event processor to catch
+	 * stragglers
+	 */
+	if (dispatcher->inflight == 0 && count)
+		queue_work(device->work_queue, &device->event_work);
 
 	/* Try to dispatch new commands */
 	_adreno_dispatcher_issuecmds(adreno_dev);

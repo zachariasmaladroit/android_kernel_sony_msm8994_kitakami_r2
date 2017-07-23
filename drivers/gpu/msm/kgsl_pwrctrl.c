@@ -47,7 +47,7 @@
 #define MAX_UDELAY		2000
 
 /* Number of jiffies for a full thermal cycle */
-#define TH_HZ			(HZ/5)
+#define TH_HZ			20
 
 #define KGSL_MAX_BUSLEVELS	20
 
@@ -169,10 +169,8 @@ static void _ab_buslevel_update(struct kgsl_pwrctrl *pwr,
 		return;
 	if (ib == 0)
 		*ab = 0;
-	else if ((!pwr->bus_percent_ab) && (!pwr->bus_ab_mbytes))
+	else if (!pwr->bus_percent_ab)
 		*ab = DEFAULT_BUS_P * ib / 100;
-	else if (pwr->bus_width)
-		*ab = pwr->bus_ab_mbytes;
 	else
 		*ab = (pwr->bus_percent_ab * max_bw) / 100;
 
@@ -253,8 +251,6 @@ void kgsl_pwrctrl_buslevel_update(struct kgsl_device *device,
 	} else {
 		/* If the bus is being turned off, reset to default level */
 		pwr->bus_mod = 0;
-		pwr->bus_percent_ab = 0;
-		pwr->bus_ab_mbytes = 0;
 	}
 	trace_kgsl_buslevel(device, pwr->active_pwrlevel, buslevel);
 	last_vote_buslevel = buslevel;
@@ -275,8 +271,7 @@ void kgsl_pwrctrl_buslevel_update(struct kgsl_device *device,
 		msm_bus_scale_client_update_request(pwr->pcl, buslevel);
 
 	/* ask a governor to vote on behalf of us */
-	if (pwr->devbw)
-		devfreq_vbif_update_bw(ib_votes[last_vote_buslevel], ab);
+	devfreq_vbif_update_bw(ib_votes[last_vote_buslevel], ab);
 }
 EXPORT_SYMBOL(kgsl_pwrctrl_buslevel_update);
 
@@ -1510,7 +1505,7 @@ int kgsl_pwrctrl_init(struct kgsl_device *device)
 
 	pwr->power_flags = 0;
 
-	pwr->interval_timeout = msecs_to_jiffies(pdata->idle_timeout);
+	pwr->interval_timeout = pdata->idle_timeout;
 	pwr->strtstp_sleepwake = pdata->strtstp_sleepwake;
 
 	if (kgsl_property_read_u32(device, "qcom,pm-qos-active-latency",
@@ -1545,37 +1540,19 @@ int kgsl_pwrctrl_init(struct kgsl_device *device)
 
 	/* Set if independent bus BW voting is supported */
 	pwr->bus_control = pdata->bus_control;
-	/* Bus width in bytes, set it to zero if not found */
-	if (of_property_read_u32(pdev->dev.of_node, "qcom,bus-width",
-		&pwr->bus_width))
-		pwr->bus_width = 0;
 
 	/* Check if gpu bandwidth vote device is defined in dts */
-	if (pwr->bus_control) {
-		/* Check if gpu bandwidth vote device is defined in dts */
-		gpubw_dev_node = of_parse_phandle(pdev->dev.of_node,
+	gpubw_dev_node = of_parse_phandle(pdev->dev.of_node,
 					"qcom,gpubw-dev", 0);
-		/*
-		 * Governor support enables the gpu bus scaling via governor
-		 * and hence no need to register for bus scaling client
-		 * if gpubw-dev is defined.
-		 */
-		if (gpubw_dev_node) {
-			p2dev = of_find_device_by_node(gpubw_dev_node);
-			if (p2dev) {
-				pwr->devbw = &p2dev->dev;
-			} else {
-				KGSL_PWR_ERR(device,
-					"gpubw-dev not available");
-				result = -EINVAL;
-				goto done;
-			}
-		} else {
-			KGSL_PWR_ERR(device,
-				"Unable to find gpubw-dev device in dts");
-			result = -EINVAL;
-			goto done;
-		}
+	/*
+	 * Governor support enables the gpu bus scaling via governor
+	 * and hence no need to register for bus scaling client
+	 * if gpubw-dev is defined.
+	 */
+	if (gpubw_dev_node) {
+		p2dev = of_find_device_by_node(gpubw_dev_node);
+		if (p2dev)
+			pwr->devbw = &p2dev->dev;
 	} else {
 		/*
 		 * Register for gpu bus scaling if governor support
@@ -1855,7 +1832,6 @@ static int _init(struct kgsl_device *device)
 		kgsl_pwrctrl_irq(device, KGSL_PWRFLAGS_OFF);
 		del_timer_sync(&device->idle_timer);
 		device->ftbl->stop(device);
-		kgsl_pwrscale_sleep(device);
 		/* fall through */
 	case KGSL_STATE_AWARE:
 		kgsl_pwrctrl_disable(device);
@@ -1922,7 +1898,6 @@ static int _wake(struct kgsl_device *device)
 		/* Enable state before turning on irq */
 		kgsl_pwrctrl_set_state(device, KGSL_STATE_ACTIVE);
 		kgsl_pwrctrl_irq(device, KGSL_PWRFLAGS_ON);
-		kgsl_pwrscale_wake(device);
 		mod_timer(&device->idle_timer, jiffies +
 				device->pwrctrl.interval_timeout);
 		break;
@@ -1959,7 +1934,6 @@ _aware(struct kgsl_device *device)
 	case KGSL_STATE_SLEEP:
 		status = _wake(device);
 	case KGSL_STATE_ACTIVE:
-		kgsl_pwrscale_sleep(device);
 		kgsl_pwrctrl_irq(device, KGSL_PWRFLAGS_OFF);
 		del_timer_sync(&device->idle_timer);
 		break;
