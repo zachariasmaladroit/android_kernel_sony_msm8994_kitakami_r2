@@ -227,7 +227,7 @@ void cpufreq_sched_set_cap(int cpu, unsigned long capacity)
 		goto out;
 
 	/* Convert the new maximum capacity request into a cpu frequency */
-	freq_new = capacity * policy->max >> SCHED_CAPACITY_SHIFT;
+	freq_new = capacity * gd->max >> SCHED_CAPACITY_SHIFT;
 
 	if (freq_new > policy->max)
 		freq_new = policy->max;
