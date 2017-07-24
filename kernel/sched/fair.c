@@ -4787,7 +4787,8 @@ static int group_idle_state(struct sched_group *sg)
 static unsigned int sched_group_energy(struct energy_env *eenv)
 {
 	struct sched_domain *sd;
-	int cpu, total_energy = 0;
+	int cpu;
+	u64 total_energy = 0;
 	struct cpumask visit_cpus;
 	struct sched_group *sg;
 
@@ -4852,11 +4853,10 @@ static unsigned int sched_group_energy(struct energy_env *eenv)
 
 				idle_idx = group_idle_state(sg);
 				group_util = group_norm_usage(eenv, sg);
-				sg_busy_energy = (group_util * sg->sge->cap_states[cap_idx].power)
-								>> SCHED_CAPACITY_SHIFT;
+				sg_busy_energy = (group_util * sg->sge->cap_states[cap_idx].power);
+
 				sg_idle_energy = ((SCHED_LOAD_SCALE-group_util)
-								* sg->sge->idle_states[idle_idx].power)
-								>> SCHED_CAPACITY_SHIFT;
+								* sg->sge->idle_states[idle_idx].power);
 
 				total_energy += sg_busy_energy + sg_idle_energy;
 
@@ -4872,7 +4872,7 @@ next_cpu:
 		continue;
 	}
 
-	eenv->energy = total_energy;
+	eenv->energy = total_energy >> SCHED_CAPACITY_SHIFT;
 	return total_energy;
 }
 
