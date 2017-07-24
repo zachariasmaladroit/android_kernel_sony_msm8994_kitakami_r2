@@ -85,6 +85,7 @@
 #define DEF_TEMP_THRESHOLD 60
 #else
 #define DEF_TEMP_THRESHOLD 56
+#endif
 #define HOTPLUG_SENSOR_ID 18
 #define HOTPLUG_HYSTERESIS 2
 unsigned int temp_threshold = DEF_TEMP_THRESHOLD;
