@@ -43,8 +43,6 @@ static LIST_HEAD(devfreq_governor_list);
 static LIST_HEAD(devfreq_list);
 static DEFINE_MUTEX(devfreq_list_lock);
 
-static struct notifier_block notif;
-
 /**
  * find_device_devfreq() - find devfreq struct using device pointer
  * @dev:	device pointer used to lookup device devfreq.
@@ -1019,6 +1017,11 @@ static int state_notifier_callback(struct notifier_block *this,
 	return NOTIFY_OK;
 }
 
+static struct notifier_block notif = {
+	.notifier_call = state_notifier_callback,
+	.priority = INT_MAX,
+};
+
 static int __init devfreq_init(void)
 {
 	int ret = 0;
@@ -1037,7 +1040,6 @@ static int __init devfreq_init(void)
 	}
 	devfreq_class->dev_attrs = devfreq_attrs;
 
-	notif.notifier_call = state_notifier_callback;
 	ret = state_register_client(&notif);
 
 	return ret;
