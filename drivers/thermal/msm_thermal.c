@@ -81,6 +81,9 @@
 } while (0)
 
 //custom thermal
+#if defined(CONFIG_MACH_SONY_SATSUKI) || defined(CONFIG_MACH_SONY_SATSUKI_DSDS)
+#define DEF_TEMP_THRESHOLD 60
+#else
 #define DEF_TEMP_THRESHOLD 56
 #define HOTPLUG_SENSOR_ID 18
 #define HOTPLUG_HYSTERESIS 2
