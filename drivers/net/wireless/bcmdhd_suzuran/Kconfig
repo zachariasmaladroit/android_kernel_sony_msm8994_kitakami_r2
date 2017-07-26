@@ -11,7 +11,21 @@ config BCMDHD_SUZURAN
 choice
 	prompt "Select Broadcom wireless card"
 	depends on BCMDHD_SUZURAN
-	default BCM43455
+	default BCM4339
+
+config BCM4339
+	bool "Broadcom 4339 wireless card support"
+	depends on BCMDHD_SUZURAN
+	---help---
+	  This module adds support for wireless adapters based on
+	  Broadcom 4339 chipset.
+
+config BCM4354
+	bool "Broadcom 4354 wireless card support"
+	depends on BCMDHD_SUZURAN
+	---help---
+	  This module adds support for wireless adapters based on
+	  Broadcom 4354 chipset.
 
 config BCM43455
 	bool "Broadcom 43455 wireless cards support"
