@@ -745,7 +745,7 @@ static int mdss_mdp_cmd_wait4pingpong(struct mdss_mdp_ctl *ctl, void *arg)
 #ifdef CONFIG_FB_MSM_MDSS_SPECIFIC_PANEL
 				"dsi1_ctrl", "dsi1_phy");
 #else
-				"dsi1_ctrl", "dsi1_phy");
+				"dsi1_ctrl", "dsi1_phy", "panic");
 #endif /* CONFIG_FB_MSM_MDSS_SPECIFIC_PANEL */
 		} else if (ctx->pp_timeout_report_cnt == MAX_RECOVERY_TRIALS) {
 			pr_err("timeout recovery seq failed(%d) ctl=%d, cnt=%d\n",
