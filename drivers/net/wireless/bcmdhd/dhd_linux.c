@@ -6195,7 +6195,7 @@ dhd_preinit_ioctls(dhd_pub_t *dhd)
 #ifdef WLAIBSS
 	setbit(eventmask, WLC_E_AIBSS_TXFAIL);
 #endif /* WLAIBSS */
-	setbit(eventmask, WLC_E_TRACE);
+	clrbit(eventmask, WLC_E_TRACE);
 	setbit(eventmask, WLC_E_CSA_COMPLETE_IND);
 	/* Write updated Event mask */
 	bcm_mkiovar("event_msgs", eventmask, WL_EVENTING_MASK_LEN, iovbuf, sizeof(iovbuf));
