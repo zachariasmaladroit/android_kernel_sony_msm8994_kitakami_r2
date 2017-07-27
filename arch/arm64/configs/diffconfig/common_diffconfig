@@ -256,7 +256,12 @@ CONFIG_SECURITY_NETWORK=y
 # CONFIG_SECURITY_PATH is not set
 
 # optimization levels
+# only this works, finline or other specific optimizations break booting
 CONFIG_CC_OPTIMIZE_FOR_SIZE=y
+
+
+CONFIG_ARCH_HAS_CACHE_LINE_SIZE=y
+
 
 # KSM / UKSM
 # CONFIG_KSM is not set
