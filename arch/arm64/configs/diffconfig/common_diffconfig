@@ -255,6 +255,11 @@ CONFIG_SECURITY_NETWORK=y
 # CONFIG_SECURITY_PERF_EVENTS_RESTRICT is not set
 # CONFIG_SECURITY_PATH is not set
 
+# crypto & security stuff:
+CONFIG_CRYPTO_CHACHA20POLY1305=y
+CONFIG_CRYPTO_POLY1305=y
+CONFIG_CRYPTO_CHACHA20=y
+
 # optimization levels
 # only this works, finline or other specific optimizations break booting
 CONFIG_CC_OPTIMIZE_FOR_SIZE=y
