@@ -281,6 +281,13 @@ CONFIG_SECURITY_YAMA=y
 CONFIG_SECURITY_YAMA_STACKED=y
 # CONFIG_DEFAULT_SECURITY_YAMA is not set
 
+# disable 'socket monitoring interface'
+# CONFIG_INET_DIAG is not set
+
+# restrict access to dmesg except for root
+CONFIG_SECURITY_DMESG_RESTRICT=y
+CONFIG_SECURITY_PERF_EVENTS_RESTRICT=y
+
 # optimization levels
 # only this works, finline or other specific optimizations break booting
 CONFIG_CC_OPTIMIZE_FOR_SIZE=y
