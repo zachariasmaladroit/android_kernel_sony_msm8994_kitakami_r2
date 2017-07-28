@@ -2849,10 +2849,11 @@ void somc_batfet_open(struct device *dev, bool open)
 	}
 }
 
-#define UNPLUG_WAKE_PERIOD		(3 * HZ)
+#define UNPLUG_WAKE_PERIOD		(3000)
 void somc_unplug_wakelock(void)
 {
-	wake_lock_timeout(&chg_params->unplug_wakelock, UNPLUG_WAKE_PERIOD);
+	wake_lock_timeout(&chg_params->unplug_wakelock, 
+								msecs_to_jiffies(UNPLUG_WAKE_PERIOD));
 }
 
 #define VFLOAT_CMP_CFG_REG		0xF5
