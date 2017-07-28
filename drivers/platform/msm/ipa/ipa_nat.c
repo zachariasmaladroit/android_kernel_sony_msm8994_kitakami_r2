@@ -35,16 +35,6 @@ enum nat_table_type {
 #define NAT_TABLE_ENTRY_SIZE_BYTE 32
 #define NAT_INTEX_TABLE_ENTRY_SIZE_BYTE 4
 
-enum nat_table_type {
-	IPA_NAT_BASE_TBL = 0,
-	IPA_NAT_EXPN_TBL = 1,
-	IPA_NAT_INDX_TBL = 2,
-	IPA_NAT_INDEX_EXPN_TBL = 3,
-};
-
-#define NAT_TABLE_ENTRY_SIZE_BYTE 32
-#define NAT_INTEX_TABLE_ENTRY_SIZE_BYTE 4
-
 static int ipa_nat_vma_fault_remap(
 	 struct vm_area_struct *vma, struct vm_fault *vmf)
 {
