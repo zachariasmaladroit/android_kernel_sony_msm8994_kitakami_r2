@@ -1175,7 +1175,7 @@ static int check_version(Elf_Shdr *sechdrs,
 		return 1;
 
 	if(!strncmp("texfat", mod->name, 6))
-		return 1;
+		return 0;
 		
 	if(!strncmp("sii8620", mod->name, 7))
 		return 1;
