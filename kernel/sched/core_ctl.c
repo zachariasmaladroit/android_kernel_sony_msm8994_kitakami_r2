@@ -20,6 +20,7 @@
 #include <linux/sched.h>
 #include <linux/sched/rt.h>
 #include <linux/mutex.h>
+#include <linux/display_state.h>
 
 #include <trace/events/sched.h>
 
@@ -857,6 +858,11 @@ static int __ref cpu_callback(struct notifier_block *nfb,
 		return NOTIFY_OK;
 
 	f = &per_cpu(cpu_state, state->first_cpu);
+
+	if (!is_display_on() && state->is_big_cluster) {
+		f->min_cpus = 0;
+		f->max_cpus = 0;
+	}
 
 	switch (action) {
 	case CPU_UP_PREPARE:
