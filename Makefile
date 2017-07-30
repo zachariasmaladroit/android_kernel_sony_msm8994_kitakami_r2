@@ -388,6 +388,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fisolate-erroneous-paths-attribute \
 		   -fno-pic \
 		   -mtune=cortex-a57.cortex-a53 \
+		   -march=armv8-a+crc+crypto \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
 		   
 #KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
