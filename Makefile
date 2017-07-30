@@ -387,7 +387,6 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fisolate-erroneous-paths-dereference \
 		   -fisolate-erroneous-paths-attribute \
 		   -fno-pic \
-		   -fsanitize=undefined \
 		   -fipa-ra -fipa-icf -fipa-reference -flra-remat \
 		   -mtune=cortex-a53 \
 		   -march=armv8-a+crc+crypto \
@@ -408,6 +407,8 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 #		   -fno-pic \
 #		   -std=gnu89 $(call cc-option,-fno-PIE)
 #
+#		  Needs libubsan* and other stuff ?!
+#		   -fsanitize=undefined \
 #
 #		  GCC 6.x
 #		  Value range propagation now assumes that the this pointer in
