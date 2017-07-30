@@ -387,7 +387,9 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fisolate-erroneous-paths-dereference \
 		   -fisolate-erroneous-paths-attribute \
 		   -fno-pic \
-		   -mtune=cortex-a57.cortex-a53 \
+		   -fsanitize=undefined \
+		   -fipa-ra -fipa-icf -fipa-reference -flra-remat \
+		   -mtune=cortex-a53 \
 		   -march=armv8-a+crc+crypto \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
 		   
@@ -405,6 +407,17 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 #		   -mtune=cortex-a57.cortex-a53 \
 #		   -fno-pic \
 #		   -std=gnu89 $(call cc-option,-fno-PIE)
+#
+#
+#		  GCC 6.x
+#		  Value range propagation now assumes that the this pointer in
+#		  C++ member functions is non-null. This eliminates common
+#		  null pointer checks but also breaks some non-conforming
+#		  code-bases (such as Qt-5, Chromium, KDevelop). As a temporary
+#		  work-around -fno-delete-null-pointer-checks can be used. 
+#		  Wrong code can be identified by using -fsanitize=undefined.
+#
+#		   -fsanitize=undefined \
 #
 #			pessimistic:
 #
