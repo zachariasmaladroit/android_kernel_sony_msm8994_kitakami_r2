@@ -1,4 +1,4 @@
-CFLAGS_KERNEL := -fno-stack-protector -fdelete-null-pointer-checks -ftree-vrp -fisolate-erroneous-paths-attribute -fisolate-erroneous-paths-dereference -fno-unsafe-math-optimizations -fno-strict-aliasing
+CFLAGS_KERNEL := -fno-stack-protector -fno-unsafe-math-optimizations -fno-strict-aliasing
 
 obj-$(CONFIG_MSM_QDSP6_APRV2) += apr.o apr_v2.o apr_tal.o voice_svc.o
 obj-$(CONFIG_MSM_QDSP6_APRV3) += apr.o apr_v3.o apr_tal.o voice_svc.o
