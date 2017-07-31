@@ -1,4 +1,4 @@
-CFLAGS_KERNEL := -Wno-memset-transposed-args -fno-stack-protector -fno-unsafe-math-optimizations -fno-strict-aliasing
+CFLAGS_KERNEL := -Wno-memset-transposed-args -fno-stack-protector -fdelete-null-pointer-checks -ftree-vrp -fisolate-erroneous-paths-attribute -fisolate-erroneous-paths-dereference -fno-unsafe-math-optimizations -fno-strict-aliasing
 
 snd-soc-qdsp6v2-objs += msm-dai-q6-v2.o msm-pcm-q6-v2.o msm-pcm-routing-v2.o \
 			msm-compress-q6-v2.o msm-compr-q6-v2.o \

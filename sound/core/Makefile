@@ -1,4 +1,4 @@
-CFLAGS_KERNEL := -fno-stack-protector -fno-unsafe-math-optimizations -fno-strict-aliasing
+CFLAGS_KERNEL := -fno-stack-protector -fdelete-null-pointer-checks -ftree-vrp -fisolate-erroneous-paths-attribute -fisolate-erroneous-paths-dereference -fno-unsafe-math-optimizations -fno-strict-aliasing
 
 #
 # Makefile for ALSA
