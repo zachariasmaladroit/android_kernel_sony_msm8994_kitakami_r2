@@ -1,3 +1,5 @@
+CFLAGS_KERNEL := -fno-stack-protector -fno-unsafe-math-optimizations -fno-strict-aliasing
+
 obj-$(CONFIG_MSM_QDSP6V2_CODECS) += aac_in.o qcelp_in.o evrc_in.o amrnb_in.o g711mlaw_in.o g711alaw_in.o audio_utils.o
 obj-$(CONFIG_MSM_QDSP6V2_CODECS) += audio_wma.o audio_wmapro.o audio_aac.o audio_multi_aac.o audio_utils_aio.o
 obj-$(CONFIG_MSM_QDSP6V2_CODECS) += q6audio_v2.o q6audio_v2_aio.o
