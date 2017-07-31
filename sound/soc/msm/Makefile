@@ -1,5 +1,3 @@
-CFLAGS_KERNEL := -fno-stack-protector -fno-unsafe-math-optimizations -fno-strict-aliasing
-
 # MSM CPU/CODEC DAI Support
 
 

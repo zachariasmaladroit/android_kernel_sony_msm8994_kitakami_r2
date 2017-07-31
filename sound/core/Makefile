@@ -1,5 +1,3 @@
-CFLAGS_KERNEL := -fno-stack-protector -fno-unsafe-math-optimizations -fno-strict-aliasing
-
 #
 # Makefile for ALSA
 # Copyright (c) 1999,2001 by Jaroslav Kysela <perex@perex.cz>

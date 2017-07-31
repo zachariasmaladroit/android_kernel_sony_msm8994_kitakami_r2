@@ -1,4 +1,4 @@
-CFLAGS_KERNEL := -fno-stack-protector -fno-unsafe-math-optimizations -fno-strict-aliasing
+CFLAGS_KERNEL := -fno-unsafe-math-optimizations -fno-strict-aliasing
 
 snd-soc-core-objs := soc-core.o soc-dapm.o soc-jack.o soc-cache.o soc-utils.o
 snd-soc-core-objs += soc-pcm.o soc-compress.o soc-io.o
