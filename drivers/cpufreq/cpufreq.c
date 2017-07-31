@@ -1858,7 +1858,16 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
 
 			cpufreq_notify_transition(policy, &freqs,
 					CPUFREQ_POSTCHANGE);
-		}
+
+			/*
+			 * This might look like a redundant call as we are checking it again
+			 * ater finding index. But it is left intentionally for cases where
+			 * exactly same freq is called again and so we can save on few function
+			 * calls.
+			 */
+ 	        if (target_freq == policy->cur)
+ 	        retval = 0;
+     	}
 	}
 
 out:
