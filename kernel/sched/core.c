@@ -1214,8 +1214,8 @@ static inline void clear_hmp_request(int cpu) { }
  * IMPORTANT: Initialize both copies to same value!!
  */
 
-static __read_mostly unsigned int sched_ravg_hist_size = 12;
-__read_mostly unsigned int sysctl_sched_ravg_hist_size = 12;
+static __read_mostly unsigned int sched_ravg_hist_size = 10;
+__read_mostly unsigned int sysctl_sched_ravg_hist_size = 10;
 
 static __read_mostly unsigned int sched_window_stats_policy =
 	 WINDOW_STATS_MAX_RECENT_AVG;
@@ -1279,10 +1279,10 @@ unsigned int max_possible_capacity = 1024; /* max(rq->max_possible_capacity) */
 cpumask_t mpc_mask = CPU_MASK_ALL;
 
 /* Window size (in ns) */
-__read_mostly unsigned int sched_ravg_window = 5000000;
+__read_mostly unsigned int sched_ravg_window = 6000000;
 
-/* Min window size (in ns) = 5ms */
-#define MIN_SCHED_RAVG_WINDOW 5000000
+/* Min window size (in ns) = 10ms */
+#define MIN_SCHED_RAVG_WINDOW 10000000
 
 /* Max window size (in ns) = 1s */
 #define MAX_SCHED_RAVG_WINDOW 1000000000
