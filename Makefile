@@ -386,6 +386,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fisolate-erroneous-paths-dereference \
 		   -fisolate-erroneous-paths-attribute \
 		   -fno-pic \
+		   -fipa-cp -fipa-cp-alignment -fipa-sra \
 		   -fipa-ra -fipa-icf -fipa-reference -flra-remat \
 		   -mtune=cortex-a53 \
 		   -march=armv8-a+crc+crypto \
