@@ -383,11 +383,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Wno-format-security \
 		   -fdiagnostics-color=always \
 		   -fno-delete-null-pointer-checks \
-		   -fdelete-null-pointer-checks -ftree-vrp \
-		   -fisolate-erroneous-paths-dereference \
-		   -fisolate-erroneous-paths-attribute \
 		   -fno-pic \
-		   -fipa-ra -fipa-icf -fipa-reference -flra-remat \
 		   -mtune=cortex-a53 \
 		   -march=armv8-a+crc+crypto \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
@@ -406,6 +402,15 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 #		   -mtune=cortex-a57.cortex-a53 \
 #		   -fno-pic \
 #		   -std=gnu89 $(call cc-option,-fno-PIE)
+#
+#		  Remove for now, might worsen sound output quality
+#		   -fdelete-null-pointer-checks -ftree-vrp \
+#		   -fisolate-erroneous-paths-dereference \
+#		   -fisolate-erroneous-paths-attribute \
+#
+#
+#		 GCC 5.x specific optimizations
+#		   -fipa-ra -fipa-icf -fipa-reference -flra-remat \
 #
 #		  Needs libubsan* and other stuff ?!
 #		   -fsanitize=undefined \
