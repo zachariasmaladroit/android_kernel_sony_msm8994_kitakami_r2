@@ -382,7 +382,9 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
 		   -fdiagnostics-color=always \
-		   -fno-delete-null-pointer-checks \
+		   -fdelete-null-pointer-checks -ftree-vrp \
+		   -fisolate-erroneous-paths-dereference \
+		   -fisolate-erroneous-paths-attribute \
 		   -fno-pic \
 		   -mtune=cortex-a53 \
 		   -march=armv8-a+crc+crypto \
@@ -403,7 +405,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 #		   -fno-pic \
 #		   -std=gnu89 $(call cc-option,-fno-PIE)
 #
-#		  Remove for now, might worsen sound output quality
+#		  Remove for now (?), might worsen sound output quality
 #		   -fdelete-null-pointer-checks -ftree-vrp \
 #		   -fisolate-erroneous-paths-dereference \
 #		   -fisolate-erroneous-paths-attribute \
