@@ -74,8 +74,8 @@ static void wake_up_hotplug_thread(struct cpu_data *state);
 static void add_to_pending_lru(struct cpu_data *state);
 static void update_lru(struct cpu_data *state);
 static int displaystate = 1;
-static ssize_t previous_min_cpus;
-static ssize_t previous_max_cpus;
+static ssize_t previous_min_cpus = 1;
+static ssize_t previous_max_cpus = MAX_CPUS_PER_GROUP;
 
 /* ========================= sysfs interface =========================== */
 
