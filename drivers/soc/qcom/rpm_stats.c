@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2014, 2017, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2014, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -28,8 +28,6 @@
 #include <asm/arch_timer.h>
 #include "rpm_stats.h"
 
-
-static DEFINE_MUTEX(rpm_stats_mutex);
 
 enum {
 	ID_COUNTER,
@@ -213,12 +211,6 @@ static int msm_rpmstats_copy_stats(struct msm_rpmstats_private_data *pdata)
 
 	record.id = msm_rpmstats_read_register(pdata->reg_base,
 						pdata->read_idx, 1);
-	if (record.id >= ID_MAX) {
-		pr_err("%s: array out of bound error found.\n",
-			__func__);
-		return -EINVAL;
-	}
-
 	record.val = msm_rpmstats_read_register(pdata->reg_base,
 						pdata->read_idx, 2);
 
@@ -241,20 +233,13 @@ static ssize_t msm_rpmstats_file_read(struct file *file, char __user *bufu,
 				  size_t count, loff_t *ppos)
 {
 	struct msm_rpmstats_private_data *prvdata;
-	ssize_t ret;
-
-	mutex_lock(&rpm_stats_mutex);
 	prvdata = file->private_data;
 
-	if (!prvdata) {
-		ret = -EINVAL;
-		goto exit;
-	}
+	if (!prvdata)
+		return -EINVAL;
 
-	if (!bufu || count == 0) {
-		ret = -EINVAL;
-		goto exit;
-	}
+	if (!bufu || count == 0)
+		return -EINVAL;
 
 	if (prvdata->platform_data->version == 1) {
 		if (!prvdata->num_records)
@@ -271,30 +256,22 @@ static ssize_t msm_rpmstats_file_read(struct file *file, char __user *bufu,
 			*ppos = 0;
 	}
 
-	ret = simple_read_from_buffer(bufu, count, ppos,
+	return simple_read_from_buffer(bufu, count, ppos,
 			prvdata->buf, prvdata->len);
-exit:
-	mutex_unlock(&rpm_stats_mutex);
-	return ret;
 }
 
 static int msm_rpmstats_file_open(struct inode *inode, struct file *file)
 {
 	struct msm_rpmstats_private_data *prvdata;
 	struct msm_rpmstats_platform_data *pdata;
-	int ret = 0;
 
-	mutex_lock(&rpm_stats_mutex);
 	pdata = inode->i_private;
 
 	file->private_data =
 		kmalloc(sizeof(struct msm_rpmstats_private_data), GFP_KERNEL);
 
-	if (!file->private_data) {
-		ret = -ENOMEM;
-		goto exit;
-	}
-
+	if (!file->private_data)
+		return -ENOMEM;
 	prvdata = file->private_data;
 
 	prvdata->reg_base = ioremap_nocache(pdata->phys_addr_base,
@@ -305,28 +282,24 @@ static int msm_rpmstats_file_open(struct inode *inode, struct file *file)
 		pr_err("%s: ERROR could not ioremap start=%pa, len=%u\n",
 			__func__, &pdata->phys_addr_base,
 			pdata->phys_size);
-		ret = -EBUSY;
-		goto exit;
+		return -EBUSY;
 	}
 
 	prvdata->read_idx = prvdata->num_records =  prvdata->len = 0;
 	prvdata->platform_data = pdata;
 	if (pdata->version == 2)
 		prvdata->num_records = 2;
-exit:
-	mutex_unlock(&rpm_stats_mutex);
-	return ret;
+
+	return 0;
 }
 
 static int msm_rpmstats_file_close(struct inode *inode, struct file *file)
 {
 	struct msm_rpmstats_private_data *private = file->private_data;
 
-	mutex_lock(&rpm_stats_mutex);
 	if (private->reg_base)
 		iounmap(private->reg_base);
 	kfree(file->private_data);
-	mutex_unlock(&rpm_stats_mutex);
 
 	return 0;
 }
