@@ -491,3 +491,7 @@ CONFIG_DEFAULT_IOSCHED="noop"
 
 # FauxSound
 CONFIG_SOUND_CONTROL_HAX_3_GPL=y
+
+# Sound related experiments
+CONFIG_SND_HRTIMER=y
+# CONFIG_SND_VERBOSE_PROCFS is not set
