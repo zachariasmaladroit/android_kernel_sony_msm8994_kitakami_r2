@@ -293,9 +293,6 @@ CONFIG_SECURITY_YAMA=y
 CONFIG_SECURITY_YAMA_STACKED=y
 # CONFIG_DEFAULT_SECURITY_YAMA is not set
 
-# explicitly enable randomization
-CONFIG_ARCH_BINFMT_ELF_RANDOMIZE_PIE=y
-
 # disable 'socket monitoring interface'
 # CONFIG_INET_DIAG is not set
 
