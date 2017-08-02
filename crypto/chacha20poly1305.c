@@ -14,7 +14,6 @@
 #include <crypto/internal/skcipher.h>
 #include <crypto/scatterwalk.h>
 #include <crypto/chacha20.h>
-#include <crypto/poly1305.h>
 #include <linux/err.h>
 #include <linux/init.h>
 #include <linux/kernel.h>
@@ -22,6 +21,9 @@
 
 #include "internal.h"
 
+#define POLY1305_BLOCK_SIZE	16
+#define POLY1305_DIGEST_SIZE	16
+#define POLY1305_KEY_SIZE	32
 #define CHACHAPOLY_IV_SIZE	12
 
 struct chachapoly_instance_ctx {
