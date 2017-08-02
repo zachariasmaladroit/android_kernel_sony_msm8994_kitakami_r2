@@ -1109,6 +1109,14 @@ config SCHED_CORE_CTL
 
 	  If unsure, say N here.
 
+config MSM_CORE_CTL_HELPER
+	tristate "Core control helper functions for dynamically hotplug CPUs"
+	help
+	  Provide helper functions for core control driver. Core control
+	  driver dynamically hotplugs CPUs from kernel based on current
+	  system load and state. It also supports limiting min and
+	  max online CPUs from userspace.
+
 config CHECKPOINT_RESTORE
 	bool "Checkpoint/restore support" if EXPERT
 	default n
