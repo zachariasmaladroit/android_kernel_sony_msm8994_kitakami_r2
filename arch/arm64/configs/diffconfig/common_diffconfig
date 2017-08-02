@@ -471,6 +471,9 @@ CONFIG_CPU_FREQ_GOV_ZZMOOVE=y
 CONFIG_CPU_FREQ_GOV_ALUCARD=y
 CONFIG_CPU_BOOST=y
 
+# STATE_NOTIFIER (slightly related thus positioning here)
+CONFIG_STATE_NOTIFIER=y
+
 # Voltage modding support
 CONFIG_VOLTAGE_CONTROL=y
 
