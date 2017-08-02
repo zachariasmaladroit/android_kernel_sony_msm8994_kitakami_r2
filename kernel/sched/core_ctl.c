@@ -867,8 +867,8 @@ static int __ref cpu_callback(struct notifier_block *nfb,
 
 	if (state->is_big_cluster) {
 		if (!is_display_on() && displaystate) {
-			previous_min_cpus = store_min_cpus;
-			previous_min_cpus = store_max_cpus;
+			previous_min_cpus = f->min_cpus;
+			previous_min_cpus = f->max_cpus;
 			f->min_cpus = 0;
 			f->max_cpus = 0;
 		}
