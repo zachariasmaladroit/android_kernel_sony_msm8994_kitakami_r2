@@ -307,7 +307,7 @@ static int random_read_wakeup_bits = 64;
  * should wake up processes which are selecting or polling on write
  * access to /dev/random.
  */
-static int random_write_wakeup_bits = 128;
+static int random_write_wakeup_bits = 28 * OUTPUT_POOL_WORDS;
 
 /*
  * The minimum number of seconds between urandom pool reseeding.  We
