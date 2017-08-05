@@ -73,9 +73,6 @@ static void apply_need(struct cpu_data *f);
 static void wake_up_hotplug_thread(struct cpu_data *state);
 static void add_to_pending_lru(struct cpu_data *state);
 static void update_lru(struct cpu_data *state);
-static int displaystate = 1;
-static ssize_t previous_min_cpus;
-static ssize_t previous_max_cpus;
 
 /* ========================= sysfs interface =========================== */
 
@@ -862,24 +859,9 @@ static int __ref cpu_callback(struct notifier_block *nfb,
 
 	f = &per_cpu(cpu_state, state->first_cpu);
 
-	if (state->is_big_cluster) {
-		if (!is_display_on() && displaystate) {
-			previous_min_cpus = store_min_cpus;
-			previous_min_cpus = store_max_cpus;
-			f->min_cpus = 0;
-			f->max_cpus = 0;
-		}
-
-		if (is_display_on() && !displaystate) {
-			f->min_cpus = previous_min_cpus;
-			f->max_cpus = previous_max_cpus;
-		}
-	}
-
-	if (is_display_on()) {
-		displaystate = 1;
-	} else {
-		displaystate = 0;
+	if (!is_display_on() && state->is_big_cluster) {
+		f->min_cpus = 0;
+		f->max_cpus = 0;
 	}
 
 	switch (action) {
