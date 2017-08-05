@@ -1050,7 +1050,7 @@ static void set_wake_boost(bool enable)
 static void wake_boost_fn(struct work_struct *work)
 {
 	set_wake_boost(true);
-	queue_delayed_work(system_power_efficient_wq, &wake_unboost_work,
+	schedule_delayed_work(&wake_unboost_work,
 			msecs_to_jiffies(WAKE_BOOST_DURATION_MS));
 }
 
