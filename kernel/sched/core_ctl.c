@@ -68,7 +68,6 @@ static DEFINE_PER_CPU(struct cpu_data, cpu_state);
 static DEFINE_SPINLOCK(state_lock);
 static DEFINE_SPINLOCK(pending_lru_lock);
 static DEFINE_MUTEX(lru_lock);
-static DEFINE_MUTEX(displaystate_lock);
 
 static void apply_need(struct cpu_data *f);
 static void wake_up_hotplug_thread(struct cpu_data *state);
@@ -863,8 +862,6 @@ static int __ref cpu_callback(struct notifier_block *nfb,
 
 	f = &per_cpu(cpu_state, state->first_cpu);
 
-	mutex_lock(&displaystate_lock);
-
 	if (state->is_big_cluster) {
 		if (!is_display_on() && displaystate) {
 			previous_min_cpus = store_min_cpus;
@@ -884,8 +881,6 @@ static int __ref cpu_callback(struct notifier_block *nfb,
 	} else {
 		displaystate = 0;
 	}
-
-	mutex_unlock(&displaystate_lock);
 
 	switch (action) {
 	case CPU_UP_PREPARE:
