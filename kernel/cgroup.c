@@ -2126,13 +2126,11 @@ static int cgroup_allow_attach(struct cgroup *cgrp, struct cgroup_taskset *tset)
 
 int subsys_cgroup_allow_attach(struct cgroup *cgrp, struct cgroup_taskset *tset)
 {
-	const struct cred *cred, *tcred;
+	const struct cred *cred = current_cred(), *tcred;
 	struct task_struct *task;
 
-	if (capable(CAP_SYS_NICE) || capable(CAP_SYS_ADMIN))
+	if (capable(CAP_SYS_NICE))
 		return 0;
-
-	cred = current_cred();
 
 	cgroup_taskset_for_each(task, cgrp, tset) {
 		tcred = __task_cred(task);
