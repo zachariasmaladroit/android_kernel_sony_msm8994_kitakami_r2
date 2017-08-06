@@ -238,8 +238,7 @@ static inline void __set_close_on_exec(int fd, struct fdtable *fdt)
 
 static inline void __clear_close_on_exec(int fd, struct fdtable *fdt)
 {
-	if (test_bit(fd, fdt->close_on_exec))
-		__clear_bit(fd, fdt->close_on_exec);
+	__clear_bit(fd, fdt->close_on_exec);
 }
 
 static inline void __set_open_fd(unsigned int fd, struct fdtable *fdt)
