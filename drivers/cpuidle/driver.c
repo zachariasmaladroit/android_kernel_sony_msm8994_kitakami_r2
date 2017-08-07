@@ -338,11 +338,10 @@ struct cpuidle_driver *cpuidle_driver_ref(void)
  */
 void cpuidle_driver_unref(void)
 {
-	struct cpuidle_driver *drv;
+	struct cpuidle_driver *drv = cpuidle_get_driver();
 
 	spin_lock(&cpuidle_driver_lock);
 
-	drv = cpuidle_get_driver();
 	if (drv && !WARN_ON(drv->refcnt <= 0))
 		drv->refcnt--;
 
