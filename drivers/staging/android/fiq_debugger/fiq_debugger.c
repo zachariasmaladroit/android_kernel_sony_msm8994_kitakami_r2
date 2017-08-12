@@ -372,7 +372,8 @@ static void fiq_debugger_schedule_work(struct fiq_debugger_state *state,
 	strlcpy(state->work_cmd, cmd, sizeof(state->work_cmd));
 	spin_unlock_irqrestore(&state->work_lock, flags);
 
-	schedule_work(&state->work);
+	queue_delayed_work(system_power_efficient_wq,
+			&state->work);
 }
 
 static void fiq_debugger_work(struct work_struct *work)
