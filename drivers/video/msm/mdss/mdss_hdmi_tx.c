@@ -522,7 +522,8 @@ static inline void hdmi_tx_send_cable_notification(
 		hdmi_ctrl->sdev.state);
 
 	/* Notify all registered modules of cable connection status */
-	schedule_work(&hdmi_ctrl->cable_notify_work);
+	queue_delayed_work(system_power_efficient_wq,
+			&hdmi_ctrl->cable_notify_work);
 } /* hdmi_tx_send_cable_notification */
 
 static inline void hdmi_tx_set_audio_switch_node(
