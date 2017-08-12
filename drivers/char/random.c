@@ -731,7 +731,8 @@ retry:
 
 			if (other->entropy_count <=
 			    3 * other->poolinfo->poolfracbits / 4) {
-				schedule_work(&other->push_work);
+				queue_delayed_work(system_power_efficient_wq,
+						&other->push_work);
 				r->entropy_total = 0;
 			}
 		}
