@@ -582,6 +582,7 @@
 			<0xff 273>,  /* msm_iommu_nonsecure_irq */
 			<0xff 275>,  /* int_msi */
 			<0xff 276>, /* wlan_pci */
+			<0xff 280>,  /* mobicore */
 			<0xff 283>,  /* int_pls_err */
 			<0xff 284>,  /* int_aer_legacy */
 			<0xff 286>,  /* int_pls_link_down */
