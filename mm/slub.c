@@ -33,7 +33,6 @@
 #include <linux/stacktrace.h>
 #include <linux/prefetch.h>
 #include <linux/memcontrol.h>
-#include <linux/random.h>
 
 #include <trace/events/kmem.h>
 
@@ -249,29 +248,20 @@ static inline int check_valid_pointer(struct kmem_cache *s,
 
 static inline void *get_freepointer(struct kmem_cache *s, void *object)
 {
-	unsigned long freepointer_addr = (unsigned long)object + s->offset;
-	return (void *)(*(unsigned long *)freepointer_addr ^ s->random ^ freepointer_addr);
-
+	return *(void **)(object + s->offset);
 }
 
 static void prefetch_freepointer(const struct kmem_cache *s, void *object)
 {
-	unsigned long freepointer_addr = (unsigned long)object + s->offset;
-	if (object) {
-		void **freepointer_ptr = (void **)(*(unsigned long *)freepointer_addr ^ s->random ^ freepointer_addr);
-		prefetch(freepointer_ptr);
-	}
+	prefetch(object + s->offset);
 }
 
 static inline void *get_freepointer_safe(struct kmem_cache *s, void *object)
 {
-	unsigned long __maybe_unused freepointer_addr;
 	void *p;
 
 #ifdef CONFIG_DEBUG_PAGEALLOC
-	freepointer_addr = (unsigned long)object + s->offset;
-	probe_kernel_read(&p, (void **)freepointer_addr, sizeof(p));
-	return (void *)((unsigned long)p ^ s->random ^ freepointer_addr);
+	probe_kernel_read(&p, (void **)(object + s->offset), sizeof(p));
 #else
 	p = get_freepointer(s, object);
 #endif
@@ -280,8 +270,7 @@ static inline void *get_freepointer_safe(struct kmem_cache *s, void *object)
 
 static inline void set_freepointer(struct kmem_cache *s, void *object, void *fp)
 {
-	unsigned long freepointer_addr = (unsigned long)object + s->offset;
-	*(void **)freepointer_addr = (void *)((unsigned long)fp ^ s->random ^ freepointer_addr);
+	*(void **)(object + s->offset) = fp;
 }
 
 /* Loop over all objects in a slab */
@@ -2619,13 +2608,6 @@ static __always_inline void slab_free(struct kmem_cache *s,
 
 	slab_free_hook(s, x);
 
-	if (!(s->flags & (SLAB_DESTROY_BY_RCU | SLAB_POISON))) {
-		size_t offset = s->offset ? 0 : sizeof(void *);
-		memset(x + offset, 0, s->object_size - offset);
-		if (s->ctor)
-			s->ctor(x);
-	}
-
 redo:
 	/*
 	 * Determine the currently cpus per cpu slab.
@@ -3789,8 +3771,6 @@ int __kmem_cache_create(struct kmem_cache *s, unsigned long flags)
 
 	if (err)
 		kmem_cache_close(s);
-
-	s->random = get_random_long();
 
 	return err;
 }
