@@ -1176,6 +1176,9 @@ static int check_version(Elf_Shdr *sechdrs,
 
 	if(!strncmp("texfat", mod->name, 6))
 		return 0;
+		
+	if(!strncmp("evbug", mod->name, 5))
+		return 0;
 
 	if(!strncmp("core_ctl", mod->name, 8))
 		return 1;
