@@ -8,7 +8,7 @@ export PATH=~/android/z5_build-environment/mdalexca-aarch64-linux-android-4.9-ke
 export CROSS_COMPILE=aarch64-linux-android-
 export ARCH=arm64
 
-make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE tulip_defconfig
+make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE nautilus_kanuti-tulip_defconfig
 
 time make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE -j$(grep -c ^processor /proc/cpuinfo)
 
