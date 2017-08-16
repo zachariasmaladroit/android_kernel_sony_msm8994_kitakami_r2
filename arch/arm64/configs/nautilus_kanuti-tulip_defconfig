@@ -566,3 +566,11 @@ CONFIG_ENABLE_LINUX_REG=y
 
 # Logging
 CONFIG_LOG_BUF_SHIFT=21
+
+# disable logging
+# CONFIG_ARCH_WANTS_CTXSW_LOGGING is not set
+# CONFIG_MSM_RPM_LOG is not set
+# CONFIG_MSM_RPM_STATS_LOG is not set
+# CONFIG_MSM_SMEM_LOGGING is not set
+# CONFIG_MSM_SMD_DEBUG is not set
+# CONFIG_MSM_TZ_LOG is not set
