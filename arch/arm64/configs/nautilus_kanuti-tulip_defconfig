@@ -534,7 +534,6 @@ CONFIG_EXFAT_COMPAT_TUXERA=y
 # CONFIG_KALLSYMS_ALL is not set
 # CONFIG_KSM is not set
 # CONFIG_DEBUG_INFO is not set
-# CONFIG_WCD9335_CODEC is not set
 
 # compile as a module
 CONFIG_MOBICORE_SUPPORT=m
