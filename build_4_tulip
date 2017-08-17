@@ -15,7 +15,7 @@ echo "					"
 
 make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE nautilus_kanuti-tulip_defconfig
 
-echo "buildling kernel	"
+echo "building kernel	"
 echo "					"
 
 time make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE -j$(grep -c ^processor /proc/cpuinfo)
@@ -44,14 +44,13 @@ DTIMAGE=../final_files/M4_Aqua/dt.img
 WLANMODULE=../final_files/M4_Aqua/wlan.ko
 
 
+echo -n "Enter version number: "
+read version
 
 echo "checking for compiled kernel...	"
 echo "									"
-if [ -f arch/arm64/boot/Image ]
-then
-
-	echo -n "Enter version number: "
-	read version
+#if [ -e arch/arm64/boot/Image ]
+#then
 
 	rm -f ../final_files/M4_Aqua/dt.img
 	rm -f ../final_files/M4_Aqua/boot.img
@@ -68,12 +67,12 @@ then
 echo "entering packaging stage ...		"
 echo "									"
 
-		if [ -e ../final_files/M4_Aqua/boot_E2303.img ]
+#		if [ -e ../final_files/M4_Aqua/boot_E2303.img ]
 
 			cd ../final_files/M4_Aqua/
 
 			mv boot_E2303.img boot.img
-
+			
 			zip -r Nautilus-K.zip boot.img wlan.ko META-INF/
 
 			echo "Copying to m4-kernelbuild	"
@@ -81,7 +80,9 @@ echo "									"
 
 			cp ~/android/final_files/M4_Aqua/Nautilus-K.zip ~/android/m4-kernelbuild/Nautilus-K_$version.zip
 
-		fi
+#		fi
+#
+#fi
 
 echo "finishing up ...	"
 echo "					"
