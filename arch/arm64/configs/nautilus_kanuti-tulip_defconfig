@@ -574,7 +574,7 @@ CONFIG_LOG_BUF_SHIFT=21
 # disable logging
 # CONFIG_ARCH_WANTS_CTXSW_LOGGING is not set
 # CONFIG_MSM_RPM_LOG is not set
-# CONFIG_MSM_RPM_STATS_LOG is not set
+CONFIG_MSM_RPM_STATS_LOG=y
 # CONFIG_MSM_SMEM_LOGGING is not set
 # CONFIG_MSM_SMD_DEBUG is not set
 # CONFIG_MSM_TZ_LOG is not set
@@ -585,16 +585,6 @@ CONFIG_LOG_BUF_SHIFT=21
 
 # security
 CONFIG_SECURITY_DMESG_RESTRICT=y
-
-# zram & other mm related
-CONFIG_ZRAM=y
-CONFIG_ZRAM_LZ4_COMPRESS=y
-# CONFIG_ZRAM_DEBUG is not set
-
-# zpool & backends
-CONFIG_Z3FOLD=y
-CONFIG_ZPOOL=y
-CONFIG_ZSMALLOC=y
 
 # in production, disabled
 # CONFIG_POWERKEY_FORCECRASH is not set
