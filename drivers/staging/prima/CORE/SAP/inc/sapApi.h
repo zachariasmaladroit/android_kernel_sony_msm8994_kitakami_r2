@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2013 The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012-2013, 2016 The Linux Foundation. All rights reserved.
  *
  * Previously licensed under the ISC license by Qualcomm Atheros, Inc.
  *
@@ -285,7 +285,8 @@ typedef struct sap_StationAssocReassocCompleteEvent_s {
     tANI_U32     assocReqLength;
     tANI_U8*     assocReqPtr;
     tANI_U32     assocRespLength;
-    tANI_U8*     assocRespPtr;    
+    tANI_U8*     assocRespPtr;
+    uint32_t rate_flags;
 } tSap_StationAssocReassocCompleteEvent;
 
 typedef struct sap_StationDisassocCompleteEvent_s {
@@ -426,8 +427,8 @@ typedef struct sap_Config {
     v_U8_t          dtim_period;     /* dtim interval */
     v_U8_t          num_accept_mac;
     v_U8_t          num_deny_mac;
-    v_U8_t          *pRSNWPAReqIE;   //If not null, it has the IE byte stream for RSN /WPA
-
+    /* Max ie length 255 * 2(WPA+RSN) + 2 bytes(vendor specific ID) * 2 */
+    v_U8_t          RSNWPAReqIE[(SIR_MAC_MAX_IE_LENGTH * 2) + 4];
     v_U8_t          countryCode[WNI_CFG_COUNTRY_CODE_LEN];  //it is ignored if [0] is 0.
     v_U8_t          RSNAuthType;
     v_U8_t          RSNEncryptType;
@@ -883,6 +884,30 @@ typedef VOS_STATUS (*tpWLAN_SAPEventCB)( tpSap_Event pSapEvent, v_PVOID_t  pUsrC
 v_U8_t WLANSAP_getState ( v_PVOID_t  pvosGCtx);
 
 /*==========================================================================
+  FUNCTION    WLANSAP_get_sessionId
+
+  DESCRIPTION
+     This api returns the current SAP sessionId to the caller.
+
+  DEPENDENCIES
+
+  PARAMETERS
+
+    IN
+    pContext            : Pointer to Sap Context structure
+    v_U8_t              : Pointer to sessionID
+
+  RETURN VALUE
+     VOS_STATUS_SUCCESS on success.
+
+     VOS_STATUS_E_INVAL: Pointer to SAP cb is NULL ; access would cause a page
+                         fault
+============================================================================*/
+VOS_STATUS WLANSAP_get_sessionId
+(
+    v_PVOID_t  pvosGCtx, v_U8_t *sessionId
+);
+/*==========================================================================
   FUNCTION    WLANSAP_StartBss
 
   DESCRIPTION 
@@ -1001,7 +1026,12 @@ WLANSAP_StopBss
 VOS_STATUS 
 WLANSAP_DisassocSta
 (
-    v_PVOID_t  pvosGCtx, v_U8_t *pPeerStaMac
+    v_PVOID_t  pvosGCtx,
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,18,0))
+    const v_U8_t *pPeerStaMac
+#else
+    v_U8_t *pPeerStaMac
+#endif
 );
 
 /*==========================================================================

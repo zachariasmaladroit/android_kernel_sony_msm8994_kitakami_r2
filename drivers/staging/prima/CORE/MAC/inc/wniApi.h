@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2013 The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012-2013, 2016-2017 The Linux Foundation. All rights reserved.
  *
  * Previously licensed under the ISC license by Qualcomm Atheros, Inc.
  *
@@ -362,7 +362,11 @@ enum eWniMsgTypes
 #ifdef FEATURE_WLAN_LPHB
     eWNI_SME_LPHB_IND,
 #endif /* FEATURE_WLAN_LPHB */
-
+#ifdef WLAN_FEATURE_RMC
+    eWNI_SME_ENABLE_RMC_REQ,
+    eWNI_SME_DISABLE_RMC_REQ,
+    eWNI_SME_IBSS_PEER_INFO_RSP,
+#endif /* WLAN_FEATURE_RMC */
     eWNI_SME_GET_TSM_STATS_REQ,
     eWNI_SME_GET_TSM_STATS_RSP,
     eWNI_SME_TSM_IE_IND,
@@ -383,6 +387,8 @@ enum eWniMsgTypes
     eWNI_SME_SET_TDLS_2040_BSSCOEX_REQ,
     eWNI_SME_DEL_ALL_TDLS_PEERS,
     eWNI_SME_REGISTER_MGMT_FRAME_CB,
+    eWNI_SME_CAP_TSF_REQ,
+    eWNI_SME_GET_TSF_REQ,
     eWNI_SME_MSG_TYPES_END
 };
 

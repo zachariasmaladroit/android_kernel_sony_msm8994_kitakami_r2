@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 The Linux Foundation. All rights reserved.
+ * Copyright (c) 2011-2017 The Linux Foundation. All rights reserved.
  *
  * Previously licensed under the ISC license by Qualcomm Atheros, Inc.
  *
@@ -444,6 +444,7 @@ static void __limInitHTVars(tpAniSirGlobal pMac)
     pMac->lim.gHTDualCTSProtection = 0;
     pMac->lim.gHTSTBCBasicMCS = 0;
     pMac->lim.gAddBA_Declined = 0;               // Flag to Decline the BAR if the particular bit (0-7) is being set   
+    vos_mem_set(&pMac->lim.staBaInfo, sizeof(pMac->lim.staBaInfo), 0);
 }
 
 static tSirRetStatus __limInitConfig( tpAniSirGlobal pMac )
@@ -762,6 +763,10 @@ limInitialize(tpAniSirGlobal pMac)
     limFTOpen(pMac);
 #endif
 
+#ifdef WLAN_FEATURE_RMC
+    limRmcInit(pMac);
+#endif /* WLAN_FEATURE_RMC */
+
     vos_list_init(&pMac->lim.gLimMgmtFrameRegistratinQueue);
 
 #if 0
@@ -856,6 +861,10 @@ limCleanup(tpAniSirGlobal pMac)
 
     limCleanupMlm(pMac);
     limCleanupLmm(pMac);
+
+#ifdef WLAN_FEATURE_RMC
+    limRmcCleanup(pMac);
+#endif /* WLAN_FEATURE_RMC */
 
     // free up preAuth table
     if (pMac->lim.gLimPreAuthTimerTable.pTable != NULL)
@@ -1055,6 +1064,7 @@ tSirRetStatus peOpen(tpAniSirGlobal pMac, tMacOpenParameters *pMacOpenParam)
 #ifdef LIM_TRACE_RECORD
     MTRACE(limTraceInit(pMac));
 #endif
+    lim_register_debug_callback();
     return eSIR_SUCCESS;
 }
 
@@ -1786,9 +1796,10 @@ tAniBool limEncTypeMatched(tpAniSirGlobal pMac, tpSchBeaconStruct  pBeacon,
                   pBeacon->capabilityInfo.privacy, pBeacon->wpaPresent,
                                                          pBeacon->rsnPresent);
     limLog(pMac, LOG1,
-            FL("pSession:: Privacy :%d EncyptionType: %d"),
+            FL("pSession:: Privacy :%d EncyptionType: %d WPS %d OSEN %d"),
                   SIR_MAC_GET_PRIVACY(pSession->limCurrentBssCaps),
-                                               pSession->encryptType);
+                       pSession->encryptType, pSession->bWPSAssociation,
+                       pSession->bOSENAssociation);
 
     /* This is handled by sending probe req due to IOT issues so return TRUE
      */
@@ -1830,13 +1841,18 @@ tAniBool limEncTypeMatched(tpAniSirGlobal pMac, tpSchBeaconStruct  pBeacon,
      * in beacon. Therefore no need to
      * check for security type in case
      * OSEN session.
+     * For WPS registration session no need to detect
+     * security mismatch as it wont match and
+     * driver may end up sending probe request without
+     * WPS IE during WPS registartion process.
      */
     /*TODO: AP capability mismatch
      * is not checked here because
      * no logic for beacon parsing
      * is avilable for HS2.0.
      */
-    if (pSession->bOSENAssociation)
+    if (pSession->bOSENAssociation ||
+             pSession->bWPSAssociation)
         return eSIR_TRUE;
 
     return eSIR_FALSE;
@@ -2144,6 +2160,21 @@ void limHandleBmpsStatusInd(tpAniSirGlobal pMac)
     return;
 }
 
+#ifdef WLAN_FEATURE_APFIND
+void limHandleAPFindInd(tpAniSirGlobal pMac)
+{
+    tANI_S8 pe_sessionid = -1;
+    /* Find STA connection session */
+    pe_sessionid = limGetInfraSessionId(pMac);
+    if (pe_sessionid != -1)
+        limTearDownLinkWithAp(pMac,
+                              pe_sessionid,
+                              eSIR_BEACON_MISSED);
+    else
+         limLog(pMac, LOGE,
+               FL("session id doesn't exist for infra"));
+}
+#endif
 
 /** -----------------------------------------------------------------
   \brief limHandleMissedBeaconInd() - handles missed beacon indication
@@ -2170,6 +2201,12 @@ void limHandleMissedBeaconInd(tpAniSirGlobal pMac, tpSirMsgQ pMsg)
          return;
     }
 #endif
+    if (pMac->pmm.inMissedBeaconScenario == TRUE) {
+         limLog(pMac, LOGW,
+               FL("beacon miss handling is already going on for BSSIdx:%d"),
+               pSirMissedBeaconInd->bssIdx);
+         return;
+    }
     if ( (pMac->pmm.gPmmState == ePMM_STATE_BMPS_SLEEP) ||
          (pMac->pmm.gPmmState == ePMM_STATE_UAPSD_SLEEP)||
          (pMac->pmm.gPmmState == ePMM_STATE_WOWLAN) )
@@ -2211,11 +2248,11 @@ void limUpdateLostLinkParams(tpAniSirGlobal pMac,
     }
     pSmeLostLinkParams =
     (tpSirSmeLostLinkParamsInd)vos_mem_malloc(sizeof(tSirSmeLostLinkParamsInd));
-
-    if (pSmeLostLinkParams == NULL)
+    if (NULL == pSmeLostLinkParams)
     {
-        limLog(pMac, LOGE,
-          FL("pSmeLostLinkParams is NULL"));
+        limLog(pMac, LOGP,
+            FL("Failed to alloc mem of size %zu for tSirSmeLostLinkParamsInd"),
+            sizeof(*pSmeLostLinkParams));
         return;
     }
     vos_mem_set(pSmeLostLinkParams, sizeof(tSirSmeLostLinkParamsInd), 0);
@@ -2339,7 +2376,7 @@ void limMicFailureInd(tpAniSirGlobal pMac, tpSirMsgQ pMsg)
     }
 
     pSirSmeMicFailureInd->messageType = eWNI_SME_MIC_FAILURE_IND;
-    pSirSmeMicFailureInd->length = sizeof(pSirSmeMicFailureInd);
+    pSirSmeMicFailureInd->length = sizeof(*pSirSmeMicFailureInd);
     pSirSmeMicFailureInd->sessionId = psessionEntry->smeSessionId;
 
     vos_mem_copy(pSirSmeMicFailureInd->bssId,
@@ -2659,4 +2696,106 @@ eHalStatus pe_ReleaseGlobalLock( tAniSirLim *psPe)
         }
     }
     return (status);
+}
+/**
+ * lim_process_sme_cap_tsf_req()- send cap tsf request to WDA
+ * Get bss_idx from PE and fill in cap tsf request.
+ * @pMac:Mac ctx
+ * @pMsgBuf: message buffer from sme
+ * Returns success on post to WDA, otherwise failure
+ */
+
+tSirRetStatus lim_process_sme_cap_tsf_req(tpAniSirGlobal pMac,
+                                          tANI_U32 *pMsgBuf)
+{
+    tSirCapTsfParams *pMsg = NULL;
+    tpPESession psessionEntry = NULL;
+    uint8_t sessionId;
+    tSirMsgQ               msg;
+    tSirCapTsfParams      *cap_tsf_params;
+
+    pMsg = (tSirCapTsfParams*)pMsgBuf;
+    if (pMsg == NULL) {
+        limLog(pMac, LOGE, FL("NULL pMsg"));
+        return eSIR_FAILURE;
+    }
+
+    psessionEntry = peFindSessionByBssid(pMac, pMsg->bssid, &sessionId);
+    if (NULL == psessionEntry)
+    {
+        limLog(pMac, LOGE, FL("NULL psessionEntry"));
+        return eSIR_FAILURE;
+    }
+    cap_tsf_params = (tSirCapTsfParams *)
+                       vos_mem_malloc(sizeof(*cap_tsf_params));
+    if (!cap_tsf_params) {
+        limLog(pMac, LOGE, FL(" Unable to allocate memory for cap tsf params"));
+        return eSIR_MEM_ALLOC_FAILED;
+    }
+    vos_mem_copy (cap_tsf_params, pMsg, sizeof(*cap_tsf_params));
+    cap_tsf_params->bss_idx = psessionEntry->bssIdx;
+
+    msg.type = WDA_CAP_TSF_REQ;
+    msg.reserved = 0;
+    msg.bodyptr = cap_tsf_params;
+    msg.bodyval = 0;
+    if(eSIR_SUCCESS != wdaPostCtrlMsg(pMac, &msg))
+    {
+        limLog(pMac, LOGE, FL("lim_process_sme_cap_tsf_req failed\n"));
+        vos_mem_free(cap_tsf_params);
+        return eSIR_FAILURE;
+    }
+
+    return eSIR_SUCCESS;
+}
+
+/**
+ * lim_process_sme_get_tsf_req()- send get tsf request to WDA
+ * Get bss_idx from PE and fill in cap tsf request.
+ * @pMac:Mac ctx
+ * @pMsgBuf: message buffer from sme
+ * Returns success on post to WDA, otherwise failure
+ */
+tSirRetStatus lim_process_sme_get_tsf_req(tpAniSirGlobal pMac,
+                                          tANI_U32 *pMsgBuf)
+{
+    tSirCapTsfParams *pMsg = NULL;
+    tpPESession psessionEntry = NULL;
+    uint8_t sessionId;
+    tSirMsgQ               msg;
+    tSirCapTsfParams      *get_tsf_params;
+
+    pMsg = (tSirCapTsfParams*)pMsgBuf;
+    if (pMsg == NULL) {
+        limLog(pMac, LOGE, FL("NULL pMsg"));
+        return eSIR_FAILURE;
+    }
+
+    psessionEntry = peFindSessionByBssid(pMac, pMsg->bssid, &sessionId);
+    if (NULL == psessionEntry)
+    {
+        limLog(pMac, LOGE, FL("NULL psessionEntry"));
+        return eSIR_FAILURE;
+    }
+    get_tsf_params = (tSirCapTsfParams *)
+                    vos_mem_malloc(sizeof(*get_tsf_params));
+    if (!get_tsf_params) {
+        limLog(pMac, LOGE, FL(" Unable to allocate memory for cap tsf params"));
+        return eSIR_MEM_ALLOC_FAILED;
+    }
+    vos_mem_copy (get_tsf_params, pMsg, sizeof(*get_tsf_params));
+    get_tsf_params->bss_idx = psessionEntry->bssIdx;
+
+    msg.type = WDA_GET_TSF_REQ;
+    msg.reserved = 0;
+    msg.bodyptr = get_tsf_params;
+    msg.bodyval = 0;
+    if(eSIR_SUCCESS != wdaPostCtrlMsg(pMac, &msg))
+    {
+        limLog(pMac, LOGE, FL("lim_process_sme_cap_tsf_req failed\n"));
+        vos_mem_free(get_tsf_params);
+        return eSIR_FAILURE;
+    }
+
+    return eSIR_SUCCESS;
 }

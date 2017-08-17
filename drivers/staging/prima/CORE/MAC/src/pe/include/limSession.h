@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012-2016 The Linux Foundation. All rights reserved.
  *
  * Previously licensed under the ISC license by Qualcomm Atheros, Inc.
  *
@@ -92,6 +92,7 @@ typedef struct sPESession           // Added to Support BT-AMP
     tSirNwType              nwType;
     tpSirSmeStartBssReq     pLimStartBssReq;        //handle to smestart bss req
     tANI_BOOLEAN            bOSENAssociation;       //handle to OSEN assoc req
+    tANI_BOOLEAN            bWPSAssociation;        //WPS Registration
     tpSirSmeJoinReq         pLimJoinReq;            // handle to sme join req
     tpSirSmeJoinReq         pLimReAssocReq;         //handle to sme reassoc req
     tpLimMlmJoinReq         pLimMlmJoinReq;         //handle to MLM join Req
@@ -358,6 +359,7 @@ typedef struct sPESession           // Added to Support BT-AMP
     tSirQosMapSet QosMapSet;
     tANI_U8  isKeyInstalled;
     tANI_BOOLEAN is11Gonly;
+    tANI_BOOLEAN addBssfailed;
     tDot11fIEExtCap ExtCap;
 }tPESession, *tpPESession;
 
@@ -419,6 +421,7 @@ tpPESession peFindSessionByBssid(tpAniSirGlobal pMac,  tANI_U8*  bssid,    tANI_
 tpPESession peFindSessionByBssIdx(tpAniSirGlobal pMac,  tANI_U8 bssIdx);
 
 
+tANI_S8 limGetInfraSessionId(tpAniSirGlobal pMac);
 
 
 /*--------------------------------------------------------------------------
@@ -493,10 +496,5 @@ void peDeleteSession(tpAniSirGlobal pMac, tpPESession psessionEntry);
   \sa
   --------------------------------------------------------------------------*/
 
-
+int peFindBssIdxFromSmeSessionId(tpAniSirGlobal pMac, tANI_U8 sme_sessionId);
 #endif //#if !defined( __LIM_SESSION_H )
-
-
-
-
-

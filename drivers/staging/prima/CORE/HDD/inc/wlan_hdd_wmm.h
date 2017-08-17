@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012-2016 The Linux Foundation. All rights reserved.
  *
  * Previously licensed under the ISC license by Qualcomm Atheros, Inc.
  *
@@ -264,8 +264,14 @@ v_U16_t hdd_wmm_select_queue(struct net_device * dev, struct sk_buff *skb);
   @return         : Qdisc queue index
   ===========================================================================*/
 
-v_U16_t hdd_hostapd_select_queue(struct net_device * dev, struct sk_buff *skb);
-
+v_U16_t hdd_hostapd_select_queue(struct net_device * dev, struct sk_buff *skb
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,13,0))
+                                 , void *accel_priv
+#endif
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+                                 , select_queue_fallback_t fallbac
+#endif
+);
 
 
 /**============================================================================
@@ -400,5 +406,13 @@ hdd_wlan_wmm_status_e hdd_wmm_checkts( hdd_adapter_t* pAdapter,
                    : other values if failure
   ===========================================================================*/
 VOS_STATUS hdd_wmm_adapter_clear( hdd_adapter_t *pAdapter );
+
+/**============================================================================
+  @brief hdd_log_ip_addr() - Function to log IP header src and dst address
+  @param pAdapter  : [in]  pointer to os packet
+
+  @return          : None
+  ===========================================================================*/
+void hdd_log_ip_addr(struct sk_buff *skb);
 
 #endif /* #ifndef _WLAN_HDD_WMM_H */

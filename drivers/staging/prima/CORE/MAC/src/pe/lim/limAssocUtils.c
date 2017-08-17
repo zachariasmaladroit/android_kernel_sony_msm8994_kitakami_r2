@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2016 The Linux Foundation. All rights reserved.
+ * Copyright (c) 2011-2017 The Linux Foundation. All rights reserved.
  *
  * Previously licensed under the ISC license by Qualcomm Atheros, Inc.
  *
@@ -743,12 +743,15 @@ limCleanupRxPath(tpAniSirGlobal pMac, tpDphHashNode pStaDs,tpPESession psessionE
     pMac->lim.gLimNumRxCleanup++;
 #endif
 
-    if (psessionEntry->limSmeState == eLIM_SME_JOIN_FAILURE_STATE) {
-        retCode = limDelBss( pMac, pStaDs, psessionEntry->bssIdx, psessionEntry);
+    /* Do DEL BSS or DEL STA only if ADD BSS was success */
+    if (!psessionEntry->addBssfailed)
+    {
+        if (psessionEntry->limSmeState == eLIM_SME_JOIN_FAILURE_STATE)
+           retCode = limDelBss( pMac, pStaDs,
+                          psessionEntry->bssIdx, psessionEntry);
+        else
+           retCode = limDelSta( pMac, pStaDs, true, psessionEntry);
     }
-    else
-        retCode = limDelSta( pMac, pStaDs, true, psessionEntry);
-
     return retCode;
 
 } /*** end limCleanupRxPath() ***/
@@ -825,9 +828,9 @@ limSendDelStaCnf(tpAniSirGlobal pMac, tSirMacAddr staDsAddr,
     if ((mlmStaContext.cleanupTrigger ==
                                       eLIM_HOST_DISASSOC) ||
         (mlmStaContext.cleanupTrigger ==
-                                      eLIM_LINK_MONITORING_DISASSOC) ||
+                                      eLIM_PROMISCUOUS_MODE_DISASSOC) ||
         (mlmStaContext.cleanupTrigger ==
-                                      eLIM_PROMISCUOUS_MODE_DISASSOC))
+                                      eLIM_LINK_MONITORING_DISASSOC))
     {
         /**
          * Host or LMM driven Disassociation.
@@ -841,6 +844,7 @@ limSendDelStaCnf(tpAniSirGlobal pMac, tSirMacAddr staDsAddr,
                      (tANI_U8 *) staDsAddr,
                       sizeof(tSirMacAddr));
         mlmDisassocCnf.resultCode = statusCode;
+        mlmDisassocCnf.aid          = staDsAssocId;
         mlmDisassocCnf.disassocTrigger =
                                    mlmStaContext.cleanupTrigger;
         /* Update PE session Id*/
@@ -850,10 +854,8 @@ limSendDelStaCnf(tpAniSirGlobal pMac, tSirMacAddr staDsAddr,
                           LIM_MLM_DISASSOC_CNF,
                           (tANI_U32 *) &mlmDisassocCnf);
     }
-    else if ((mlmStaContext.cleanupTrigger ==
-                                           eLIM_HOST_DEAUTH) ||
-             (mlmStaContext.cleanupTrigger ==
-                                           eLIM_LINK_MONITORING_DEAUTH))
+    else if ((mlmStaContext.cleanupTrigger == eLIM_HOST_DEAUTH) ||
+             (mlmStaContext.cleanupTrigger == eLIM_LINK_MONITORING_DEAUTH))
     {
         /**
          * Host or LMM driven Deauthentication.
@@ -865,6 +867,7 @@ limSendDelStaCnf(tpAniSirGlobal pMac, tSirMacAddr staDsAddr,
                      (tANI_U8 *) staDsAddr,
                       sizeof(tSirMacAddr));
         mlmDeauthCnf.resultCode    = statusCode;
+        mlmDeauthCnf.aid           = staDsAssocId;
         mlmDeauthCnf.deauthTrigger =
                                    mlmStaContext.cleanupTrigger;
         /* PE session Id */
@@ -2418,7 +2421,15 @@ limAddSta(
     }
     else
 #endif
-        pAddStaParams->staIdx = HAL_STA_INVALID_IDX;
+#ifdef SAP_AUTH_OFFLOAD
+        if (!pMac->sap_auth_offload)
+            pAddStaParams->staIdx = HAL_STA_INVALID_IDX;
+        else
+            pAddStaParams->staIdx = pStaDs->staIndex;
+#else
+            pAddStaParams->staIdx = HAL_STA_INVALID_IDX;
+#endif
+
     pAddStaParams->staType = pStaDs->staType;
 
     pAddStaParams->updateSta = updateEntry;
@@ -2590,11 +2601,30 @@ limAddSta(
     "p2pCapableSta: %d"), pAddStaParams->htLdpcCapable,
     pAddStaParams->vhtLdpcCapable, pAddStaParams->p2pCapableSta);
 
+#ifdef SAP_AUTH_OFFLOAD
+    if (pMac->sap_auth_offload) {
+        pAddStaParams->dpuIndex =  pStaDs->dpuIndex;
+        pAddStaParams->bcastDpuIndex = pStaDs->bcastDpuIndex;
+        pAddStaParams->bcastMgmtDpuIdx = pStaDs->bcastMgmtDpuIdx;
+        pAddStaParams->ucUcastSig = pStaDs->ucUcastSig;
+        pAddStaParams->ucBcastSig = pStaDs->ucBcastSig;
+        pAddStaParams->ucMgmtSig = pStaDs->ucMgmtSig;
+        pAddStaParams->bssIdx =  pStaDs->bssId;
+    }
+#endif
+
     //we need to defer the message until we get the response back from HAL.
     if (pAddStaParams->respReqd)
         SET_LIM_PROCESS_DEFD_MESGS(pMac, false);
 
-    msgQ.type = WDA_ADD_STA_REQ;
+#ifdef SAP_AUTH_OFFLOAD
+    if (pMac->sap_auth_offload && LIM_IS_AP_ROLE(psessionEntry))
+        msgQ.type = WDA_SAP_OFL_ADD_STA;
+    else
+        msgQ.type = WDA_ADD_STA_REQ;
+#else
+        msgQ.type = WDA_ADD_STA_REQ;
+#endif
 
     msgQ.reserved = 0;
     msgQ.bodyptr = pAddStaParams;
@@ -2720,7 +2750,14 @@ limDelSta(
     pDelStaParams->sessionId = psessionEntry->peSessionId;
     
     pDelStaParams->status  = eHAL_STATUS_SUCCESS;
+#ifdef SAP_AUTH_OFFLOAD
+    if (pMac->sap_auth_offload && LIM_IS_AP_ROLE(psessionEntry))
+        msgQ.type = WDA_SAP_OFL_DEL_STA;
+    else
+        msgQ.type = WDA_DELETE_STA_REQ;
+#else
     msgQ.type = WDA_DELETE_STA_REQ;
+#endif
     msgQ.reserved = 0;
     msgQ.bodyptr = pDelStaParams;
     msgQ.bodyval = 0;
@@ -4025,7 +4062,7 @@ tSirRetStatus limStaSendAddBssPreAssoc( tpAniSirGlobal pMac, tANI_U8 updateEntry
 
     limExtractApCapabilities( pMac,
                             (tANI_U8 *) bssDescription->ieFields,
-                            limGetIElenFromBssDescription( bssDescription ),
+                            GET_IE_LEN_IN_BSS(bssDescription->length),
                             pBeaconStruct );
 
     if(pMac->lim.gLimProtectionControl != WNI_CFG_FORCE_POLICY_PROTECTION_DISABLE)

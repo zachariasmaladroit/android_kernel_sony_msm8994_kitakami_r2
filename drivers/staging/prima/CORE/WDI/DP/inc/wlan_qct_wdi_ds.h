@@ -174,6 +174,7 @@ typedef struct
    wpt_uint32 extscanBuffer;
 #endif
    wpt_uint32 loggingData;
+   wpt_uint32 indType;
 } WDI_DS_RxMetaInfoType;
 
 typedef struct sPktMetaInfo
@@ -187,6 +188,7 @@ typedef struct sPktMetaInfo
 
 typedef struct
 {
+   wpt_uint16 status;
    wpt_boolean active;
    wpt_uint64 logBuffAddress[MAX_NUM_OF_BUFFER];
    wpt_uint32 logBuffLength[MAX_NUM_OF_BUFFER];
@@ -194,7 +196,50 @@ typedef struct
    wpt_uint8   logType;
    /* Indicate if Last segment of log is received*/
    wpt_boolean done;
+   wpt_uint16 reasonCode;
 } WDI_DS_LoggingSessionType;
+
+
+/*----------------------------------------------------------------------------
+ *   WDI_AddStaParams
+ *     -------------------------------------------------------------------------*/
+typedef struct
+{
+    wpt_uint8    ucSTAIdx;
+    wpt_uint8    ucWmmEnabled;
+    wpt_uint8    ucHTCapable;
+
+    /* MAC Address of STA */
+    wpt_macAddr staMacAddr;
+
+    /*MAC Address of the BSS*/
+    wpt_macAddr  macBSSID;
+
+    /* Field to indicate if this is sta entry for itself STA adding entry for itself
+     * or remote (AP adding STA after successful association.
+     * This may or may not be required in production driver.
+     * 0 - Self, 1 other/remote, 2 - bssid
+     */
+    wpt_uint8   ucStaType;
+
+
+    /*DPU Information*/
+    wpt_uint8   dpuIndex;                      // DPU table index
+    wpt_uint8   dpuSig;                        // DPU signature
+    wpt_uint8   bcastDpuIndex;
+    wpt_uint8   bcastDpuSignature;
+    wpt_uint8   bcastMgmtDpuIndex;
+    wpt_uint8   bcastMgmtDpuSignature;
+
+
+    /*RMF enabled/disabled*/
+    wpt_uint8   ucRmfEnabled;
+
+    /* Index into the BSS Session table */
+    wpt_uint8   ucBSSIdx;
+
+}WDI_AddStaParams;
+
 
 WPT_STATIC WPT_INLINE WDI_DS_RxMetaInfoType* WDI_DS_ExtractRxMetaData (wpt_packet *pFrame)
 {
@@ -215,7 +260,7 @@ WPT_STATIC WPT_INLINE WDI_DS_TxMetaInfoType* WDI_DS_ExtractTxMetaData (wpt_packe
 typedef void (*WDI_DS_TxCompleteCallback)(void *pContext, wpt_packet *pFrame);
 typedef void (*WDI_DS_RxPacketCallback) (void *pContext, wpt_packet *pFrame);
 typedef void (*WDI_DS_TxFlowControlCallback)(void *pContext, wpt_uint8 ac_mask);
-typedef void (*WDI_DS_RxLogCallback)(void);
+typedef void (*WDI_DS_RxLogCallback)(wpt_uint8 logType);
 
 
 
@@ -314,6 +359,59 @@ wpt_uint32 WDI_DS_GetReservedResCountPerSTA(void *pContext,
  *
  */
 WDI_Status WDI_DS_AddSTAMemPool(void *pContext, wpt_uint8 staIndex);
+/**
+ @brief WDI_STATableFindStaidByAddr - Given a station mac address, search
+ for the corresponding station index from the Station Table.
+
+ @param  pWDICtx:   Context pointer
+staAddr:  station address
+pucStaId: output station id
+
+@see
+@return Result of the function call
+*/
+WDI_Status
+WDI_STATableFindStaidByAddr
+(
+ void*  pWDICtx,
+ wpt_macAddr            staAddr,
+ wpt_uint8*             pucStaId
+ );
+
+/**
+ *  @brief WDI_STATableAddSta - Function to Add Station
+ *
+ *
+ *  @param  pWDICtx:     pointer to the WLAN DAL context
+ *  pwdiParam:   station parameters
+ *
+ *  @see
+ *  @return Result of the function call
+ *                 */
+WDI_Status
+WDI_STATableAddSta
+(
+ void*  pWDICtx,
+ WDI_AddStaParams*      pwdiParam
+ );
+
+
+/**
+ * @brief WDI_STATableDelSta - Function to Delete a Station
+ *
+ *
+ * @param  pWDICtx:         pointer to the WLAN DAL context
+ *         ucSTAIdx:        station to be deleted
+ *
+ * @see
+ * @return Result of the function call
+ */
+WDI_Status
+WDI_STATableDelSta
+(
+ void*  pWDICtx,
+ wpt_uint8              ucSTAIdx
+ );
 
 /* DAL Remove STA from memPool
  * Parameters:
