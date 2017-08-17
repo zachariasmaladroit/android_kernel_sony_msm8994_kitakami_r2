@@ -1169,7 +1169,10 @@ static int check_version(Elf_Shdr *sechdrs,
 	struct modversion_info *versions;
 
 	if(!strncmp("wlan", mod->name, 4))
-		return 1;
+		return 0;
+		
+	if(!strncmp("pronto_wlan", mod->name, 11))
+		return 0;
 
 	if(!strncmp("moc_", mod->name, 4))
 		return 1;
