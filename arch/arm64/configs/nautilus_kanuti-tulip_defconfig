@@ -554,9 +554,15 @@ CONFIG_USB_MSM_OTG_72K=y
 CONFIG_USB_MSM_OTG=y
 CONFIG_USB_HOST_NOTIFY=y
 
-# zram tweaks & stuff
+# zram & other mm related
 CONFIG_ZRAM=y
 CONFIG_ZRAM_LZ4_COMPRESS=y
+# CONFIG_ZRAM_DEBUG is not set
+
+# zpool & backends
+CONFIG_Z3FOLD=y
+CONFIG_ZPOOL=y
+CONFIG_ZSMALLOC=y
 
 # Hotplug
 # CONFIG_MSM_CORE_CTL_HELPER is not set
