@@ -4,14 +4,14 @@ export USE_CCACHE=1
 
 export CACHE_DIR=~/.ccache
 
-export PATH=~/android/z5_build-environment/mdalexca-aarch64-linux-android-4.9-kernel-linaro-09c6758022e7/bin/:$PATH
+export PATH=~/android/z5_build-environment/UBERTC-aarch64-linux-android-4.9-kernel-3f2327eeb9b3/bin/:$PATH
 export CROSS_COMPILE=aarch64-linux-android-
-export ARCH=arm64
 
 make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE nautilus_kanuti-tulip_defconfig
 
 time make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE -j$(grep -c ^processor /proc/cpuinfo)
 
+#export ARCH=arm64
 #export ARCH=arm64
 #make msm8994-perf_defconfig
 ###make oldconfig
@@ -26,8 +26,13 @@ time make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE -j$(grep -c ^processor /proc/c
 #../build_tools/mkbootimg --kernel arch/arm64/boot/Image --ramdisk $RAMDISK --dt dtb.img --base 0x81dfff00 --ramdisk_offset 0x82000000 --tags_offset 0x81E00000 --pagesize 2048 --cmdline "console=ttyHSL0,115200,n8 androidboot.console=ttyHSL0 androidboot.hardware=qcom msm_rtb.filter=0x237 ehci-hcd.park=3 androidboot.bootdevice=7824900.sdhci lpm_levels.sleep_disabled=1 earlyprintk" -o $BOOTIMAGE && echo -e "${GREEN}Done!${NCOLOR}"
 #WLANM=../build_tools/zipme/system/lib/modules/pronto/pronto_wlan.ko
 
+
+
+rm -f ../final_files/dt.img
+rm -f ../final_files/boot_E2303.img
+
 # Kernel build:
-BOOTIMAGE=../final_files/boot_E2303.img
+BOOTIMAGE=../final_files/M4_Aqua/boot.img
 RAMDISK=../final_files/boot_M4_Aqua_6.x_1.33.img-ramdisk.cpio.gz
 DTIMAGE=../final_files/dt.img
 
@@ -36,3 +41,5 @@ make dtbs
 ../final_files/dtbToolCM --force-v2 -o $DTIMAGE -s 2048 -p ./scripts/dtc/ ./arch/arm/boot/dts/
 
 ../final_files/mkbootimg_MM --cmdline "console=ttyHSL0,115200,n8 androidboot.console=ttyHSL0 androidboot.hardware=qcom msm_rtb.filter=0x237 ehci-hcd.park=3 androidboot.bootdevice=7824900.sdhci lpm_levels.sleep_disabled=1 earlyprintk" --base 0x81dfff00 --kernel arch/arm64/boot/Image --ramdisk $RAMDISK --dt $DTIMAGE --ramdisk_offset 0x82000000 --tags_offset 0x81E00000 --pagesize 2048 -o $BOOTIMAGE
+
+zip -r ../z5-kernelbuild/Nautilus-K.zip  ../final_files/M4_Aqua/boot.img ../final_files/META-INF/
