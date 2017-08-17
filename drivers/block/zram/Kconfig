@@ -1,7 +1,6 @@
 config ZRAM
 	tristate "Compressed RAM block device support"
-	depends on BLOCK && SYSFS
-	select ZPOOL
+	depends on BLOCK && SYSFS && ZSMALLOC
 	select LZO_COMPRESS
 	select LZO_DECOMPRESS
 	default n
@@ -24,7 +23,7 @@ config ZRAM_LZ4_COMPRESS
 	default n
 	help
 	  This option enables LZ4 compression algorithm support. Compression
-	  algorithm can be changed using `comp_algorithm' device attribute.
+	  algorithm can be changed using 'comp_algorithm' device attribute.
 
 config ZRAM_DEBUG
 	bool "Compressed RAM block device debug support"
