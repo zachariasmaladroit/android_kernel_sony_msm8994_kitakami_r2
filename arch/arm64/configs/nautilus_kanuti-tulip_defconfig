@@ -557,7 +557,6 @@ CONFIG_USB_HOST_NOTIFY=y
 
 # zram tweaks & stuff
 CONFIG_ZRAM=y
-CONFIG_ZRAM_LZ4_COMPRESS=y
 
 # Hotplug
 # CONFIG_MSM_CORE_CTL_HELPER is not set
