@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2013 The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012-2013, 2016 The Linux Foundation. All rights reserved.
  *
  * Previously licensed under the ISC license by Qualcomm Atheros, Inc.
  *
@@ -235,6 +235,7 @@ enum eWniMsgTypes
     eWNI_SME_PRE_CHANNEL_SWITCH_FULL_POWER,
     eWNI_SME_GET_SNR_REQ,
     eWNI_SME_LOST_LINK_PARAMS_IND,
+    eWNI_SME_DEL_TEST_BA,
     //General Power Save Messages
     eWNI_PMC_MSG_TYPES_BEGIN,
     eWNI_PMC_PWR_SAVE_CFG,
@@ -362,7 +363,11 @@ enum eWniMsgTypes
 #ifdef FEATURE_WLAN_LPHB
     eWNI_SME_LPHB_IND,
 #endif /* FEATURE_WLAN_LPHB */
-
+#ifdef WLAN_FEATURE_RMC
+    eWNI_SME_ENABLE_RMC_REQ,
+    eWNI_SME_DISABLE_RMC_REQ,
+    eWNI_SME_IBSS_PEER_INFO_RSP,
+#endif /* WLAN_FEATURE_RMC */
     eWNI_SME_GET_TSM_STATS_REQ,
     eWNI_SME_GET_TSM_STATS_RSP,
     eWNI_SME_TSM_IE_IND,
