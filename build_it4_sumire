@@ -36,7 +36,7 @@ then
 	echo -n "Enter version number: "
 	read version
 
-	echo "Packaging 'Permissive' kernel"
+	echo "Packaging 'ENForcing' kernel"
 	echo " "
 
 	if [ -e ../final_files/boot_E6653.img ]
