@@ -88,7 +88,7 @@ CONFIG_USB_MIRRORLINK=y
 # CONFIG_USB_STORAGE_SDDR09 is not set
 # CONFIG_USB_STORAGE_SDDR55 is not set
 # CONFIG_USB_STORAGE_USBAT is not set
-# CONFIG_USB_USBNET is not set
+
 # CONFIG_USB_VIDEO_CLASS is not set
 CONFIG_VFAT_FS_NO_DUALNAMES=y
 
@@ -222,31 +222,6 @@ CONFIG_TI_DRV2667=y
 # CONFIG_PCI_QUIRKS is not set
 # CONFIG_SYSRQ_SCHED_DEBUG is not set
 
-# DM related for Nougat LaOS, etc. | non-stock, enable the 3 following
-# CONFIG_DM_BUFIO is not set
-# CONFIG_DM_UEVENT is not set
-# CONFIG_DM_VERITY is not set
-#
-# CONFIG_DM_FLAKEY is not set
-# CONFIG_PANIC_ON_DM_VERITY_ERRORS is not set
-
-# CONFIG_DM_DEBUG is not set
-CONFIG_DM_CRYPT=y
-CONFIG_DM_REQ_CRYPT=y
-# CONFIG_DM_SNAPSHOT is not set
-# CONFIG_DM_THIN_PROVISIONING is not set
-# CONFIG_DM_CACHE is not set
-# CONFIG_DM_MIRROR is not set
-# CONFIG_DM_RAID is not set
-# CONFIG_DM_ZERO is not set
-# CONFIG_DM_MULTIPATH is not set
-# CONFIG_DM_DELAY is not set
-# CONFIG_DM_UEVENT is not set
-# CONFIG_DM_FLAKEY is not set
-# CONFIG_DM_VERITY is not set
-# CONFIG_TARGET_CORE is not set
-# CONFIG_FUSION is not set
-
 # upstream changes
 # CONFIG_MSM_ULTRASOUND is not set
 
@@ -330,20 +305,13 @@ CONFIG_Z3FOLD=y
 CONFIG_ZPOOL=y
 CONFIG_ZSMALLOC=y
 
-# in production, disabled
+# in production, disabled / AOSP / LineageOS / CR / crDroid enable (?)
 # CONFIG_POWERKEY_FORCECRASH is not set
 # CONFIG_INPUT_KEYRESET is not set
 # CONFIG_INPUT_KEYCOMBO is not set
-# CONFIG_INPUT_KEYCHORD is not set
+CONFIG_INPUT_KEYCHORD=y
 
 # Kernel Modules
-CONFIG_MODULES=y
-# CONFIG_MODULE_FORCE_LOAD is not set
-CONFIG_MODULE_UNLOAD=y
-CONFIG_MODULE_FORCE_UNLOAD=y
-CONFIG_MODVERSIONS=y
-# CONFIG_MODULE_SRCVERSION_ALL is not set
-# CONFIG_MODULE_SIG is not set
 
 # Pstore
 CONFIG_PSTORE=y
@@ -390,8 +358,11 @@ CONFIG_NLS_ISO8859_15=y
 CONFIG_NLS_CODEPAGE_852=y
 
 # Taking care of security fixes & independence from prebuilt-modules
-CONFIG_ECRYPT_FS=y
+# NOT in Nougat (LineageOS/CR/crDroid)
+# CONFIG_ECRYPT_FS is not set
 # CONFIG_ECRYPT_FS_MESSAGING is not set
+
+CONFIG_MSDOS_FS=y
 
 # exfat opensource driver ("fat64") from LG G6 custom kernel
 CONFIG_EXFAT_FS=y
@@ -553,10 +524,10 @@ CONFIG_GENERIC_ACL=y
 CONFIG_TMPFS_POSIX_ACL=y
 CONFIG_TMPFS_XATTR=y
 
-# CONFIG_ECRYPT_FS is not set
-
 CONFIG_CPUSETS=y
 CONFIG_PROC_PID_CPUSET=y
+
+CONFIG_USB_USBNET=y
 
 CONFIG_INET_DIAG=y
 CONFIG_INET_TCP_DIAG=y
