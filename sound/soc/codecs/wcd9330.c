@@ -129,7 +129,7 @@ static int state_notifier_call(struct notifier_block *this,
 }
 
 //PDesireAudio Version: 11.0 Auralia
-static int PDesireAudio = 1;
+int PDesireAudio = 1;
 module_param(PDesireAudio, int,
 			S_IRUGO | S_IWUSR | S_IWGRP);
 MODULE_PARM_DESC(PDesireAudio, "PDesireAudio UHQA Audio output switch");
