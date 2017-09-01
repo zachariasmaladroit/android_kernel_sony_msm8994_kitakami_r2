@@ -32,6 +32,12 @@
 /* Fingerprint sensor input key */
 #define FINGERPRINT_KEY 0x2ee
 
+/* Define a minimum frequency (in khz) for the big cluster
+ * Big cluster usually have higher freq than little and
+ * don't go back to the absolute minimum freq
+ */
+#define MINIMUM_FREQ_OVERRIDE_BIG 633600
+
 /* Available bits for boost_policy state */
 #define DRIVER_ENABLED        (1U << 0)
 #define SCREEN_AWAKE          (1U << 1)
@@ -283,6 +289,11 @@ static int do_cpu_boost(struct notifier_block *nb,
 			set_boost_freq(b, policy->cpu, boost_freq);
 		policy->min = min(policy->max, boost_freq);
 	} else {
+#ifdef MINIMUM_FREQ_OVERRIDE_BIG
+		if(policy->cpu >= 4)
+			policy->min = MINIMUM_FREQ_OVERRIDE_BIG;
+		else
+#endif
 		policy->min = policy->cpuinfo.min_freq;
 	}
 
