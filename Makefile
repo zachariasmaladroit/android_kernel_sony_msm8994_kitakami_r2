@@ -246,7 +246,7 @@ GRAPHITE = -pipe
 
 HOSTCC       = ccache gcc
 HOSTCXX      = ccache g++
-HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -Os -pipe -fomit-frame-pointer
+HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -Os -pipe -fomit-frame-pointer -std=gnu89 $(call cc-option,-fno-PIE)
 HOSTCXXFLAGS = -Os -pipe
 # -DNDEBUG -fgcse-las $(GRAPHITE)
 
