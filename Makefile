@@ -386,7 +386,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fisolate-erroneous-paths-dereference \
 		   -fisolate-erroneous-paths-attribute \
 		   -fno-pic \
-		   -mcpu=cortex-a53+crc+crypto -mtune=cortex-a53 \
+		   -mcpu=cortex-a57.cortex-a53+crc+crypto -mtune=cortex-a57.cortex-a53 \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
 		   
 #KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
