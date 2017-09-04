@@ -2159,11 +2159,10 @@ static int select_best_cpu(struct task_struct *p, int target, int reason,
 		sync = 0;
 	}
 
-	if (boost && task_sched_boost(p)) {
+	if (boost && task_sched_boost(p))
 		small_task = 0;
-	}
 
-	if (small_task && !boost && !sync) {
+	if (small_task && !sync) {
 		best_cpu = best_small_task_cpu(p, sync);
 		prefer_idle = 0;	/* For sched_task_load tracepoint */
 		goto done;
