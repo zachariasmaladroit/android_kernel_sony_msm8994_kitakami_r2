@@ -461,6 +461,12 @@ CONFIG_CPU_BOOST=y
 # STATE_NOTIFIER (slightly related thus positioning here)
 CONFIG_STATE_NOTIFIER=y
 
+# Powersuspend
+CONFIG_POWERSUSPEND=y
+
+# Adreno idler
+CONFIG_ADRENO_IDLER=y
+
 # Voltage modding support
 CONFIG_VOLTAGE_CONTROL=y
 
