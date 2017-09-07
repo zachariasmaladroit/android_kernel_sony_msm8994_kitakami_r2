@@ -882,7 +882,7 @@ void dhd_enable_packet_filter(int value, dhd_pub_t *dhd)
 #endif /* PKT_FILTER_SUPPORT */
 }
 
-//#ifdef CONFIG_BCMDHD_WIFI_PM
+#ifdef CONFIG_BCMDHD_WIFI_PM
 /*static int wifi_pm = 0;
 module_param(wifi_pm, int, 0755);
 EXPORT_SYMBOL(wifi_pm);
@@ -898,22 +898,22 @@ module_param(wifi_pm_awake, int, 0660);
 
 int wifi_pm_suspended = PM_MAX;
 module_param(wifi_pm_suspended, int, 0660);
-//#endif
+#endif
 
 static int dhd_set_suspend(int value, dhd_pub_t *dhd)
 {
-//#ifdef CONFIG_BCMDHD_WIFI_PM
+#ifdef CONFIG_BCMDHD_WIFI_PM
 int power_mode = wifi_pm_awake;
-//#else
-//int power_mode = PM_MAX;
-//#endif
+#else
+int power_mode = PM_MAX;
+#endif
 	/* wl_pkt_filter_enable_t	enable_parm; */
 	char iovbuf[32];
-//#ifdef CONFIG_BCMDHD_WIFI_PM
+#ifdef CONFIG_BCMDHD_WIFI_PM
 	int bcn_li_dtim = dtim_awake; /* Default bcn_li_dtim in resume mode is 0 but honor the override instead */
-//#else
-//	int bcn_li_dtim = 0; /* Default bcn_li_dtim in resume mode is 0 */
-//#endif
+#else
+	int bcn_li_dtim = 0; /* Default bcn_li_dtim in resume mode is 0 */
+#endif
 #ifndef ENABLE_FW_ROAM_SUSPEND
 	uint roamvar = 1;
 #endif /* ENABLE_FW_ROAM_SUSPEND */
@@ -940,20 +940,20 @@ int power_mode = wifi_pm_awake;
 #ifdef PKT_FILTER_SUPPORT
 				dhd->early_suspended = 1;
 #endif
-//#ifdef CONFIG_BCMDHD_WIFI_PM
+#ifdef CONFIG_BCMDHD_WIFI_PM
 				power_mode = wifi_pm_suspended;
-//#endif
+#endif
 				/* Kernel suspended */
 				DHD_INFO(("%s: force extra Suspend setting \n", __FUNCTION__));
 
-//#ifdef CONFIG_BCMDHD_WIFI_PM
+#ifdef CONFIG_BCMDHD_WIFI_PM
 				dhd_wl_ioctl_cmd(dhd, WLC_SET_PM, (char *)&power_mode, sizeof(power_mode), TRUE, 0);
-//#else
-//#ifndef SUPPORT_PM2_ONLY
-//				dhd_wl_ioctl_cmd(dhd, WLC_SET_PM, (char *)&power_mode,
-//				                 sizeof(power_mode), TRUE, 0);
-//#endif /* SUPPORT_PM2_ONLY */
-//#endif
+#else
+#ifndef SUPPORT_PM2_ONLY
+				dhd_wl_ioctl_cmd(dhd, WLC_SET_PM, (char *)&power_mode,
+				                 sizeof(power_mode), TRUE, 0);
+#endif /* SUPPORT_PM2_ONLY */
+#endif
 
 				/* Enable packet filter, only allow unicast packet to send up */
 				dhd_enable_packet_filter(1, dhd);
@@ -1016,10 +1016,10 @@ int power_mode = wifi_pm_awake;
 				dhd_wl_ioctl_cmd(dhd, WLC_SET_PM, (char *)&power_mode,
 				                 sizeof(power_mode), TRUE, 0);
 #endif
-//#ifdef CONFIG_BCMDHD_WIFI_PM
+#ifdef CONFIG_BCMDHD_WIFI_PM
 				dhd_wl_ioctl_cmd(dhd, WLC_SET_PM, (char *)&power_mode, sizeof(power_mode), TRUE, 0);
-//#else
-//#endif /* SUPPORT_PM2_ONLY */
+#else
+#endif /* SUPPORT_PM2_ONLY */
 #ifdef PKT_FILTER_SUPPORT
 				/* disable pkt filter */
 				dhd_enable_packet_filter(0, dhd);
