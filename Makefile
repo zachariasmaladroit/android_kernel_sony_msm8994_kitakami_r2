@@ -390,6 +390,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fsplit-paths \
 		   -fgcse-after-reload \
 		   -fivopts \
+		   -finline-functions-called-once -finline-small-functions -findirect-inlining -fpartial-inlining \
 		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
 		   -fpredictive-commoning \
 		   -mcpu=cortex-a57.cortex-a53+crc+crypto -mtune=cortex-a57.cortex-a53 \
