@@ -62,10 +62,3 @@ config BROADCOM_WIFI_RESERVED_MEM
 	depends on BCMDHD_SUZURAN
 	---help---
 	  This is a configuration for broadcom WLAN driver.
-
-config BCMDHD_WIFI_PM
-	bool "Enable support for changing the WiFi power mode"
-	depends on BCM4356
-	default y
-	---help---
-	Enable support for changing the WiFi power mode for screen-off.
