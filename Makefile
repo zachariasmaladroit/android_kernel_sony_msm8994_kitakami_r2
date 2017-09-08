@@ -386,10 +386,6 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fisolate-erroneous-paths-dereference \
 		   -fisolate-erroneous-paths-attribute \
 		   -fno-pic \
-		   -fsplit-loops \
-		   -fgcse-after-reload \
-		   -fivopts \
-		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
 		   -mcpu=cortex-a57.cortex-a53+crc+crypto -mtune=cortex-a57.cortex-a53 \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
 		   
