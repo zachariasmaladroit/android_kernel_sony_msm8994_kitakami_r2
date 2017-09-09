@@ -461,8 +461,8 @@ CONFIG_CPU_BOOST=y
 # STATE_NOTIFIER (slightly related thus positioning here)
 CONFIG_STATE_NOTIFIER=y
 
-# Powersuspend
-CONFIG_POWERSUSPEND=y
+# Powersuspend (deprecated, do not use - let's see if the superb idle drain was caused by this)
+# CONFIG_POWERSUSPEND is not set
 
 # Adreno idler
 CONFIG_ADRENO_IDLER=y
