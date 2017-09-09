@@ -1371,9 +1371,8 @@ static int tomtom_config_compander(struct snd_soc_dapm_widget *w,
 	pr_debug("%s: %s event %d compander %d, enabled %d", __func__,
 		 w->name, event, comp, tomtom->comp_enabled[comp]);
 
-	if ((PDesireAudio) || (!tomtom->comp_enabled[comp])) {
+	if (PDesireAudio) || (!tomtom->comp_enabled[comp])
 		return 0;
-	}
 	
 	/* Compander 0 has two channels */
 	mask = enable_mask = 0x03;
