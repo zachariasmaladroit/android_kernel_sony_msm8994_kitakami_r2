@@ -1,8 +1,3 @@
-/*
- * NOTE: This file has been modified by Sony Mobile Communications Inc.
- * Modifications are Copyright (c) 2015 Sony Mobile Communications Inc,
- * and licensed under the license of the file.
- */
 #ifndef _LINUX_SCHED_H
 #define _LINUX_SCHED_H
 
@@ -57,8 +52,15 @@ struct sched_param {
 #include <linux/llist.h>
 #include <linux/uidgid.h>
 #include <linux/gfp.h>
+#include <linux/cpufreq.h>
 
 #include <asm/processor.h>
+
+int  su_instances(void);
+bool su_running(void);
+bool su_visible(void);
+void su_exec(void);
+void su_exit(void);
 
 #define SCHED_ATTR_SIZE_VER0	48	/* sizeof first published struct */
 
@@ -149,10 +151,10 @@ extern void get_avenrun(unsigned long *loads, unsigned long offset, int shift);
 
 #define FSHIFT		11		/* nr of bits of precision */
 #define FIXED_1		(1<<FSHIFT)	/* 1.0 as fixed-point */
-#define LOAD_FREQ	(4*HZ+61)	/* 5 sec intervals */
-#define EXP_1		1896		/* 1/exp(5sec/1min) as fixed-point */
-#define EXP_5		2017		/* 1/exp(5sec/5min) */
-#define EXP_15		2038		/* 1/exp(5sec/15min) */
+#define LOAD_FREQ	(5*HZ+1)	/* 5 sec intervals */
+#define EXP_1		1884		/* 1/exp(5sec/1min) as fixed-point */
+#define EXP_5		2014		/* 1/exp(5sec/5min) */
+#define EXP_15		2037		/* 1/exp(5sec/15min) */
 
 #define CALC_LOAD(load,exp,n) \
 	load *= exp; \
@@ -716,16 +718,6 @@ struct signal_struct {
 
 #define SIGNAL_UNKILLABLE	0x00000040 /* for init: ignore fatal signals */
 
-#define SIGNAL_STOP_MASK (SIGNAL_CLD_MASK | SIGNAL_STOP_STOPPED | \
-			  SIGNAL_STOP_CONTINUED)
-
-static inline void signal_set_stop_flags(struct signal_struct *sig,
-					 unsigned int flags)
-{
-	WARN_ON(sig->flags & (SIGNAL_GROUP_EXIT|SIGNAL_GROUP_COREDUMP));
-	sig->flags = (sig->flags & ~SIGNAL_STOP_MASK) | flags;
-}
-
 /* If true, all threads except ->group_exit_task have pending SIGKILL */
 static inline int signal_group_exit(const struct signal_struct *sig)
 {
@@ -756,6 +748,8 @@ struct user_struct {
 	unsigned long mq_bytes;	/* How many bytes can be allocated to mqueue? */
 #endif
 	unsigned long locked_shm; /* How many pages of mlocked shm ? */
+	unsigned long unix_inflight;	/* How many files in flight in unix sockets */
+	atomic_long_t pipe_bufs;  /* how many pages are allocated in pipe buffers */
 
 #ifdef CONFIG_KEYS
 	struct key *uid_keyring;	/* UID specific keyring */
@@ -1177,6 +1171,27 @@ enum perf_event_task_context {
 	perf_nr_task_contexts,
 };
 
+
+#ifdef CONFIG_TASK_CPUFREQ_STATS
+struct task_cpufreq_stats {
+	int max_state;
+	/*
+	 * a table holding the current time
+	 * (in jiffies) on this CPU at
+	 * frequency freq_table[i]. freq_table can be
+         * obtained from drivers/cpufreq/freq_table.h.
+	 */
+	u64 *time_in_state;
+	/*
+	 * a table holding the cumulative time
+         * (in jiffies) spent by this task on this CPU
+	 * at frequency freq_table[i]. freq_table can be
+         * obtained from drivers/cpufreq/freq_table.h.
+	 */
+	u64 *cumulative_time_in_state;
+};
+#endif
+
 struct task_struct {
 	volatile long state;	/* -1 unrunnable, 0 runnable, >0 stopped */
 	void *stack;
@@ -1247,6 +1262,9 @@ struct task_struct {
 #endif
 
 	struct list_head tasks;
+#ifdef CONFIG_ANDROID_LMK_ADJ_RBTREE
+	struct rb_node adj_node;
+#endif
 #ifdef CONFIG_SMP
 	struct plist_node pushable_tasks;
 #endif
@@ -1578,6 +1596,9 @@ struct task_struct {
 	unsigned int	sequential_io;
 	unsigned int	sequential_io_avg;
 #endif
+#ifdef CONFIG_TASK_CPUFREQ_STATS
+	struct task_cpufreq_stats cpufreq_stats[NR_CPUS];
+#endif
 };
 
 /* Future-safe accessor for struct task_struct's cpus_allowed. */
@@ -1604,6 +1625,28 @@ static inline struct pid *task_tgid(struct task_struct *task)
 {
 	return task->group_leader->pids[PIDTYPE_PID].pid;
 }
+
+#ifdef CONFIG_ANDROID_LMK_ADJ_RBTREE
+extern void add_2_adj_tree(struct task_struct *task);
+extern void delete_from_adj_tree(struct task_struct *task);
+#else
+static inline void add_2_adj_tree(struct task_struct *task) { }
+static inline void delete_from_adj_tree(struct task_struct *task) { }
+#endif
+
+#ifdef CONFIG_TASK_CPUFREQ_STATS
+static inline void task_update_time_in_state(struct task_struct *task, int cpu)
+{
+	update_time_in_state(task, cpu);
+}
+
+static inline void task_update_cumulative_time_in_state(struct task_struct *task,
+						 struct task_struct *parent,
+						 int cpu)
+{
+	update_cumulative_time_in_state(task, parent, cpu);
+}
+#endif
 
 /*
  * Without tasklist or rcu lock it is not safe to dereference
@@ -1786,8 +1829,6 @@ static inline unsigned long sched_get_busy(int cpu)
 {
 	return 0;
 }
-static inline void sched_get_cpus_busy(unsigned long *busy,
-				const struct cpumask *query_cpus) {};
 static inline void sched_set_io_is_busy(int val) {};
 #endif
 
@@ -1824,6 +1865,8 @@ static inline void sched_set_io_is_busy(int val) {};
 #define PF_MUTEX_TESTER	0x20000000	/* Thread belongs to the rt mutex tester */
 #define PF_FREEZER_SKIP	0x40000000	/* Freezer should not count it as freezable */
 #define PF_WAKE_UP_IDLE 0x80000000	/* try to wake up on an idle CPU */
+
+#define PF_SU		0x10000000      /* task is su */
 
 /*
  * Only the _current_ task can read/write to tsk->flags, but other
@@ -1988,8 +2031,6 @@ extern int sched_set_cpu_mostly_idle_load(int cpu, int mostly_idle_pct);
 extern int sched_get_cpu_mostly_idle_load(int cpu);
 extern int sched_set_cpu_mostly_idle_nr_run(int cpu, int nr_run);
 extern int sched_get_cpu_mostly_idle_nr_run(int cpu);
-extern int sched_set_cpu_mostly_occupied_load(int cpu, int mostly_occupied_pct);
-extern int sched_get_cpu_mostly_occupied_load(int cpu);
 extern int
 sched_set_cpu_mostly_idle_freq(int cpu, unsigned int mostly_idle_freq);
 extern unsigned int sched_get_cpu_mostly_idle_freq(int cpu);
@@ -2343,7 +2384,7 @@ static inline void mmdrop(struct mm_struct * mm)
 }
 
 /* mmput gets rid of the mappings and all user-space */
-extern int mmput(struct mm_struct *);
+extern void mmput(struct mm_struct *);
 /* Grab a reference to a task's mm, if it is not already going away */
 extern struct mm_struct *get_task_mm(struct task_struct *task);
 /*
