@@ -32,8 +32,6 @@
 extern struct snd_soc_codec *fauxsound_codec_ptr;
 extern int wcd9xxx_hw_revision;
 
-extern int PDesireAudio;
-
 static int snd_ctrl_locked = 1;
 static int snd_rec_ctrl_locked = 1;
 
@@ -304,22 +302,6 @@ static ssize_t headphone_gain_store(struct kobject *kobj,
 	return count;
 }
 
-static ssize_t pdesireaudio_show(struct kobject *kobj,
-                struct kobj_attribute *attr, char *buf)
-{
-        return sprintf(buf, "%d\n", PDesireAudio);
-}
-
-static ssize_t pdesireaudio_store(struct kobject *kobj,
-                 struct kobj_attribute *attr, const char *buf, size_t count)
-{
-        if (buf[0] >= '0' && buf[0] <= '1' && buf[1] == '\n')
-                if (PDesireAudio != buf[0] - '0')
-                        PDesireAudio = buf[0] - '0';
-
-        return count;
-}
-
 static unsigned int selected_reg = 0xdeadbeef;
 
 static ssize_t sound_reg_select_store(struct kobject *kobj,
@@ -467,12 +449,6 @@ static struct kobj_attribute sound_hw_revision_attribute =
 		0444,
 		sound_control_hw_revision_show, NULL);
 
-static struct kobj_attribute PDesireAudio_mode_attribute =
-        __ATTR(PDesireAudio_enabled,
-                0666,
-                pdesireaudio_show,
-                pdesireaudio_store);
-
 static struct attribute *sound_control_attrs[] =
 	{
 		&cam_mic_gain_attribute.attr,
@@ -481,7 +457,6 @@ static struct attribute *sound_control_attrs[] =
 		&headphone_gain_attribute.attr,
 		&sound_control_locked_attribute.attr,
 		&sound_control_rec_locked_attribute.attr,
-		&PDesireAudio_mode_attribute.attr,
 		&sound_reg_sel_attribute.attr,
 		&sound_reg_read_attribute.attr,
 		&sound_reg_write_attribute.attr,
