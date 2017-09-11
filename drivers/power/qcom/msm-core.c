@@ -170,11 +170,18 @@ static void set_threshold(struct cpu_activity_info *cpu_node)
 		&cpu_node->low_threshold);
 }
 
+static inline bool should_run_resampling(void)
+{
+	if (!mutex_is_locked(&suspend_update_mutex) && !in_suspend)
+		return true;
+	else
+		return false;
+}
+
 static inline void schedule_sampling(void)
 {
-	if (!work_busy(&sampling_work) && !in_suspend)
+	if (should_run_resampling())
 		queue_work(msm_core_wq, &sampling_work);
-
 }
 
 /* May be called from an interrupt context */
@@ -307,10 +314,10 @@ static inline void do_sampling(void)
 	struct cpu_activity_info *cpu_node;
 	static int prev_temp[NR_CPUS];
 
-	mutex_lock(&suspend_update_mutex);
-	if (in_suspend)
-		goto unlock;
+	if (!should_run_resampling())
+		return;
 
+	mutex_lock(&suspend_update_mutex);
 	trigger_cpu_pwr_stats_calc();
 
 	for_each_online_cpu(cpu) {
@@ -323,9 +330,7 @@ static inline void do_sampling(void)
 				cpu_node->low_threshold.temp);
 		}
 	}
-
-unlock:
-		mutex_unlock(&suspend_update_mutex);
+	mutex_unlock(&suspend_update_mutex);
 }
 
 static void samplequeue_handle(struct work_struct *work)
