@@ -33,7 +33,7 @@
 #define RCU_KTHREAD_PRIO 1
 
 #ifdef CONFIG_RCU_BOOST
-#include "../locking/rtmutex_common.h"
+#include "../kernel/rtmutex_common.h"
 
 /*
  * Control variables for per-CPU and per-rcu_node kthreads.  These
