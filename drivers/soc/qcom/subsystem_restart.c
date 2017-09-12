@@ -191,6 +191,8 @@ struct subsys_device {
 	struct list_head list;
 };
 
+static void subsys_notify_crash_reason(struct subsys_device *subsys);
+
 static struct subsys_device *to_subsys(struct device *d)
 {
 	return container_of(d, struct subsys_device, dev);
@@ -610,10 +612,11 @@ static void subsystem_shutdown(struct subsys_device *dev, void *data)
 {
 	const char *name = dev->desc->name;
 
-	pr_info("[%p]: Shutting down %s\n", current, name);
+	pr_info("[%s:%d]: Shutting down %s\n",
+			current->comm, current->pid, name);
 	if (dev->desc->shutdown(dev->desc, true) < 0)
-		panic("subsys-restart: [%p]: Failed to shutdown %s!",
-			current, name);
+		panic("subsys-restart: [%s:%d]: Failed to shutdown %s!",
+			current->comm, current->pid, name);
 	dev->crash_count++;
 	subsys_set_state(dev, SUBSYS_OFFLINE);
 	disable_all_irqs(dev);
@@ -625,7 +628,8 @@ static void subsystem_ramdump(struct subsys_device *dev, void *data)
 
 	if (dev->desc->ramdump)
 		if (dev->desc->ramdump(is_ramdump_enabled(dev), dev->desc) < 0)
-			pr_warn("%s[%p]: Ramdump failed.\n", name, current);
+			pr_warn("%s[%s:%d]: Ramdump failed.\n",
+				name, current->comm, current->pid);
 	dev->do_ramdump_on_put = false;
 }
 
@@ -640,7 +644,7 @@ static void subsystem_powerup(struct subsys_device *dev, void *data)
 	const char *name = dev->desc->name;
 	int ret;
 
-	pr_info("[%p]: Powering up %s\n", current, name);
+	pr_info("[%s:%d]: Powering up %s\n", current->comm, current->pid, name);
 	init_completion(&dev->err_ready);
 
 	if (dev->desc->powerup(dev->desc) < 0) {
@@ -652,7 +656,8 @@ static void subsystem_powerup(struct subsys_device *dev, void *data)
 		} else {
 			notify_each_subsys_device(&dev, 1, SUBSYS_POWERUP_FAILURE,
 									NULL);
-			panic("[%p]: Powerup error: %s!", current, name);
+			panic("[%s:%d]: Powerup error: %s!",
+				current->comm, current->pid, name);
 		}
 	}
 	enable_all_irqs(dev);
@@ -661,8 +666,8 @@ static void subsystem_powerup(struct subsys_device *dev, void *data)
 	if (ret) {
 		notify_each_subsys_device(&dev, 1, SUBSYS_POWERUP_FAILURE,
 								NULL);
-		panic("[%p]: Timed out waiting for error ready: %s!",
-			current, name);
+		panic("[%s:%d]: Timed out waiting for error ready: %s!",
+			current->comm, current->pid, name);
 	}
 	subsys_set_state(dev, SUBSYS_ONLINE);
 	subsys_set_crash_status(dev, false);
@@ -907,8 +912,8 @@ static void subsystem_restart_wq_func(struct work_struct *work)
 	 */
 	mutex_lock(&soc_order_reg_lock);
 
-	pr_debug("[%p]: Starting restart sequence for %s\n", current,
-			desc->name);
+	pr_debug("[%s:%d]: Starting restart sequence for %s\n",
+			current->comm, current->pid, desc->name);
 	notify_each_subsys_device(list, count, SUBSYS_BEFORE_SHUTDOWN, NULL);
 	for_each_subsys_device(list, count, NULL, subsystem_shutdown);
 	notify_each_subsys_device(list, count, SUBSYS_AFTER_SHUTDOWN, NULL);
@@ -919,7 +924,7 @@ static void subsystem_restart_wq_func(struct work_struct *work)
 	spin_lock_irqsave(&track->s_lock, flags);
 	track->p_state = SUBSYS_RESTARTING;
 	spin_unlock_irqrestore(&track->s_lock, flags);
-
+	subsys_notify_crash_reason(dev);
 	/* Collect ram dumps for all subsystems in order here */
 	for_each_subsys_device(list, count, NULL, subsystem_ramdump);
 
@@ -929,8 +934,8 @@ static void subsystem_restart_wq_func(struct work_struct *work)
 	for_each_subsys_device(list, count, NULL, subsystem_powerup);
 	notify_each_subsys_device(list, count, SUBSYS_AFTER_POWERUP, NULL);
 
-	pr_info("[%p]: Restart sequence for %s completed.\n",
-			current, desc->name);
+	pr_info("[%s:%d]: Restart sequence for %s completed.\n",
+			current->comm, current->pid, desc->name);
 
 	mutex_unlock(&soc_order_reg_lock);
 	mutex_unlock(&track->lock);
@@ -1057,6 +1062,8 @@ int subsystem_crash_reason(const char *name, char *msg)
 	if (!dev)
 		return -ENODEV;
 	update_crash_reason(dev, msg, SUBSYS_CRASH_REASON_LEN);
+	subsys_notify_crash_reason(dev);
+
 	return 0;
 }
 EXPORT_SYMBOL(subsystem_crash_reason);
@@ -1182,7 +1189,12 @@ void update_crash_reason(struct subsys_device *subsys,
 {
 	memcpy(subsys->crash_reason, smem_reason, size);
 	subsys->data_ready = 1;
-	wake_up(&subsys->subsys_debug_q);
+}
+
+static void subsys_notify_crash_reason(struct subsys_device *subsys)
+{
+	if (subsys->data_ready && subsys->restart_level != RESET_SOC)
+		wake_up(&subsys->subsys_debug_q);
 }
 
 static ssize_t subsys_debugfs_reason_read(struct file *filp, char __user *ubuf,
@@ -1267,6 +1279,7 @@ static int __init subsys_debugfs_init(void) { return 0; };
 static void subsys_debugfs_exit(void) { }
 static int subsys_debugfs_add(struct subsys_device *subsys) { return 0; }
 static void subsys_debugfs_remove(struct subsys_device *subsys) { }
+static void subsys_notify_crash_reason(struct subsys_device *subsys) { }
 #endif
 
 static int subsys_device_open(struct inode *inode, struct file *file)

@@ -1834,6 +1834,10 @@ static int msm_routing_ext_ec_put(struct snd_kcontrol *kcontrol,
 	pr_debug("%s: msm_route_ec_ref_rx = %d value = %ld\n",
 		__func__, msm_route_ext_ec_ref,
 		ucontrol->value.integer.value[0]);
+	if (mux >= e->max) {
+		pr_err("%s: Invalid mux value %d\n", __func__, mux);
+		return -EINVAL;
+	}
 
 	mutex_lock(&routing_lock);
 	switch (ucontrol->value.integer.value[0]) {
