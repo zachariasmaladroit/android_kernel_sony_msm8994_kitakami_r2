@@ -46,6 +46,17 @@ static DEFINE_MUTEX(scm_lock);
 #define SMC_ATOMIC_MASK 0x80000000
 #define IS_CALL_AVAIL_CMD 1
 
+#define SCM_BUF_LEN(__cmd_size, __resp_size) ({ \
+	size_t x =  __cmd_size + __resp_size; \
+	size_t y = sizeof(struct scm_command) + sizeof(struct scm_response); \
+	size_t result; \
+	if (x < __cmd_size || (x + y) < x) \
+		result = 0; \
+	else \
+		result = x + y; \
+	result; \
+	})
+
 /**
  * struct scm_command - one SCM command buffer
  * @len: total available memory for command and response
@@ -356,7 +367,7 @@ int scm_call_noalloc(u32 svc_id, u32 cmd_id, const void *cmd_buf,
 	int ret;
 	size_t len = scm_get_buf_len(cmd_len, resp_len);
 
-	if (len == 0 || len > scm_buf_len)
+	if (len == 0)
 		return -EINVAL;
 
 	if (!IS_ALIGNED((unsigned long)scm_buf, PAGE_SIZE))
