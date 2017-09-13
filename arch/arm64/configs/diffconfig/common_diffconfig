@@ -156,6 +156,9 @@ CONFIG_TOUCHSCREEN_CLEARPAD_RMI_DEV=y
 CONFIG_LOCALVERSION="-N_RR_NovaCore_I.1_n_1_10_C_2_1_3"
 CONFIG_LOCALVERSION_AUTO=n
 
+# May the juice be with you !
+CONFIG_QNS_SYSTEM=y
+
 # stability, backwards compatibility, etc.
 # CONFIG_SWP_EMULATE is not set
 
