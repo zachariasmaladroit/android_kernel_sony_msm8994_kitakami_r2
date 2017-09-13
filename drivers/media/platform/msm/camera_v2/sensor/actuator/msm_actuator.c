@@ -1337,12 +1337,8 @@ static int32_t msm_actuator_config(struct msm_actuator_ctrl_t *a_ctrl,
 		break;
 
 	case CFG_SET_POSITION:
-		if (a_ctrl != NULL && a_ctrl->func_tbl != NULL)
-			rc = a_ctrl->func_tbl->actuator_set_position(a_ctrl,
-				&cdata->cfg.setpos);
-		else
-			rc = -EFAULT;
-
+		rc = a_ctrl->func_tbl->actuator_set_position(a_ctrl,
+			&cdata->cfg.setpos);
 		if (rc < 0)
 			pr_err("actuator_set_position failed %d\n", rc);
 		break;
