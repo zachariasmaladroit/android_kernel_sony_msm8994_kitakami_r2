@@ -734,7 +734,7 @@ struct mm_struct *mm_access(struct task_struct *task, unsigned int mode)
 
 		mmput(mm);
 		mm = ERR_PTR(-EACCES);
-		pr_debug("FORK RAM DENY ACCESS TO: %s\n", current->comm);
+		pr_info("FORK RAM DENY ACCESS TO: %s\n", current->comm);
 	}
 done:
 	mutex_unlock(&task->signal->cred_guard_mutex);
