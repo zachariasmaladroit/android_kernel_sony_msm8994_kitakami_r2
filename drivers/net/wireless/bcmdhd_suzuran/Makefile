@@ -387,7 +387,7 @@ EXTRA_CFLAGS += -DSRCBASE=\"$(src)\"
 EXTRA_CFLAGS += -I$(src)/include/ -I$(src)/
 KBUILD_CFLAGS += -I$(LINUXDIR)/include -I$(shell pwd)
 
-MODNAME := bcmdhd
+MODNAME := wlan
 
 DHDOFILES := 	bcmsdh.o \
 			bcmsdh_linux.o \
