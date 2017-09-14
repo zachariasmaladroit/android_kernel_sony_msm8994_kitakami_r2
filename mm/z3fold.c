@@ -306,7 +306,7 @@ static int z3fold_alloc(struct z3fold_pool *pool, size_t size, gfp_t gfp,
 		bud = HEADLESS;
 	else {
 		chunks = size_to_chunks(size);
-		spin_lock(&pool->lock);
+		spin_lock_bh(&pool->lock);
 
 		/* First, try to find an unbuddied z3fold page. */
 		zhdr = NULL;
@@ -335,14 +335,14 @@ static int z3fold_alloc(struct z3fold_pool *pool, size_t size, gfp_t gfp,
 			}
 		}
 		bud = FIRST;
-		spin_unlock(&pool->lock);
+		spin_unlock_bh(&pool->lock);
 	}
 
 	/* Couldn't find unbuddied z3fold page, create new one */
 	page = alloc_page(gfp);
 	if (!page)
 		return -ENOMEM;
-	spin_lock(&pool->lock);
+	spin_lock_bh(&pool->lock);
 	pool->pages_nr++;
 	zhdr = init_z3fold_page(page);
 
@@ -379,7 +379,7 @@ headless:
 	list_add(&page->lru, &pool->lru);
 
 	*handle = encode_handle(zhdr, bud);
-	spin_unlock(&pool->lock);
+	spin_unlock_bh(&pool->lock);
 
 	return 0;
 }
@@ -401,7 +401,7 @@ static void z3fold_free(struct z3fold_pool *pool, unsigned long handle)
 	struct page *page;
 	enum buddy bud;
 
-	spin_lock(&pool->lock);
+	spin_lock_bh(&pool->lock);
 	zhdr = handle_to_z3fold_header(handle);
 	page = virt_to_page(zhdr);
 
@@ -425,14 +425,14 @@ static void z3fold_free(struct z3fold_pool *pool, unsigned long handle)
 		default:
 			pr_err("%s: unknown bud %d\n", __func__, bud);
 			WARN_ON(1);
-			spin_unlock(&pool->lock);
+			spin_unlock_bh(&pool->lock);
 			return;
 		}
 	}
 
 	if (test_bit(UNDER_RECLAIM, &page->private)) {
 		/* z3fold page is under reclaim, reclaim will free */
-		spin_unlock(&pool->lock);
+		spin_unlock_bh(&pool->lock);
 		return;
 	}
 
@@ -456,7 +456,7 @@ static void z3fold_free(struct z3fold_pool *pool, unsigned long handle)
 		list_add(&zhdr->buddy, &pool->unbuddied[freechunks]);
 	}
 
-	spin_unlock(&pool->lock);
+	spin_unlock_bh(&pool->lock);
 }
 
 #ifndef list_last_entry
@@ -507,10 +507,10 @@ static int z3fold_reclaim_page(struct z3fold_pool *pool, unsigned int retries)
 	struct page *page;
 	unsigned long first_handle = 0, middle_handle = 0, last_handle = 0;
 
-	spin_lock(&pool->lock);
+	spin_lock_bh(&pool->lock);
 	if (!pool->ops || !pool->ops->evict || list_empty(&pool->lru) ||
 			retries == 0) {
-		spin_unlock(&pool->lock);
+		spin_unlock_bh(&pool->lock);
 		return -EINVAL;
 	}
 	for (i = 0; i < retries; i++) {
@@ -541,7 +541,7 @@ static int z3fold_reclaim_page(struct z3fold_pool *pool, unsigned int retries)
 			last_handle = middle_handle = 0;
 		}
 
-		spin_unlock(&pool->lock);
+		spin_unlock_bh(&pool->lock);
 
 		/* Issue the eviction callback(s) */
 		if (middle_handle) {
@@ -560,7 +560,7 @@ static int z3fold_reclaim_page(struct z3fold_pool *pool, unsigned int retries)
 				goto next;
 		}
 next:
-		spin_lock(&pool->lock);
+		spin_lock_bh(&pool->lock);
 		clear_bit(UNDER_RECLAIM, &page->private);
 		if ((test_bit(PAGE_HEADLESS, &page->private) && ret == 0) ||
 		    (zhdr->first_chunks == 0 && zhdr->last_chunks == 0 &&
@@ -572,7 +572,7 @@ next:
 			clear_bit(PAGE_HEADLESS, &page->private);
 			free_z3fold_page(zhdr);
 			pool->pages_nr--;
-			spin_unlock(&pool->lock);
+			spin_unlock_bh(&pool->lock);
 			return 0;
 		}  else if (!test_bit(PAGE_HEADLESS, &page->private)) {
 			if (zhdr->first_chunks != 0 &&
@@ -592,7 +592,7 @@ next:
 		/* add to beginning of LRU */
 		list_add(&page->lru, &pool->lru);
 	}
-	spin_unlock(&pool->lock);
+	spin_unlock_bh(&pool->lock);
 	return -EAGAIN;
 }
 
@@ -613,7 +613,7 @@ static void *z3fold_map(struct z3fold_pool *pool, unsigned long handle)
 	void *addr;
 	enum buddy buddy;
 
-	spin_lock(&pool->lock);
+	spin_lock_bh(&pool->lock);
 	zhdr = handle_to_z3fold_header(handle);
 	addr = zhdr;
 	page = virt_to_page(zhdr);
@@ -640,7 +640,7 @@ static void *z3fold_map(struct z3fold_pool *pool, unsigned long handle)
 		break;
 	}
 out:
-	spin_unlock(&pool->lock);
+	spin_unlock_bh(&pool->lock);
 	return addr;
 }
 
@@ -655,19 +655,19 @@ static void z3fold_unmap(struct z3fold_pool *pool, unsigned long handle)
 	struct page *page;
 	enum buddy buddy;
 
-	spin_lock(&pool->lock);
+	spin_lock_bh(&pool->lock);
 	zhdr = handle_to_z3fold_header(handle);
 	page = virt_to_page(zhdr);
 
 	if (test_bit(PAGE_HEADLESS, &page->private)) {
-		spin_unlock(&pool->lock);
+		spin_unlock_bh(&pool->lock);
 		return;
 	}
 
 	buddy = handle_to_buddy(handle);
 	if (buddy == MIDDLE)
 		clear_bit(MIDDLE_CHUNK_MAPPED, &page->private);
-	spin_unlock(&pool->lock);
+	spin_unlock_bh(&pool->lock);
 }
 
 /**
