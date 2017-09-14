@@ -360,7 +360,7 @@ CONFIG_WQ_POWER_EFFICIENT_DEFAULT=y
 
 # interactivity, decreased RCU overhead, better performance, less power (1000)
 # needs various driver fixes
-CONFIG_HZ=300
+CONFIG_HZ=100
 
 CONFIG_NLS_ISO8859_15=y
 CONFIG_NLS_CODEPAGE_852=y
