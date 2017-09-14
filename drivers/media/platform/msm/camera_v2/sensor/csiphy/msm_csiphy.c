@@ -714,18 +714,8 @@ static long msm_csiphy_subdev_ioctl(struct v4l2_subdev *sd,
 		break;
 	case VIDIOC_MSM_CSIPHY_RELEASE:
 	case MSM_SD_SHUTDOWN:
-	{
-		struct msm_camera_csi_lane_params csi_lane_params;
-		if (copy_from_user(&csi_lane_params,
-			(void *)arg,
-			sizeof(struct msm_camera_csi_lane_params))) {
-				pr_err("%s: %d failed\n", __func__, __LINE__);
-				rc = -EFAULT;
-				break;
-		}
-		rc = msm_csiphy_release(csiphy_dev, &csi_lane_params);
+		rc = msm_csiphy_release(csiphy_dev, arg);
 		break;
-	}
 	default:
 		pr_err_ratelimited("%s: command not found\n", __func__);
 	}
