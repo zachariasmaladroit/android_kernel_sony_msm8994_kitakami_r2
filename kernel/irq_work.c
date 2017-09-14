@@ -135,7 +135,11 @@ static void irq_work_run_list(struct llist_head *list)
 		return;
 
 	llnode = llist_del_all(list);
-	llist_for_each_entry(work, llnode, llnode) {
+	while (llnode != NULL) {
+		work = llist_entry(llnode, struct irq_work, llnode);
+
+		llnode = llist_next(llnode);
+
 		/*
 		 * Clear the PENDING bit, after this point the @work
 		 * can be re-used.
