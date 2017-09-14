@@ -5553,6 +5553,7 @@ static void __qseecom_deinit_clk(enum qseecom_ce_hw_instance ce)
 static int qseecom_probe(struct platform_device *pdev)
 {
 	int rc;
+	int ret = 0;
 	struct device *class_dev;
 	char qsee_not_legacy = 0;
 	struct msm_bus_scale_pdata *qseecom_platform_support = NULL;
@@ -5600,7 +5601,7 @@ static int qseecom_probe(struct platform_device *pdev)
 
 	class_dev = device_create(driver_class, NULL, qseecom_device_no, NULL,
 			QSEECOM_DEV);
-	if (IS_ERR(class_dev)) {
+	if (!class_dev) {
 		pr_err("class_device_create failed %d\n", rc);
 		rc = -ENOMEM;
 		goto exit_destroy_class;
@@ -5652,7 +5653,7 @@ static int qseecom_probe(struct platform_device *pdev)
 	qseecom.pdev = class_dev;
 	/* Create ION msm client */
 	qseecom.ion_clnt = msm_ion_client_create("qseecom-kernel");
-	if (IS_ERR_OR_NULL(qseecom.ion_clnt)) {
+	if (qseecom.ion_clnt == NULL) {
 		pr_err("Ion client cannot be created\n");
 		rc = -ENOMEM;
 		goto exit_del_cdev;
@@ -5790,14 +5791,14 @@ static int qseecom_probe(struct platform_device *pdev)
 			pr_info("CE operating frequency is not defined, setting to default 100MHZ\n");
 			qseecom.ce_opp_freq_hz = QSEE_CE_CLK_100MHZ;
 		}
-		rc = __qseecom_init_clk(CLK_QSEE);
-		if (rc)
+		ret = __qseecom_init_clk(CLK_QSEE);
+		if (ret)
 			goto exit_destroy_hw_instance_list;
 
 		if ((qseecom.qsee.instance != qseecom.ce_drv.instance) &&
 				(qseecom.support_pfe || qseecom.support_fde)) {
-			rc = __qseecom_init_clk(CLK_CE_DRV);
-			if (rc) {
+			ret = __qseecom_init_clk(CLK_CE_DRV);
+			if (ret) {
 				__qseecom_deinit_clk(CLK_QSEE);
 				goto exit_destroy_hw_instance_list;
 			}
@@ -5830,7 +5831,7 @@ static int qseecom_probe(struct platform_device *pdev)
 			} else {
 				pr_err("Fail to get secure app region info\n");
 				rc = -EINVAL;
-				goto exit_deinit_clock;
+				goto exit_destroy_hw_instance_list;
 			}
 			rc = qseecom_scm_call(SCM_SVC_TZSCHEDULER, 1,
 					&req, sizeof(req),
@@ -5839,7 +5840,7 @@ static int qseecom_probe(struct platform_device *pdev)
 				pr_err("send secapp reg fail %d resp.res %d\n",
 							rc, resp.result);
 				rc = -EINVAL;
-				goto exit_deinit_clock;
+				goto exit_destroy_hw_instance_list;
 			}
 		}
 	} else {
@@ -5861,11 +5862,6 @@ static int qseecom_probe(struct platform_device *pdev)
 		pr_err("Unable to register bus client\n");
 	return 0;
 
-exit_deinit_clock:
-	__qseecom_deinit_clk(CLK_QSEE);
-	if ((qseecom.qsee.instance != qseecom.ce_drv.instance) &&
-		(qseecom.support_pfe || qseecom.support_fde))
-		__qseecom_deinit_clk(CLK_CE_DRV);
 exit_destroy_hw_instance_list:
 	kzfree(qseecom.ce_info.hlos_ce_hw_instance);
 exit_destroy_ion_client:
