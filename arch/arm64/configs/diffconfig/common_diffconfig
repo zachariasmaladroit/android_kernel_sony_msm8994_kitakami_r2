@@ -160,7 +160,7 @@ CONFIG_LOCALVERSION_AUTO=n
 CONFIG_QNS_SYSTEM=y
 
 # stability, backwards compatibility, etc.
-# CONFIG_SWP_EMULATE is not set
+CONFIG_SWP_EMULATE=y
 
 # CPU
 # CONFIG_CPU_FREQ_GOV_USERSPACE is not set
