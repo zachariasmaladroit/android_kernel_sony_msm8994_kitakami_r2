@@ -1,3 +1,5 @@
+# add a commented out entry to prevent overwriting configs by typoing
+
 CONFIG_AHC=y
 CONFIG_ALLOC_BUFFERS_IN_4K_CHUNKS=y
 CONFIG_AMSS_ERR_LOG=y
@@ -153,7 +155,7 @@ CONFIG_TOUCHSCREEN_CLEARPAD_RMI_DEV=y
 	SunKernel Prominence
 ##########################
 
-CONFIG_LOCALVERSION="-N_160_Promi_I.1_2"
+CONFIG_LOCALVERSION="-N_160_Promi_I.1_3_2"
 CONFIG_LOCALVERSION_AUTO=n
 
 # CPU
