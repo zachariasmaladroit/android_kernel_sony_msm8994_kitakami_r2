@@ -380,16 +380,16 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fisolate-erroneous-paths-dereference \
 		   -fisolate-erroneous-paths-attribute \
 		   -fno-pic \
-		   -fsplit-paths \
 		   -ftree-loop-distribution -ftree-loop-distribute-patterns \
-		   -fno-code-hoisting \
 		   -fgcse-after-reload \
 		   -fivopts \
 		   -fpredictive-commoning \
 		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
 		   -mcpu=cortex-a57.cortex-a53+crc+crypto -mtune=cortex-a57.cortex-a53 \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
-		   
+
+#		   -fsplit-paths \
+#		   -fno-code-hoisting \
 #KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 #		   -fno-strict-aliasing -fno-common \
 #		   -Werror-implicit-function-declaration \
