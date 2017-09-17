@@ -41,6 +41,7 @@ typedef unsigned long mm_segment_t;
 
 /*
  * low level task data that entry.S needs immediate access to.
+ * __switch_to() assumes cpu_context follows immediately after cpu_domain.
  */
 struct thread_info {
 	unsigned long		flags;		/* low level flags */
@@ -64,6 +65,7 @@ struct thread_info {
 	},								\
 }
 
+#define init_thread_info	(init_thread_union.thread_info)
 #define init_stack		(init_thread_union.stack)
 
 /*
