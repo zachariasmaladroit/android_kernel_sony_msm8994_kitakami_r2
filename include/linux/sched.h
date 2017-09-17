@@ -1547,7 +1547,7 @@ struct task_struct {
 #ifdef CONFIG_SYSVIPC
 /* ipc stuff */
 	struct sysv_sem sysvsem;
-	struct sysv_shm sysvshm;
+/*	struct sysv_shm sysvshm;*/
 #endif
 #ifdef CONFIG_DETECT_HUNG_TASK
 /* hung task detection */
