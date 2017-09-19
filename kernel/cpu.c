@@ -280,6 +280,55 @@ static inline void check_for_tasks(int cpu)
 	write_unlock_irq(&tasklist_lock);
 }
 
+#ifdef CONFIG_PDESIRE_HOTPLUG_RT
+
+static int switch_to_rt_fifo_policy(void)
+{
+	struct sched_param param = { .sched_priority = MAX_RT_PRIO - 1 };
+	unsigned int policy = current->policy;
+	int err;
+
+	/* Nobody should be attempting hotplug from these policy contexts. */
+	if (policy == SCHED_BATCH || policy == SCHED_IDLE)
+		return -EPERM;
+
+	if (policy == SCHED_FIFO || policy == SCHED_RR)
+		return 1;
+
+	/* Only SCHED_NORMAL left. */
+	err = sched_setscheduler_nocheck(current, SCHED_FIFO, &param);
+	return err;
+
+}
+
+static int switch_to_rt_rr_policy(void)
+{
+	struct sched_param param = { .sched_priority = MAX_RT_PRIO - 1 };
+	unsigned int policy = current->policy;
+	int err;
+
+	/* Nobody should be attempting hotplug from these policy contexts. */
+	if (policy == SCHED_BATCH || policy == SCHED_IDLE)
+		return -EPERM;
+
+	if (policy == SCHED_FIFO || policy == SCHED_RR)
+		return 1;
+
+	/* Only SCHED_NORMAL left. */
+	err = sched_setscheduler_nocheck(current, SCHED_RR, &param);
+	return err;
+
+}
+
+static int switch_to_fair_policy(void)
+{
+	struct sched_param param = { .sched_priority = 0 };
+
+	return sched_setscheduler_nocheck(current, SCHED_NORMAL, &param);
+}
+
+#endif
+
 struct take_cpu_down_param {
 	unsigned long mod;
 	void *hcpu;
@@ -369,6 +418,13 @@ out_release:
 int __ref cpu_down(unsigned int cpu)
 {
 	int err;
+#ifdef CONFIG_PDESIRE_HOTPLUG_RT
+	int switch_err;
+
+	switch_err = switch_to_rt_fifo_policy();
+	if (switch_err < 0)
+		return switch_err;
+#endif
 
 	cpu_maps_update_begin();
 
@@ -381,6 +437,15 @@ int __ref cpu_down(unsigned int cpu)
 
 out:
 	cpu_maps_update_done();
+
+#ifdef CONFIG_PDESIRE_HOTPLUG_RT
+	if (!switch_err) {
+		switch_err = switch_to_fair_policy();
+		pr_err("Hotplug policy switch err. Task %s pid=%d\n",
+					current->comm, current->pid);
+	}
+#endif
+
 	return err;
 }
 EXPORT_SYMBOL(cpu_down);
@@ -441,40 +506,16 @@ out:
 	return ret;
 }
 
-static int switch_to_rt_policy(void)
-{
-	struct sched_param param = { .sched_priority = MAX_RT_PRIO - 1 };
-	unsigned int policy = current->policy;
-	int err;
-
-	/* Nobody should be attempting hotplug from these policy contexts. */
-	if (policy == SCHED_BATCH || policy == SCHED_IDLE)
-		return -EPERM;
-
-	if (policy == SCHED_FIFO || policy == SCHED_RR)
-		return 1;
-
-	/* Only SCHED_NORMAL left. */
-	err = sched_setscheduler_nocheck(current, SCHED_FIFO, &param);
-	return err;
-
-}
-
-static int switch_to_fair_policy(void)
-{
-	struct sched_param param = { .sched_priority = 0 };
-
-	return sched_setscheduler_nocheck(current, SCHED_NORMAL, &param);
-}
-
 int __cpuinit cpu_up(unsigned int cpu)
 {
 	int err = 0;
+#ifdef CONFIG_PDESIRE_HOTPLUG_RT
 	int switch_err = 0;
 
-	switch_err = switch_to_rt_policy();
+	switch_err = switch_to_rt_rr_policy();
 	if (switch_err < 0)
 		return switch_err;
+#endif
 
 #ifdef	CONFIG_MEMORY_HOTPLUG
 	int nid;
@@ -525,11 +566,13 @@ int __cpuinit cpu_up(unsigned int cpu)
 out:
 	cpu_maps_update_done();
 
+#ifdef CONFIG_PDESIRE_HOTPLUG_RT
 	if (!switch_err) {
 		switch_err = switch_to_fair_policy();
 		pr_err("Hotplug policy switch err. Task %s pid=%d\n",
 					current->comm, current->pid);
 	}
+#endif
 
 	return err;
 }
