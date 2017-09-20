@@ -96,11 +96,11 @@ static void ncp_req_put(struct ncp_request_reply *req)
 		kfree(req);
 }
 
-void ncp_tcp_data_ready(struct sock *sk)
+void ncp_tcp_data_ready(struct sock *sk, int len)
 {
 	struct ncp_server *server = sk->sk_user_data;
 
-	server->data_ready(sk);
+	server->data_ready(sk, len);
 	schedule_work(&server->rcv.tq);
 }
 

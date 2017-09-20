@@ -6732,7 +6732,7 @@ do_nonblock:
 	goto out;
 }
 
-void sctp_data_ready(struct sock *sk)
+void sctp_data_ready(struct sock *sk, int len)
 {
 	struct socket_wq *wq;
 
