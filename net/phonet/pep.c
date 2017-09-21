@@ -462,9 +462,10 @@ out:
 queue:
 	skb->dev = NULL;
 	skb_set_owner_r(skb, sk);
+	err = skb->len;
 	skb_queue_tail(queue, skb);
 	if (!sock_flag(sk, SOCK_DEAD))
-		sk->sk_data_ready(sk);
+		sk->sk_data_ready(sk, err);
 	return NET_RX_SUCCESS;
 }
 
@@ -586,9 +587,10 @@ static int pipe_handler_do_rcv(struct sock *sk, struct sk_buff *skb)
 		pn->rx_credits--;
 		skb->dev = NULL;
 		skb_set_owner_r(skb, sk);
+		err = skb->len;
 		skb_queue_tail(&sk->sk_receive_queue, skb);
 		if (!sock_flag(sk, SOCK_DEAD))
-			sk->sk_data_ready(sk);
+			sk->sk_data_ready(sk, err);
 		return NET_RX_SUCCESS;
 
 	case PNS_PEP_CONNECT_RESP:
@@ -696,7 +698,7 @@ static int pep_do_rcv(struct sock *sk, struct sk_buff *skb)
 		skb_queue_head(&sk->sk_receive_queue, skb);
 		sk_acceptq_added(sk);
 		if (!sock_flag(sk, SOCK_DEAD))
-			sk->sk_data_ready(sk);
+			sk->sk_data_ready(sk, 0);
 		return NET_RX_SUCCESS;
 
 	case PNS_PEP_DISCONNECT_REQ:

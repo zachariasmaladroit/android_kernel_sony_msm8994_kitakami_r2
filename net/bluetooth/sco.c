@@ -1009,7 +1009,7 @@ static void sco_conn_ready(struct sco_conn *conn)
 			sk->sk_state = BT_CONNECTED;
 
 		/* Wake up parent */
-		parent->sk_data_ready(parent);
+		parent->sk_data_ready(parent, 1);
 
 		bh_unlock_sock(parent);
 
