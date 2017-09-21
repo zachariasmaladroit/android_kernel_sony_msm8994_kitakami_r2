@@ -97,6 +97,7 @@ static void log_modem_sfr(struct modem_data *drv)
 static void restart_modem(struct modem_data *drv)
 {
 	log_modem_sfr(drv);
+	drv->ignore_errors = true;
 	subsystem_restart_dev(drv->subsys);
 }
 
@@ -105,7 +106,7 @@ static irqreturn_t modem_err_fatal_intr_handler(int irq, void *dev_id)
 	struct modem_data *drv = subsys_to_drv(dev_id);
 
 	/* Ignore if we're the one that set the force stop GPIO */
-	if (drv->crash_shutdown || subsys_get_crash_status(drv->subsys))
+	if (drv->crash_shutdown)
 		return IRQ_HANDLED;
 
 	pr_err("Fatal error on the modem.\n");
@@ -165,6 +166,7 @@ static int modem_powerup(const struct subsys_desc *subsys)
 	 */
 	INIT_COMPLETION(drv->stop_ack);
 	drv->subsys_desc.ramdump_disable = 0;
+	drv->ignore_errors = false;
 	drv->q6->desc.fw_name = subsys->fw_name;
 	return pil_boot(&drv->q6->desc);
 }
@@ -218,8 +220,7 @@ static int modem_ramdump(int enable, const struct subsys_desc *subsys)
 static irqreturn_t modem_wdog_bite_intr_handler(int irq, void *dev_id)
 {
 	struct modem_data *drv = subsys_to_drv(dev_id);
-
-	if (subsys_get_crash_status(drv->subsys))
+	if (drv->ignore_errors)
 		return IRQ_HANDLED;
 
 	pr_err("Watchdog bite received from modem software!\n");
