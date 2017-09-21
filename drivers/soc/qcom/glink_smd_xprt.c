@@ -1268,7 +1268,7 @@ static int ssr(struct glink_transport_if *if_ptr)
 
 	einfo->xprt_if.glink_core_if_ptr->link_down(&einfo->xprt_if);
 	queue_delayed_work(system_power_efficient_wq,
-				&einfo->ssr_work, msecs_to_jiffies(5000));
+				&einfo->ssr_work, 5 * HZ);
 	return 0;
 }
 
