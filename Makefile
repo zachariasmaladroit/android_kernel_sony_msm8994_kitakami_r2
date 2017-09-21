@@ -382,15 +382,12 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
 		   -fdiagnostics-color=always \
-		   -fno-delete-null-pointer-checks \
-		   -fno-aggressive-loop-optimizations \
+		   -fdelete-null-pointer-checks -ftree-vrp \
+		   -fisolate-erroneous-paths-dereference \
+		   -fisolate-erroneous-paths-attribute \
 		   -fno-pic \
 		   -mcpu=cortex-a53+crc+crypto -mtune=cortex-a53 \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
-#
-#		   -fdelete-null-pointer-checks -ftree-vrp \
-#		   -fisolate-erroneous-paths-dereference \
-#		   -fisolate-erroneous-paths-attribute \
 #
 #		   -fsplit-paths \
 #		   -ftree-loop-distribution -ftree-loop-distribute-patterns \
