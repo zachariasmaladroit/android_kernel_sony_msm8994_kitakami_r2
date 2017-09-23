@@ -188,6 +188,10 @@ config CRYPTO_GLUE_HELPER_X86
 	depends on X86
 	select CRYPTO_ALGAPI
 
+config CRYPTO_SOMC_FIPS_KSCL
+	tristate "Sony Mobile FIPS AES-XTS/AES-CBC Driver"
+	default n
+
 comment "Authenticated Encryption with Associated Data"
 
 config CRYPTO_CCM
