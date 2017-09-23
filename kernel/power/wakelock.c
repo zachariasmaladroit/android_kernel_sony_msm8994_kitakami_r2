@@ -72,9 +72,28 @@ static inline void decrement_wakelocks_number(void)
 	number_of_wakelocks--;
 }
 #else /* CONFIG_PM_WAKELOCKS_LIMIT = 0 */
+#ifdef CONFIG_PDESIRE_WAKELOCK_DYNAMIC_LIMITER
+static unsigned int number_of_wakelocks;
+
+static inline bool wakelocks_limit_exceeded(void)
+{
+	return number_of_wakelocks > CONFIG_PDESIRE_WAKELOCK_LIMIT;
+}
+
+static inline void increment_wakelocks_number(void)
+{
+	number_of_wakelocks++;
+}
+
+static inline void decrement_wakelocks_number(void)
+{
+	number_of_wakelocks--;
+}
+#else
 static inline bool wakelocks_limit_exceeded(void) { return false; }
 static inline void increment_wakelocks_number(void) {}
 static inline void decrement_wakelocks_number(void) {}
+#endif
 #endif /* CONFIG_PM_WAKELOCKS_LIMIT */
 
 #ifdef CONFIG_PM_WAKELOCKS_GC
@@ -158,10 +177,15 @@ static struct wakelock *wakelock_lookup_add(const char *name, size_t len,
 	}
 	if (!add_if_not_found)
 		return ERR_PTR(-EINVAL);
-
+#ifdef CONFIG_PDESIRE_WAKELOCK_DYNAMIC_LIMITER
+	if (wakelocks_limit_exceeded()) {
+		number_of_wakelocks = CONFIG_PDESIRE_WAKELOCK_LIMIT_RESET
+		return ERR_PTR(-ENOSPC);
+	}
+#else
 	if (wakelocks_limit_exceeded())
 		return ERR_PTR(-ENOSPC);
-
+#endif
 	/* Not found, we have to add a new one. */
 	wl = kzalloc(sizeof(*wl), GFP_KERNEL);
 	if (!wl)
