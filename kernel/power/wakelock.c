@@ -75,9 +75,31 @@ static inline void decrement_wakelocks_number(void)
 #ifdef CONFIG_PDESIRE_WAKELOCK_DYNAMIC_LIMITER
 static unsigned int number_of_wakelocks;
 
+static inline bool wakelocks_in_blocked_range(void)
+{
+	unsigned int range;
+
+	range = CONFIG_PDESIRE_WAKELOCK_LIMIT + CONFIG_PDESIRE_WAKELOCK_LIMIT_RANGE;
+
+	/* Null check if a Config is not set */
+	if (range == NULL) 
+		goto finish;
+
+	if (number_of_wakelocks > range) {
+		number_of_wakelocks = 0;
+		goto finish;
+	}
+
+	if (number_of_wakelocks > CONFIG_PDESIRE_WAKELOCK_LIMIT)
+		return true;
+
+finish:
+	return false;
+}
+
 static inline bool wakelocks_limit_exceeded(void)
 {
-	return number_of_wakelocks > CONFIG_PDESIRE_WAKELOCK_LIMIT;
+	return wakelocks_in_blocked_range();
 }
 
 static inline void increment_wakelocks_number(void)
@@ -177,15 +199,9 @@ static struct wakelock *wakelock_lookup_add(const char *name, size_t len,
 	}
 	if (!add_if_not_found)
 		return ERR_PTR(-EINVAL);
-#ifdef CONFIG_PDESIRE_WAKELOCK_DYNAMIC_LIMITER
-	if (wakelocks_limit_exceeded()) {
-		number_of_wakelocks = CONFIG_PDESIRE_WAKELOCK_LIMIT_RESET
-		return ERR_PTR(-ENOSPC);
-	}
-#else
+
 	if (wakelocks_limit_exceeded())
 		return ERR_PTR(-ENOSPC);
-#endif
 	/* Not found, we have to add a new one. */
 	wl = kzalloc(sizeof(*wl), GFP_KERNEL);
 	if (!wl)
