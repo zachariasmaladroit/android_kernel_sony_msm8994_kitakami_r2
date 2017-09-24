@@ -1121,7 +1121,7 @@ CONFIG_MSM_PERFORMANCE_HOTPLUG_ON=y
 CONFIG_STATE_NOTIFIER=y
 
 # Powersuspend (deprecated, do not use - let's see if the superb idle drain was caused by this)
-# CONFIG_POWERSUSPEND is not set
+CONFIG_POWERSUSPEND=y
 
 # Adreno idler
 CONFIG_ADRENO_IDLER=y
