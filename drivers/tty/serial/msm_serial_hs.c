@@ -2279,7 +2279,6 @@ static irqreturn_t msm_hs_wakeup_isr(int irq, void *dev)
 	struct msm_hs_port *msm_uport = (struct msm_hs_port *)dev;
 	struct uart_port *uport = &msm_uport->uport;
 
-	__pm_stay_awake(&msm_uport->ws);
 	spin_lock_irqsave(&uport->lock, flags);
 	if (!atomic_read(&msm_uport->wakeup_irq_disabled)) {
 		disable_irq_nosync(msm_uport->wakeup.irq);
@@ -2331,7 +2330,7 @@ static void msm_hs_wakeup_resume_work(struct work_struct *work)
 		}
 
 		spin_unlock_irqrestore(&uport->lock, flags);
-		__pm_relax(&msm_uport->ws);
+		msm_hs_resource_unvote(msm_uport);
 
 		if (wakeup && msm_uport->wakeup.inject_rx)
 			tty_flip_buffer_push(tty->port);
