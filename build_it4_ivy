@@ -10,7 +10,7 @@ export PATH=~/android/z5_build-environment/aarch64-linux-android-6.3.1/bin/:$PAT
 export CROSS_COMPILE=aarch64-linux-android-
 
 #export KBUILD_DIFFCONFIG=ivy_diffconfig
-make kitakami_sumire_defconfig
+make kitakami_ivy_defconfig
 ###make oldconfig
 make -j8
 
