@@ -916,7 +916,7 @@ extern uint32 dhd_get_scan_timeout(dhd_pub_t *pub);
 
 #define MAX_DTIM_SKIP_BEACON_INTERVAL	100 /* max allowed associated AP beacon for DTIM skip */
 #ifndef MAX_DTIM_ALLOWED_INTERVAL
-#define MAX_DTIM_ALLOWED_INTERVAL 900 /* max allowed total beacon interval for DTIM skip */
+#define MAX_DTIM_ALLOWED_INTERVAL 300 /* max allowed total beacon interval for DTIM skip */
 #endif
 #define NO_DTIM_SKIP 1
 #ifdef SDTEST
