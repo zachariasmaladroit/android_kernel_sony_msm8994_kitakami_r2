@@ -332,7 +332,7 @@ static int msm_hs_ioctl(struct uart_port *uport, unsigned int cmd,
 		if (msm_uport->pm_state != MSM_HS_PM_ACTIVE)
 			state = 0;
 		ret = state;
-		MSM_HS_INFO("%s():GET UART CLOCK STATUS: cmd=%d state=%d\n",
+		MSM_HS_DBG("%s():GET UART CLOCK STATUS: cmd=%d state=%d\n",
 			__func__, cmd, state);
 		break;
 	}
@@ -2540,7 +2540,11 @@ static int msm_hs_startup(struct uart_port *uport)
 		}
 	}
 
-	wakeup_source_init(&msm_uport->ws, tty->name);
+	if (!tty->name)
+		wakeup_source_init(&msm_uport->ws, "msm-bt-uart");
+	else
+		wakeup_source_init(&msm_uport->ws, tty->name);
+
 	ret = msm_hs_config_uart_gpios(uport);
 	if (ret) {
 		MSM_HS_ERR("Uart GPIO request failed\n");
