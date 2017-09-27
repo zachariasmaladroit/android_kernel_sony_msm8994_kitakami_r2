@@ -2301,7 +2301,7 @@ static void msm_hs_wakeup_resume_work(struct work_struct *work)
 	struct tty_struct *tty = NULL;
 
 	if (pm_runtime_enabled(uport->dev)) {
-		msm_hs_resource_vote(msm_uport);
+		__pm_stay_awake(&msm_uport->ws);
 		spin_lock_irqsave(&uport->lock, flags);
 
 		MSM_HS_DBG("%s(): ignore %d\n", __func__,
@@ -2327,7 +2327,7 @@ static void msm_hs_wakeup_resume_work(struct work_struct *work)
 		}
 
 		spin_unlock_irqrestore(&uport->lock, flags);
-		msm_hs_resource_unvote(msm_uport);
+		__pm_relax(&msm_uport->ws);
 
 		if (wakeup && msm_uport->wakeup.inject_rx)
 			tty_flip_buffer_push(tty->port);
