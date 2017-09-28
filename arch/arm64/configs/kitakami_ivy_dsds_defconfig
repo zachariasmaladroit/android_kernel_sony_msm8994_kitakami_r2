@@ -646,7 +646,7 @@ CONFIG_STRICT_MEMORY_RWX=y
 	SunKernel Facula
 ##########################
 
-CONFIG_LOCALVERSION="-N_RR_Facula_I.2_1"
+CONFIG_LOCALVERSION="-N_RR_Facula_I.2_2"
 # CONFIG_LOCALVERSION_AUTO is not set
 
 # android: recommended.cfg: enable taskstats
