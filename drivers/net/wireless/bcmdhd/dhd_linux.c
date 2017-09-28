@@ -2324,7 +2324,7 @@ dhd_sendpkt(dhd_pub_t *dhdp, int ifidx, void *pktbuf)
 
 #if defined(DHD_USE_IDLECOUNT) && defined(BCMPCIE)
 	if (bus_wakeup(dhdp->bus) == TRUE) {
-		DHD_ERROR(("%s : pcie is still in suspend state!!\n", __FUNCTION__));
+		DHD_INFO(("%s : pcie is still in suspend state!!\n", __FUNCTION__));
 		PKTFREE(dhdp->osh, pktbuf, TRUE);
 		return -EBUSY;
 	}
@@ -2332,7 +2332,7 @@ dhd_sendpkt(dhd_pub_t *dhdp, int ifidx, void *pktbuf)
 
 #ifdef PCIE_FULL_DONGLE
 	if (dhdp->busstate == DHD_BUS_SUSPEND) {
-		DHD_ERROR(("%s : pcie is still in suspend state!!\n", __FUNCTION__));
+		DHD_INFO(("%s : pcie is still in suspend state!!\n", __FUNCTION__));
 		PKTFREE(dhdp->osh, pktbuf, TRUE);
 		return -EBUSY;
 	}
@@ -2499,7 +2499,7 @@ dhd_start_xmit(struct sk_buff *skb, struct net_device *net)
 	dhd->pub.tx_in_progress = TRUE;
 #ifdef PCIE_FULL_DONGLE
 	if (dhd->pub.busstate == DHD_BUS_SUSPEND) {
-		DHD_ERROR(("%s : pcie is still in suspend state!!\n", __FUNCTION__));
+		DHD_INFO(("%s : pcie is still in suspend state!!\n", __FUNCTION__));
 		dev_kfree_skb(skb);
 		ifp = DHD_DEV_IFP(net);
 		ifp->stats.tx_dropped++;
@@ -9272,7 +9272,7 @@ void dhd_wk_lock_stats_dump(dhd_pub_t *dhdp)
 	spin_lock_irqsave(&dhd->wakelock_spinlock, flags);
 	dhd_wk_lock_rec_dump();
 	spin_unlock_irqrestore(&dhd->wakelock_spinlock, flags);
-	DHD_ERROR((KERN_ERR"Event wakelock counter %u\n", dhd->wakelock_event_counter));
+	DHD_INFO((KERN_ERR"Event wakelock counter %u\n", dhd->wakelock_event_counter));
 }
 #else
 #define STORE_WKLOCK_RECORD(wklock_type)
@@ -9479,7 +9479,7 @@ int dhd_os_check_wakelock_all(dhd_pub_t *pub)
 
 	/* Indicate to the Host to avoid going to suspend if internal locks are up */
 	if (dhd && lock_active) {
-		DHD_ERROR(("%s wakelock c-%d wl-%d wd-%d rx-%d "
+		DHD_INFO(("%s wakelock c-%d wl-%d wd-%d rx-%d "
 			"ctl-%d intr-%d evt-%d txfl-%d\n",
 			__FUNCTION__, c, l1, l2, l3, l4, l5, l6, l7));
 
