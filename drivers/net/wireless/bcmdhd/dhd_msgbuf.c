@@ -3286,18 +3286,18 @@ int dhd_prot_ioctl(dhd_pub_t *dhd, int ifidx, wl_ioctl_t * ioc, void * buf, int 
 	uint8 action;
 
 	if ((dhd->busstate == DHD_BUS_DOWN) || dhd->hang_was_sent) {
-		DHD_ERROR(("%s : bus is down. we have nothing to do\n", __FUNCTION__));
+		DHD_INFO(("%s : bus is down. we have nothing to do\n", __FUNCTION__));
 		goto done;
 	}
 
 #ifdef DHD_USE_IDLECOUNT
 	if (!bus_wake(dhd->bus)) {
-		DHD_ERROR(("%s : bus_wake returns 0\n", __FUNCTION__));
+		DHD_INFO(("%s : bus_wake returns 0\n", __FUNCTION__));
 	}
 #endif /* DHD_USE_IDLECOUNT */
 
 	if (dhd->busstate == DHD_BUS_SUSPEND) {
-		DHD_ERROR(("%s : bus is suspended, bus->suspend[%d], bus->host_suspended[%d]\n",
+		DHD_INFO(("%s : bus is suspended, bus->suspend[%d], bus->host_suspended[%d]\n",
 			__FUNCTION__, dhd->bus->suspended, dhd->bus->host_suspend));
 		goto done;
 	}
@@ -3349,7 +3349,7 @@ int dhd_prot_ioctl(dhd_pub_t *dhd, int ifidx, wl_ioctl_t * ioc, void * buf, int 
 		ret = 0;
 	} else {
 #ifndef CUSTOMER_HW5
-		DHD_ERROR(("%s: status ret value is %d \n", __FUNCTION__, ret));
+		DHD_INFO(("%s: status ret value is %d \n", __FUNCTION__, ret));
 #endif /* CUSTOMER_HW5 */
 		dhd->dongle_error = ret;
 	}
