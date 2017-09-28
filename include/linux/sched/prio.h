@@ -1,6 +1,9 @@
 #ifndef _SCHED_PRIO_H
 #define _SCHED_PRIO_H
 
+#define MAX_NICE	19
+#define MIN_NICE	-20
+
 /*
  * Priority of a process goes from 0..MAX_PRIO-1, valid RT
  * priority is 0..MAX_RT_PRIO-1, and SCHED_NORMAL/SCHED_BATCH
@@ -37,5 +40,15 @@
 #define USER_PRIO(p)		((p)-MAX_RT_PRIO)
 #define TASK_USER_PRIO(p)	USER_PRIO((p)->static_prio)
 #define MAX_USER_PRIO		(USER_PRIO(MAX_PRIO))
+
+/*
+ * Convert nice value [19,-20] to rlimit style value [1,40].
+ */
+#define nice_to_rlimit(nice) (MAX_NICE - nice + 1)
+
+/*
+ * Convert rlimit style value [1,40] to nice value [-20, 19].
+ */
+#define rlimit_to_nice(prio) (MAX_NICE - prio + 1)
 
 #endif /* _SCHED_PRIO_H */
