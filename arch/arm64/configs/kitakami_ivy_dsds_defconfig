@@ -1110,12 +1110,15 @@ CONFIG_BCMDHD_FW_PATH="/system/etc/firmware/wlan/bcmdhd/fw_bcmdhd.bin"
 CONFIG_BCMDHD_NVRAM_PATH="/system/etc/firmware/wlan/bcmdhd/bcmdhd.cal"
 
 # Hotplug management (pick one pair)
-CONFIG_MSM_CORE_CTL_HELPER=y
-CONFIG_MSM_CORE_CTL=y
+# CONFIG_MSM_CORE_CTL_HELPER is not set
+# CONFIG_MSM_CORE_CTL is not set
 CONFIG_MSM_PERFORMANCE=y
 CONFIG_MSM_PERFORMANCE_HOTPLUG_ON=y
-# CONFIG_SCHED_CORE_CTL is not set
-# CONFIG_SCHED_CORE_CTL_HELPER is not set
+CONFIG_SCHED_CORE_CTL=y
+CONFIG_SCHED_CORE_CTL_HELPER=y
+
+# "The ~200 Line Linux Kernel Patch That Does Wonders"
+CONFIG_SCHED_AUTOGROUP=y
 
 # STATE_NOTIFIER (slightly related thus positioning here)
 CONFIG_STATE_NOTIFIER=y
