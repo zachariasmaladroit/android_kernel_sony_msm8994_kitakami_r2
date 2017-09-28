@@ -1591,7 +1591,8 @@ static int mostly_idle_cpu_sync(int cpu, int sync)
 		nr_running--;
 
 	return load <= rq->mostly_idle_load &&
-		nr_running <= rq->mostly_idle_nr_run;
+		nr_running <= rq->mostly_idle_nr_run &&
+		!sched_cpu_high_irqload(cpu);
 }
 
 static int boost_refcount;
@@ -1710,9 +1711,6 @@ static int task_will_fit(struct task_struct *p, int cpu)
 static int eligible_cpu(struct task_struct *p, int cpu, int sync)
 {
 	struct rq *rq = cpu_rq(cpu);
-
-	if (sched_cpu_high_irqload(cpu))
-		return 0;
 
 	if (mostly_idle_cpu_sync(cpu, sync))
 		return 1;
@@ -1839,7 +1837,7 @@ static int best_small_task_cpu(struct task_struct *p, int sync)
 	 */
 	if (!cpu_rq(min_cost_cpu)->cstate &&
 	    mostly_idle_cpu_sync(min_cost_cpu, sync) &&
-	    !sched_cpu_high_irqload(min_cost_cpu) && min_cost_cpu == prev_cpu)
+	    min_cost_cpu == prev_cpu)
 		return min_cost_cpu;
 
 	for_each_cpu(i, &search_cpus) {
@@ -1865,8 +1863,7 @@ static int best_small_task_cpu(struct task_struct *p, int sync)
 			continue;
 		}
 
-		if (mostly_idle_cpu_sync(i, sync) &&
-		    !sched_cpu_high_irqload(i)) {
+		if (mostly_idle_cpu_sync(i, sync)) {
 			if (best_mi_cpu == -1 || i == prev_cpu)
 				best_mi_cpu = i;
 			continue;
@@ -2041,8 +2038,7 @@ static int select_best_cpu(struct task_struct *p, int target, int reason,
 		 * where the task will fit.
 		 */
 		if (!task_will_fit(p, i)) {
-			if (mostly_idle_cpu_sync(i, sync) &&
-			    !sched_cpu_high_irqload(i)) {
+			if (mostly_idle_cpu_sync(i, sync)) {
 				load = cpu_load_sync(i, sync);
 				if (load < min_fallback_load ||
 				    (load == min_fallback_load &&
@@ -2144,12 +2140,8 @@ static int select_best_cpu(struct task_struct *p, int target, int reason,
 		}
 	}
 
-	/*
-	 * Don't need to check !sched_cpu_high_irqload(best_cpu) because
-	 * best_cpu cannot have high irq load.
-	 */
-	if (min_cstate_cpu >= 0 && (prefer_idle > 0 || best_cpu < 0 ||
-				    !mostly_idle_cpu_sync(best_cpu, sync)))
+	if (min_cstate_cpu >= 0 && (prefer_idle > 0 ||
+		!(best_cpu >= 0 && mostly_idle_cpu_sync(best_cpu, sync))))
 		best_cpu = min_cstate_cpu;
 done:
 	if (best_cpu < 0) {
