@@ -576,7 +576,7 @@ CONFIG_QCOM_EARLY_RANDOM=y
 
 CONFIG_QCOM_NPA_DUMP=y
 CONFIG_KERNEL_TEXT_MPU_PROT=y
-CONFIG_AMSS_ERR_LOG=y
+
 CONFIG_MSM_TZ_LOG=y
 CONFIG_EXT4_FS=y
 CONFIG_EXT4_FS_SECURITY=y
@@ -1245,3 +1245,7 @@ CONFIG_HID_SENSOR_HUB=y
 
 # add support to trace the block layer
 CONFIG_BLK_DEV_IO_TRACE=y
+
+# disable support for printing out the last state upon modem failure
+# (sensitive data, also: non-Stock ROM, thus useless)
+# CONFIG_AMSS_ERR_LOG is not set
