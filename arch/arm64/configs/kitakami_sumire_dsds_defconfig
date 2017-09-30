@@ -1159,3 +1159,6 @@ CONFIG_CMA_SIZE_MBYTES=32
 
 # disable support for serial port
 # CONFIG_SERIO is not set
+
+# add support for battery indicator on HID devices
+CONFIG_HID_BATTERY_STRENGTH=y
