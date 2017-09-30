@@ -1156,3 +1156,6 @@ CONFIG_MSM_BT_POWER=y
 
 # CMA, allocating framebuffer, etc. memory [CMA_SIZE_MBYTES 16 -> 32]
 CONFIG_CMA_SIZE_MBYTES=32
+
+# disable support for serial port
+# CONFIG_SERIO is not set
