@@ -944,8 +944,10 @@ CONFIG_ANDROID_BINDER_DEVICES="binder,hwbinder,vndbinder"
 # CONFIG_ANDROID_BINDER_IPC_SELFTEST is not set
 # CONFIG_CORESIGHT is not set
 # CONFIG_BIF is not set
+
+# Sensors (SSC), needed for adaptive (automagic) brightness
 # CONFIG_SENSORS is not set
-# CONFIG_SENSORS_SSC is not set
+CONFIG_SENSORS_SSC=y
 
 # CONFIG_MSM_SMD_DEBUG is not set
 
@@ -1149,8 +1151,8 @@ CONFIG_RMNET_DATA=y
 CONFIG_RMNET_DATA_FC=y
 # CONFIG_RMNET_DATA_DEBUG_PKT is not set
 
-# Bluetooth enable PMIC on/off switch
-CONFIG_MSM_BT_POWER=y
+# Bluetooth disable PMIC on/off switch - otherwise FM, bluetooth broken
+# CONFIG_MSM_BT_POWER is not set
 
 # CMA, allocating framebuffer, etc. memory [CMA_SIZE_MBYTES 16 -> 32]
 CONFIG_CMA_SIZE_MBYTES=32
