@@ -385,15 +385,19 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fdelete-null-pointer-checks -ftree-vrp \
 		   -fisolate-erroneous-paths-dereference \
 		   -fisolate-erroneous-paths-attribute \
-		   -mpc-relative-literal-loads \
-		   -fno-aggressive-loop-optimizations \
 		   -fno-pic \
-		   -fsched-interblock -fsched-spec -fno-schedule-insns -fschedule-insns2 \
-		   -fsched-pressure -fno-tree-reassoc -fmodulo-sched -fmodulo-sched-allow-regmoves \
-  		   -ftracer \
-		   -fivopts \
-		   -mcpu=cortex-a53+crc+crypto -mtune=cortex-a53 \
+		   -mtune=cortex-a53 \
+		   -march=armv8-a+crc+crypto \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
+#
+#		   -mcpu=cortex-a53+crc+crypto \
+#
+#		   -mpc-relative-literal-loads \
+#		   -fno-aggressive-loop-optimizations \
+#		   -fsched-interblock -fsched-spec -fno-schedule-insns -fschedule-insns2 \
+#		   -fsched-pressure -fno-tree-reassoc -fmodulo-sched -fmodulo-sched-allow-regmoves \
+# 		   -ftracer \
+#		   -fivopts \
 #
 #		   -fsplit-paths \
 #		   -ftree-loop-distribution -ftree-loop-distribute-patterns \
