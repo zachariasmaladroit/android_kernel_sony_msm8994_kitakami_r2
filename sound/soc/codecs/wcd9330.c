@@ -8824,12 +8824,6 @@ static int tomtom_post_reset_cb(struct wcd9xxx *wcd9xxx)
 	codec = (struct snd_soc_codec *)(wcd9xxx->ssr_priv);
 	tomtom = snd_soc_codec_get_drvdata(codec);
 
-	/*
-	 * Delay is needed for settling time
-	 * for the register configuration
-	 */
-	msleep(50);
-
 	snd_soc_card_change_online_state(codec->card, 1);
 	clear_bit(BUS_DOWN, &tomtom->status_mask);
 
