@@ -1249,3 +1249,9 @@ CONFIG_BLK_DEV_IO_TRACE=y
 # disable support for printing out the last state upon modem failure
 # (sensitive data, also: non-Stock ROM, thus useless)
 # CONFIG_AMSS_ERR_LOG is not set
+
+# enable Panic on data corruption, if there's data corruption we better
+# crash the system as soon as it occurs, otherwise the context is lost
+# to track the (potentially fixable) origin down, also it's a
+# surefire way to screw up the system anyway
+CONFIG_PANIC_ON_DATA_CORRUPTION=y
