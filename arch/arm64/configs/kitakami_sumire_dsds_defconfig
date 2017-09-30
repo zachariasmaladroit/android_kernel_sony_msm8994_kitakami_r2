@@ -1242,3 +1242,6 @@ CONFIG_HID_SENSOR_HUB=y
 
 # watchdog related setup, prefer bark over panicking instantly
 # CONFIG_MSM_FORCE_PANIC_ON_WDOG_BARK is not set
+
+# add support to trace the block layer
+CONFIG_BLK_DEV_IO_TRACE=y
