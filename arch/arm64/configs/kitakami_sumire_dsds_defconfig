@@ -1255,3 +1255,12 @@ CONFIG_BLK_DEV_IO_TRACE=y
 # to track the (potentially fixable) origin down, also it's a
 # surefire way to screw up the system anyway
 CONFIG_PANIC_ON_DATA_CORRUPTION=y
+
+# add missing ciphers, algorithms
+CONFIG_CRYPTO_CTS=y
+CONFIG_CRYPTO_SHA512=y
+CONFIG_CRYPTO_WP512=y
+CONFIG_CRYPTO_RMD128=y
+CONFIG_CRYPTO_RMD160=y
+CONFIG_CRYPTO_RMD256=y
+CONFIG_CRYPTO_RMD320=y
