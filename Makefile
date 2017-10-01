@@ -244,8 +244,8 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 GRAPHITE = -pipe
 # -floop-parallelize-all -ftree-parallelize-loops=3
 
-HOSTCC       = ccache gcc
-HOSTCXX      = ccache g++
+HOSTCC       = gcc
+HOSTCXX      = g++
 HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -Os -pipe -fomit-frame-pointer -std=gnu89 $(call cc-option,-fno-PIE)
 HOSTCXXFLAGS = -Os -pipe
 # -DNDEBUG -fgcse-las $(GRAPHITE)
