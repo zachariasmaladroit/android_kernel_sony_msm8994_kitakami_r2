@@ -115,8 +115,8 @@ static void __init rcu_bootup_announce_oddness(void)
 #endif /* #ifdef CONFIG_RCU_NOCB_CPU_ALL */
 #endif /* #ifndef CONFIG_RCU_NOCB_CPU_NONE */
 	if (have_rcu_nocb_mask) {
-		cpulist_scnprintf(nocb_buf, sizeof(nocb_buf), rcu_nocb_mask);
-		pr_info("\tExperimental no-CBs CPUs: %s.\n", nocb_buf);
+//		cpulist_scnprintf(nocb_buf, sizeof(nocb_buf), rcu_nocb_mask);
+//		pr_info("\tExperimental no-CBs CPUs: %*pbl.\n", nocb_buf);
 		if (rcu_nocb_poll)
 			pr_info("\tExperimental polled no-CBs CPUs.\n");
 	}
