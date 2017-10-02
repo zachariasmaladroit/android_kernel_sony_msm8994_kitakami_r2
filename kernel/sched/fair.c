@@ -47,8 +47,8 @@
  *  run vmstat and monitor the context-switches (cs) field)
  */
 #ifdef CONFIG_ZEN_INTERACTIVE
-unsigned int sysctl_sched_latency			= 3000000ULL;
-unsigned int normalized_sysctl_sched_latency		= 3000000ULL;
+unsigned int sysctl_sched_latency			= 600000ULL;
+unsigned int normalized_sysctl_sched_latency		= 600000ULL;
 #else
 unsigned int sysctl_sched_latency = 6000000ULL;
 unsigned int normalized_sysctl_sched_latency = 6000000ULL;
@@ -71,8 +71,8 @@ enum sched_tunable_scaling sysctl_sched_tunable_scaling
  * (default: 0.75 msec * (1 + ilog(ncpus)), units: nanoseconds)
  */
 #ifdef CONFIG_ZEN_INTERACTIVE
-unsigned int sysctl_sched_min_granularity		= 300000ULL;
-unsigned int normalized_sysctl_sched_min_granularity	= 300000ULL;
+unsigned int sysctl_sched_min_granularity		= 75000ULL;
+unsigned int normalized_sysctl_sched_min_granularity	= 75000ULL;
 #else
 unsigned int sysctl_sched_min_granularity = 750000ULL;
 unsigned int normalized_sysctl_sched_min_granularity = 750000ULL;
@@ -82,7 +82,7 @@ unsigned int normalized_sysctl_sched_min_granularity = 750000ULL;
  * is kept at sysctl_sched_latency / sysctl_sched_min_granularity
  */
 #ifdef CONFIG_ZEN_INTERACTIVE
-static unsigned int sched_nr_latency = 10;
+static unsigned int sched_nr_latency = 8;
 #else
 static unsigned int sched_nr_latency = 8;
 #endif
@@ -110,8 +110,8 @@ unsigned int __read_mostly sysctl_sched_wake_to_idle = 0;
  * have immediate wakeup/sleep latencies.
  */
 #ifdef CONFIG_ZEN_INTERACTIVE
-unsigned int sysctl_sched_wakeup_granularity		= 500000UL;
-unsigned int normalized_sysctl_sched_wakeup_granularity	= 500000UL;
+unsigned int sysctl_sched_wakeup_granularity		= 100000UL;
+unsigned int normalized_sysctl_sched_wakeup_granularity	= 100000UL;
 
 const_debug unsigned int sysctl_sched_migration_cost	= 250000UL;
 #else
