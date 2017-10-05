@@ -6865,9 +6865,11 @@ void __cfg80211_send_event_skb(struct sk_buff *skb, gfp_t gfp)
 	if (data->nla_type == NL80211_ATTR_VENDOR_DATA)
 		genlmsg_multicast_netns(wiphy_net(&rdev->wiphy), skb, 0,
 			nl80211_vendor_mcgrp.id, gfp);
+#ifdef CONFIG_NL80211_TESTMODE
 	else
 		genlmsg_multicast_netns(wiphy_net(&rdev->wiphy), skb, 0,
 			nl80211_testmode_mcgrp.id, gfp);
+#endif
 }
 EXPORT_SYMBOL(__cfg80211_send_event_skb);
 
