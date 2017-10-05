@@ -334,12 +334,12 @@ static s32 wl_cfg80211_resume(struct wiphy *wiphy);
 	2, 0))
 static s32 wl_cfg80211_mgmt_tx_cancel_wait(struct wiphy *wiphy,
 	bcm_struct_cfgdev *cfgdev, u64 cookie);
-static s32 wl_cfg80211_del_station(struct wiphy *wiphy,
+/*static s32 wl_cfg80211_del_station(struct wiphy *wiphy,
 	struct net_device *ndev,
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 16, 0))
 	const
 #endif
-	struct station_del_parameters *params);
+	struct station_del_parameters *params);*/
 static s32 wl_cfg80211_change_station(struct wiphy *wiphy,
 	struct net_device *dev,
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 16, 0))
