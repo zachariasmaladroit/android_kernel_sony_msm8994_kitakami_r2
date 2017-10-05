@@ -1091,6 +1091,7 @@ CONFIG_BCM4356=y
 CONFIG_DHD_USE_STATIC_BUF=y
 CONFIG_BCMDHD_FW_PATH="/system/etc/firmware/wlan/bcmdhd/fw_bcmdhd.bin"
 # CONFIG_BCMDHD_NVRAM_PATH="/system/etc/firmware/wlan/bcmdhd/bcmdhd.cal"
+# CONFIG_NL80211_TESTMODE is not set
 # CONFIG_ATH_CARDS is not set
 # CONFIG_WIL6210 is not set
 # CONFIG_CNSS is not set
