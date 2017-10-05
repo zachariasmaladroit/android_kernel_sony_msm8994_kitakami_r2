@@ -644,7 +644,7 @@ CONFIG_STRICT_MEMORY_RWX=y
 	SunKernel Facula
 ##########################
 
-CONFIG_LOCALVERSION="-N_RR_Facula_I.2_10_2"
+CONFIG_LOCALVERSION="-N_RR_Facula_I.3"
 # CONFIG_LOCALVERSION_AUTO is not set
 
 # android: recommended.cfg: enable taskstats
@@ -1094,6 +1094,7 @@ CONFIG_BCMDHD_FW_PATH="/system/etc/firmware/wlan/bcmdhd/fw_bcmdhd.bin"
 # CONFIG_ATH_CARDS is not set
 # CONFIG_WIL6210 is not set
 # CONFIG_CNSS is not set
+# CONFIG_CLD_LL_CORE is not set
 
 # Hotplug management (pick one pair)
 # CONFIG_MSM_CORE_CTL_HELPER is not set
