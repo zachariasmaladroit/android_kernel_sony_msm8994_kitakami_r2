@@ -220,6 +220,9 @@ module_param_named(low_battery_value, soc_low_threshold, int, 0664);
 static struct power_supply bcl_psy;
 static const char bcl_psy_name[] = "bcl";
 
+#ifdef CONFIG_THERMAL_MONITOR
+extern bool msm_thermal_stop_little_hotplug;
+#endif
 static void bcl_handle_hotplug(struct work_struct *work)
 {
 	int ret = 0, cpu = 0;
@@ -256,6 +259,14 @@ static void bcl_handle_hotplug(struct work_struct *work)
 	if (ret) {
 		pr_err("hotplug request failed. err:%d\n", ret);
 		goto handle_hotplug_exit;
+
+#ifdef CONFIG_THERMAL_MONITOR
+	if (bcl_hotplug_request)
+		msm_thermal_stop_little_hotplug = true;
+	else
+		msm_thermal_stop_little_hotplug = false;
+#endif
+
 	}
 
 handle_hotplug_exit:
