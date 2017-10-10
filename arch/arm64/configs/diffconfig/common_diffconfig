@@ -340,3 +340,6 @@ CONFIG_QPNP_SMBCHARGER_EXTENSION=y
 
 # qpnp haptic
 # CONFIG_QPNP_HAPTIC is not set
+
+# FauxSound 
+# CONFIG_SOUND_CONTROL_HAX_3_GPL is not set
