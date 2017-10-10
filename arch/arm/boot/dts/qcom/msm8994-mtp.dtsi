@@ -441,18 +441,6 @@
 			debounce-interval = <15>;
 		};
 
-	//#ifdef VENDOR_EDIT
-	/*for vol- support*/
-		vol_down {
-			label = "volume_down";
-			gpios = <&pm8994_gpios 2 0x1>;
-			linux,input-type = <1>;
-			linux,code = <114>;
-			gpio-key,wakeup;
-			debounce-interval = <15>;
-		};
-    //endif VENDOR_EDIT
-		/*
 		cam_snapshot {
 			label = "cam_snapshot";
 			gpios = <&pm8994_gpios 4 0x1>;
