@@ -245,5 +245,9 @@ CONFIG_EXFAT_COMPAT_TUXERA=y
 
 # MODs
 # CONFIG_SCHED_FREQ_INPUT is not set
+
+# CPU-Boost, replace
 # CONFIG_CPU_BOOST is not set
 
+# KSM
+# CONFIG_KSM is not set
