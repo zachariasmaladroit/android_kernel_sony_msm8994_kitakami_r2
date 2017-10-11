@@ -1,12 +1,12 @@
-### GCC 4.9.x
-### I'm using Google 4.9 toolchain
+### GCC 6.3.x
+### I'm using Linaro 6.3.1 toolchain
 
 #export USE_CCACHE=1
 
 #export CACHE_DIR=~/.ccache
 
 export ARCH=arm64
-export PATH=~/android/z5_build-environment/aarch64-linux-android-4.9_google_07.2017/bin/:$PATH
+export PATH=~/android/z5_build-environment/aarch64-linux-android-6.3.1/bin/:$PATH
 export CROSS_COMPILE=aarch64-linux-android-
 
 export KBUILD_DIFFCONFIG=sumire_diffconfig
