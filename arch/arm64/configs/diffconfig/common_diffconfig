@@ -503,4 +503,4 @@ CONFIG_KSWAPD_CPU_AFFINITY_MASK="f"
 
 # Enable for significant reduction in overhead of disabled tracepoints
 # (more performance ? working on Stock ?)
-CONFIG_JUMP_LABEL=y
+# CONFIG_JUMP_LABEL is not set
