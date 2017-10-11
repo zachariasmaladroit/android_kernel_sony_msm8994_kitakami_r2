@@ -1,13 +1,13 @@
-### GCC 6.3.x
-### I'm using Linaro 6.3.1 toolchain
+### GCC 6.4.1
+### I'm using Linaro 6.4.1 toolchain
 
 #export USE_CCACHE=1
 
 #export CACHE_DIR=~/.ccache
 
 export ARCH=arm64
-export PATH=~/android/z5_build-environment/aarch64-linux-android-6.3.1/bin/:$PATH
-export CROSS_COMPILE=aarch64-linux-android-
+export PATH=~/android/z5_build-environment/gcc-linaro-6.4.1-2017.08-x86_64_aarch64-linux-gnu/bin/:$PATH
+export CROSS_COMPILE=aarch64-linux-gnu-
 
 export KBUILD_DIFFCONFIG=sumire_diffconfig
 #make kitakami_sumire_defconfig
