@@ -15,11 +15,6 @@
  * Author: Mike Chan (mike@android.com)
  *
  */
-/*
- * NOTE: This file has been modified by Sony Mobile Communications Inc.
- * Modifications are Copyright (c) 2015 Sony Mobile Communications Inc,
- * and licensed under the license of the file.
- */
 
 #include <linux/cpu.h>
 #include <linux/cpumask.h>
@@ -412,9 +407,7 @@ static u64 update_load(int cpu)
 	return now;
 }
 
-static int max_local_load = 100;
-module_param(max_local_load, int, 0644);
-
+#define MAX_LOCAL_LOAD 100
 static void cpufreq_interactive_timer(unsigned long data)
 {
 	u64 now;
@@ -496,7 +489,7 @@ static void cpufreq_interactive_timer(unsigned long data)
 
 	if (cpu_load >= tunables->go_hispeed_load || tunables->boosted) {
 		if (ppol->policy->cur < tunables->hispeed_freq &&
-		    cpu_load <= max_local_load) {
+		    cpu_load <= MAX_LOCAL_LOAD) {
 			new_freq = tunables->hispeed_freq;
 		} else {
 			new_freq = choose_freq(ppol, loadadjfreq);
@@ -508,7 +501,7 @@ static void cpufreq_interactive_timer(unsigned long data)
 		new_freq = choose_freq(ppol, loadadjfreq);
 	}
 
-	if (cpu_load <= max_local_load &&
+	if (cpu_load <= MAX_LOCAL_LOAD &&
 	    ppol->policy->cur >= tunables->hispeed_freq &&
 	    new_freq > ppol->policy->cur &&
 	    now - ppol->hispeed_validate_time <
