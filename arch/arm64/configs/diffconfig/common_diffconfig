@@ -512,3 +512,6 @@ CONFIG_KSWAPD_CPU_AFFINITY_MASK="f"
 
 # troubleshooting, hanging tasks, scheduling
 CONFIG_DETECT_HUNG_TASK=y
+
+# SYSVIPC, needed for Sony / proprietary internal stuff ?
+# CONFIG_SYSVIPC is not set
