@@ -613,7 +613,7 @@ static void *z3fold_map(struct z3fold_pool *pool, unsigned long handle)
 	void *addr;
 	enum buddy buddy;
 
-	spin_lock_bh(&pool->lock);
+	spin_lock(&pool->lock);
 	zhdr = handle_to_z3fold_header(handle);
 	addr = zhdr;
 	page = virt_to_page(zhdr);
@@ -640,7 +640,7 @@ static void *z3fold_map(struct z3fold_pool *pool, unsigned long handle)
 		break;
 	}
 out:
-	spin_unlock_bh(&pool->lock);
+	spin_unlock(&pool->lock);
 	return addr;
 }
 
@@ -655,19 +655,19 @@ static void z3fold_unmap(struct z3fold_pool *pool, unsigned long handle)
 	struct page *page;
 	enum buddy buddy;
 
-	spin_lock_bh(&pool->lock);
+	spin_lock(&pool->lock);
 	zhdr = handle_to_z3fold_header(handle);
 	page = virt_to_page(zhdr);
 
 	if (test_bit(PAGE_HEADLESS, &page->private)) {
-		spin_unlock_bh(&pool->lock);
+		spin_unlock(&pool->lock);
 		return;
 	}
 
 	buddy = handle_to_buddy(handle);
 	if (buddy == MIDDLE)
 		clear_bit(MIDDLE_CHUNK_MAPPED, &page->private);
-	spin_unlock_bh(&pool->lock);
+	spin_unlock(&pool->lock);
 }
 
 /**
