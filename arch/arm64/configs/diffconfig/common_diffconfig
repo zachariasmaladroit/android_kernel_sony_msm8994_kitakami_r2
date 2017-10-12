@@ -253,7 +253,9 @@ CONFIG_EXFAT_COMPAT_TUXERA=y
 # CONFIG_EXFAT_DEBUG is not set
 
 # MODs
-# CONFIG_SCHED_FREQ_INPUT is not set
+# obviously needed for 
+# "sched: account new task load so that governor can apply different policy"
+CONFIG_SCHED_FREQ_INPUT=y
 
 CONFIG_PM_WAKELOCKS_GC=y
 CONFIG_WQ_POWER_EFFICIENT_DEFAULT=y
