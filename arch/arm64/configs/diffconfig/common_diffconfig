@@ -339,6 +339,9 @@ CONFIG_OOPS_LOG_BUF_SHIFT=17
 # CONFIG_ELF_CORE is not set
 
 # Mobicore / GUD - remove ?
+# CONFIG_MOBICORE_SUPPORT is not set
+# CONFIG_MOBICORE_DEBUG is not set
+# CONFIG_MOBICORE_API is not set
 #
 #
 
