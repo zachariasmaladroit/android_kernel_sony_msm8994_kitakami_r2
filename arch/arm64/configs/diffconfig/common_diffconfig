@@ -257,6 +257,9 @@ CONFIG_EXFAT_COMPAT_TUXERA=y
 # "sched: account new task load so that governor can apply different policy"
 CONFIG_SCHED_FREQ_INPUT=y
 
+# "The ~200 Line Linux Kernel Patch That Does Wonders"
+CONFIG_SCHED_AUTOGROUP=y
+
 CONFIG_PM_WAKELOCKS_GC=y
 CONFIG_WQ_POWER_EFFICIENT_DEFAULT=y
 # CONFIG_WAKEUP_IRQ_DEBUG is not set
