@@ -624,12 +624,13 @@ EXPORT_SYMBOL(kgsl_context_init);
  * detached by checking the KGSL_CONTEXT_PRIV_DETACHED bit in
  * context->priv.
  */
-static void kgsl_context_detach(struct kgsl_context *context)
+int kgsl_context_detach(struct kgsl_context *context)
 {
+	int ret;
 	struct kgsl_device *device;
 
 	if (context == NULL)
-		return;
+		return -EINVAL;
 
 	/*
 	 * Mark the context as detached to keep others from using
@@ -637,7 +638,7 @@ static void kgsl_context_detach(struct kgsl_context *context)
 	 * we don't try to detach twice.
 	 */
 	if (test_and_set_bit(KGSL_CONTEXT_PRIV_DETACHED, &context->priv))
-		return;
+		return -EINVAL;
 
 	device = context->device;
 
@@ -645,7 +646,7 @@ static void kgsl_context_detach(struct kgsl_context *context)
 
 	/* we need to hold device mutex to detach */
 	mutex_lock(&device->mutex);
-	context->device->ftbl->drawctxt_detach(context);
+	ret = context->device->ftbl->drawctxt_detach(context);
 	mutex_unlock(&device->mutex);
 
 	/*
@@ -659,6 +660,8 @@ static void kgsl_context_detach(struct kgsl_context *context)
 	kgsl_del_event_group(&context->events);
 
 	kgsl_context_put(context);
+
+	return ret;
 }
 
 void
@@ -2601,15 +2604,14 @@ long kgsl_ioctl_drawctxt_destroy(struct kgsl_device_private *dev_priv,
 {
 	struct kgsl_drawctxt_destroy *param = data;
 	struct kgsl_context *context;
+	long result;
 
 	context = kgsl_context_get_owner(dev_priv, param->drawctxt_id);
-	if (context == NULL)
-		return -EINVAL;
 
-	kgsl_context_detach(context);
+	result = kgsl_context_detach(context);
+
 	kgsl_context_put(context);
-
-	return 0;
+	return result;
 }
 
 static long _sharedmem_free_entry(struct kgsl_mem_entry *entry)
