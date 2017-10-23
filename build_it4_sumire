@@ -1,13 +1,13 @@
-### GCC 7.2.x
-### I'm using Linaro 7.2.1 toolchain
+### GCC 6.4.1
+### I'm using Linaro 6.4.1 toolchain
 
 #export USE_CCACHE=1
 
 #export CACHE_DIR=~/.ccache
 
 export ARCH=arm64
-export PATH=~/android/z5_build-environment/flash_gcc-prebuilts_7.x/bin/:$PATH
-export CROSS_COMPILE=aarch64-linaro-linux-android-
+export PATH=~/android/z5_build-environment/gcc-linaro-6.4.1-2017.08-x86_64_aarch64-linux-gnu/bin/:$PATH
+export CROSS_COMPILE=aarch64-linux-gnu-
 
 #export KBUILD_DIFFCONFIG=sumire_diffconfig
 make kitakami_sumire_defconfig
