@@ -1237,7 +1237,7 @@ static ssize_t clearpad_pca_show(struct device *dev,
 		block_num.block_num++;
 	}
 	buf -= null_pos;
-	dev_info(&this->pdev->dev, "read size = %d",
+	dev_dbg(&this->pdev->dev, "read size = %d",
 			 (i * block_size) - null_pos);
 err_unlock:
 	if (rc)
@@ -1295,7 +1295,7 @@ static int clearpad_prepare_f11_2d(struct clearpad_t *this)
 		goto exit;
 
 	this->extents.n_fingers = clearpad_number_of_fingers[buf[0] & 0x07];
-	dev_info(&this->pdev->dev, "number of fingers=%d\n",
+	dev_dbg(&this->pdev->dev, "number of fingers=%d\n",
 			this->extents.n_fingers);
 
 	/* enable ABS event interrupts */
@@ -1474,7 +1474,7 @@ static int clearpad_prepare_f12_2d(struct clearpad_t *this)
 	for (i = 0; i < BITS_PER_BYTE; i++)
 		this->extents.n_bytes_per_object += (buf[0] & BIT(i)) >> i;
 
-	dev_info(&this->pdev->dev,
+	dev_dbg(&this->pdev->dev,
 		"x_max=%d, y_max=%d, n_fingers=%d, n_bytes_per_object=%d\n",
 		this->extents.x_max, this->extents.y_max,
 		this->extents.n_fingers,
@@ -1491,7 +1491,7 @@ static void clearpad_firmware_reset(struct clearpad_t *this)
 	kfree(this->flash.image);
 	memset(&this->flash, 0, sizeof(this->flash));
 	this->fwdata_available = false;
-	dev_info(&this->pdev->dev, "firmware image has been reset\n");
+	dev_dbg(&this->pdev->dev, "firmware image has been reset\n");
 }
 
 static int clearpad_flash(struct clearpad_t *this);
@@ -1544,14 +1544,14 @@ static int clearpad_initialize(struct clearpad_t *this)
 	}
 
 	if (this->state != SYN_STATE_RUNNING) {
-		dev_info(&this->pdev->dev,
+		dev_dbg(&this->pdev->dev,
 			"device mid %d, prop %d, family 0x%02x, " \
 			"rev 0x%02x.%02x, extra 0x%02x\n",
 			info->manufacturer_id, info->product_properties,
 			info->customer_family, info->firmware_revision_major,
 			info->firmware_revision_minor,
 			info->firmware_revision_extra);
-		dev_info(&this->pdev->dev,
+		dev_dbg(&this->pdev->dev,
 			"bl %04d-%02d-%02d, tester %d, s/n %d, id '%s'\n",
 			 2000 + info->date[0], info->date[1], info->date[2],
 			 ((int)info->tester_id[0] << 8) + info->tester_id[1],
@@ -1561,7 +1561,7 @@ static int clearpad_initialize(struct clearpad_t *this)
 	}
 
 	if (this->flash.image) {
-		dev_info(&this->pdev->dev, "force firmware update\n");
+		dev_dbg(&this->pdev->dev, "force firmware update\n");
 		this->state = SYN_STATE_FLASH_IMAGE_SET;
 		this->task = SYN_TASK_NO_SUSPEND;
 		rc = clearpad_flash(this);
@@ -1592,7 +1592,7 @@ static int clearpad_initialize(struct clearpad_t *this)
 	this->flash_requested = false;
 
 	/* notify end of task */
-	dev_info(&this->pdev->dev, "result: %s", this->result_info);
+	dev_dbg(&this->pdev->dev, "result: %s", this->result_info);
 	wake_up_interruptible(&this->task_none_wq);
 exit:
 	return rc;
@@ -1673,7 +1673,7 @@ static int clearpad_flash_program(struct clearpad_t *this)
 		goto exit;
 	}
 
-	dev_info(&this->pdev->dev, "flashing enabled\n");
+	dev_dbg(&this->pdev->dev, "flashing enabled\n");
 
 	/* PDT may have changed, re-read */
 	rc = clearpad_read_pdt(this);
@@ -1713,7 +1713,7 @@ static int clearpad_flash_program(struct clearpad_t *this)
 	if (rc)
 		goto exit;
 
-	dev_info(&this->pdev->dev, "firmware erasing\n");
+	dev_dbg(&this->pdev->dev, "firmware erasing\n");
 
 	this->state = SYN_STATE_FLASH_PROGRAM;
 exit:
@@ -1786,12 +1786,12 @@ write_block_data:
 		goto exit;
 
 	if (f->data.pos % 100 == 0)
-		dev_info(&this->pdev->dev,
+		dev_dbg(&this->pdev->dev,
 		       "wrote %d blocks\n", f->data.pos);
 
 	/* if we've reached the end of the data flashing */
 	if (++f->data.pos == f->data.blocks) {
-		dev_info(&this->pdev->dev,
+		dev_dbg(&this->pdev->dev,
 				"data flash finished\n");
 		this->state = SYN_STATE_FLASH_DATA;
 	}
@@ -1866,7 +1866,7 @@ write_block_data:
 
 	/* if we've reached the end of the configuration flashing */
 	if (++f->config.pos == f->config.blocks) {
-		dev_info(&this->pdev->dev,
+		dev_dbg(&this->pdev->dev,
 				"configuration flash finished\n");
 		this->state = SYN_STATE_FLASH_CONFIG;
 	}
@@ -1910,7 +1910,7 @@ static int clearpad_flash_disable(struct clearpad_t *this)
 	if (rc)
 		goto exit;
 
-	dev_info(&this->pdev->dev,
+	dev_dbg(&this->pdev->dev,
 			"flashing finished, resetting\n");
 	this->state = SYN_STATE_FLASH_DISABLE;
 	msleep(100);
@@ -1939,7 +1939,7 @@ static int clearpad_flash_verify(struct clearpad_t *this)
 	this->state = SYN_STATE_INIT;
 	this->task = SYN_TASK_NONE;
 
-	dev_info(&this->pdev->dev,
+	dev_dbg(&this->pdev->dev,
 			"device successfully flashed\n");
 
 	clearpad_set_irq(this, this->pdt[SYN_F34_FLASH].irq_mask, false);
@@ -1966,7 +1966,7 @@ static void clearpad_firmware_check(struct clearpad_t *this)
 	f->data.blocks = (f->data.length / 16) + !!(f->data.length % 16);
 	f->data.data = data + HEADER_SIZE;
 	f->data.pos = 0;
-	dev_info(&this->pdev->dev, "DATA: length=%d blocks=%d data=%p\n",
+	dev_dbg(&this->pdev->dev, "DATA: length=%d blocks=%d data=%p\n",
 		 f->data.length, f->data.blocks, f->data.data);
 
 	/* Set up configuration block info */
@@ -1974,7 +1974,7 @@ static void clearpad_firmware_check(struct clearpad_t *this)
 	f->config.blocks = (f->config.length / 16) + !!(f->config.length % 16);
 	f->config.data = data + HEADER_SIZE + f->data.length;
 	f->config.pos = 0;
-	dev_info(&this->pdev->dev, "CONFIG: length=%d blocks=%d data=%p\n",
+	dev_dbg(&this->pdev->dev, "CONFIG: length=%d blocks=%d data=%p\n",
 		 f->config.length, f->config.blocks, f->config.data);
 }
 
@@ -2047,7 +2047,7 @@ static int clearpad_flash(struct clearpad_t *this)
 		}
 
 		/* notify end of task */
-		dev_info(&this->pdev->dev, "result: %s", this->result_info);
+		dev_dbg(&this->pdev->dev, "result: %s", this->result_info);
 		wake_up_interruptible(&this->task_none_wq);
 	}
 	return rc;
@@ -2068,7 +2068,7 @@ static void clearpad_wd_status_poll(struct work_struct *work)
 		if (rc) {
 			dev_err(&this->pdev->dev, "%s, rc = %d\n",
 							__func__, rc);
-			dev_info(&this->pdev->dev, "Resetting device\n");
+			dev_dbg(&this->pdev->dev, "Resetting device\n");
 			clearpad_reset_power(this, __func__);
 		} else {
 			this->reset_count = 0;
@@ -2153,7 +2153,7 @@ static int clearpad_vreg_suspend(struct clearpad_t *this, int enable)
 				__func__, (enable ? "LPM" : "HPM"), rc);
 		goto exit;
 	} else {
-		dev_info(&this->pdev->dev,
+		dev_dbg(&this->pdev->dev,
 				"%s: vdd: set mode (%s) ok, new mode=%d\n",
 				__func__, (enable ? "LPM" : "HPM"), rc);
 		rc = 0;
@@ -2569,7 +2569,7 @@ end:
 		rc = clearpad_set_cover_status(this);
 
 	this->active |= SYN_ACTIVE_POWER;
-	dev_info(&this->pdev->dev, "normal mode OK\n");
+	dev_dbg(&this->pdev->dev, "normal mode OK\n");
 exit:
 	return rc;
 }
@@ -2633,7 +2633,7 @@ static int clearpad_set_suspend_mode(struct clearpad_t *this)
 	}
 
 	this->active &= ~SYN_ACTIVE_POWER;
-	dev_info(&this->pdev->dev, "suspend mode OK\n");
+	dev_dbg(&this->pdev->dev, "suspend mode OK\n");
 exit:
 	return rc;
 }
@@ -2652,7 +2652,7 @@ static int clearpad_set_power(struct clearpad_t *this)
 		 this->input->users,
 		 !!(active & SYN_STANDBY));
 
-	dev_info(&this->pdev->dev, "%s: state=%s\n", __func__,
+	dev_dbg(&this->pdev->dev, "%s: state=%s\n", __func__,
 		 clearpad_state_name[this->state]);
 	should_wake = !(active & SYN_STANDBY);
 
@@ -2661,7 +2661,7 @@ static int clearpad_set_power(struct clearpad_t *this)
 	else if (!should_wake && (active & SYN_ACTIVE_POWER))
 		rc = clearpad_set_suspend_mode(this);
 	else
-		dev_info(&this->pdev->dev, "no change (%d)\n", should_wake);
+		dev_dbg(&this->pdev->dev, "no change (%d)\n", should_wake);
 
 	if (rc)
 		clearpad_reset_power(this, __func__);
@@ -2684,7 +2684,7 @@ static void clearpad_reset_power(struct clearpad_t *this, const char *cause)
 
 	if (cause && cause == this->reset_cause) {
 		if (this->reset_count >= SYN_RETRY_NUM_OF_RESET) {
-			dev_info(&this->pdev->dev, "ignore reset request\n");
+			dev_dbg(&this->pdev->dev, "ignore reset request\n");
 			return;
 		} else {
 			this->reset_count++;
@@ -2699,7 +2699,7 @@ static void clearpad_reset_power(struct clearpad_t *this, const char *cause)
 		}
 	}
 
-	dev_info(&this->pdev->dev, "power on reset (%s)\n", cause);
+	dev_dbg(&this->pdev->dev, "power on reset (%s)\n", cause);
 
 	spin_lock_irqsave(&this->slock, flags);
 	this->dev_busy = false;
@@ -2758,7 +2758,7 @@ static void clearpad_funcarea_initialize(struct clearpad_t *this)
 	funcarea = this->funcarea;
 
 	if (funcarea == NULL) {
-		dev_info(&this->pdev->dev, "no funcarea\n");
+		dev_dbg(&this->pdev->dev, "no funcarea\n");
 		return;
 	}
 
@@ -2811,7 +2811,7 @@ static void clearpad_funcarea_initialize(struct clearpad_t *this)
 			continue;
 		}
 
-		dev_info(&this->pdev->dev,
+		dev_dbg(&this->pdev->dev,
 			 "funcarea '%s' [%d, %d, %d, %d] [%d, %d, %d, %d]\n",
 			 func_name[funcarea->func],
 			 funcarea->original.x1, funcarea->original.y1,
@@ -3263,7 +3263,7 @@ static int clearpad_handle_gesture(struct clearpad_t *this)
 	if (rc)
 		goto exit;
 
-	dev_info(&this->pdev->dev, "Gesture %d", wakeint);
+	dev_dbg(&this->pdev->dev, "Gesture %d", wakeint);
 
 	if (time_after(jiffies, this->wakeup_gesture.time_started))
 		this->wakeup_gesture.time_started = jiffies +
@@ -3285,10 +3285,10 @@ static int clearpad_process_F01_RMI(struct clearpad_t *this)
 		rc = clearpad_get(SYNF(this, F01_RMI, DATA, 0x00), &status);
 		if (rc)
 			goto exit;
-		dev_info(&this->pdev->dev, "status = 0x%02x\n", status);
+		dev_dbg(&this->pdev->dev, "status = 0x%02x\n", status);
 
 		if (DEVICE_STATUS_UNCONFIGURED_RESET_OCCURRED == status) {
-			dev_info(&this->pdev->dev, "device reset\n");
+			dev_dbg(&this->pdev->dev, "device reset\n");
 			if (this->state == SYN_STATE_FLASH_DISABLE) {
 				rc = clearpad_flash(this);
 				if (rc)
@@ -3312,7 +3312,7 @@ static int clearpad_process_F01_RMI(struct clearpad_t *this)
 			clearpad_reset_power(this, NULL);
 			goto exit;
 		} else {
-			dev_info(&this->pdev->dev,
+			dev_dbg(&this->pdev->dev,
 					"check fail: retry = %d\n", i);
 			msleep(100);
 		}
@@ -3448,7 +3448,7 @@ static int clearpad_process_irq(struct clearpad_t *this)
 
 	rc = 0;
 
-	dev_info(&this->pdev->dev, "no work, interrupt=[0x%02x]\n", interrupt);
+	dev_dbg(&this->pdev->dev, "no work, interrupt=[0x%02x]\n", interrupt);
 unlock:
 	if (rc) {
 		dev_err(&this->pdev->dev, "%s: error %d\n", __func__, rc);
@@ -3480,7 +3480,7 @@ static irqreturn_t clearpad_threaded_handler(int irq, void *dev_id)
 			break;
 		}
 		this->irq_pending = false;
-		dev_info(&this->pdev->dev, "Touch irq pending\n");
+		dev_dbg(&this->pdev->dev, "Touch irq pending\n");
 		spin_unlock_irqrestore(&this->slock, flags);
 
 	} while (true);
@@ -3497,7 +3497,7 @@ static irqreturn_t clearpad_hard_handler(int irq, void *dev_id)
 	spin_lock_irqsave(&this->slock, flags);
 	if (unlikely(this->dev_busy)) {
 		this->irq_pending = true;
-		dev_info(&this->pdev->dev, "Touch irq busy\n");
+		dev_dbg(&this->pdev->dev, "Touch irq busy\n");
 		ret = IRQ_HANDLED;
 	} else {
 		this->dev_busy = true;
@@ -3554,7 +3554,7 @@ static int clearpad_command_open(struct clearpad_t *this,
 		rc = -ENOMEM;
 	} else {
 		this->flash.buffer_size = image_size;
-		dev_info(&this->pdev->dev,
+		dev_dbg(&this->pdev->dev,
 			"prepared buffer size=%zu\n", this->flash.buffer_size);
 	}
 	UNLOCK(this);
@@ -3595,13 +3595,13 @@ static ssize_t clearpad_fwdata_write(struct file *file,
 		image_size = this->flash.firmware_size
 				+ this->flash.config_size
 				+ HEADER_SIZE;
-		dev_info(&this->pdev->dev,
+		dev_dbg(&this->pdev->dev,
 				"firmware_size=%d\n",
 				this->flash.firmware_size);
-		dev_info(&this->pdev->dev,
+		dev_dbg(&this->pdev->dev,
 				"config_size=%d\n",
 				this->flash.config_size);
-		dev_info(&this->pdev->dev,
+		dev_dbg(&this->pdev->dev,
 				"image_size=%zu\n", image_size);
 		rc = clearpad_command_open(this, image_size);
 		if (rc) {
@@ -3620,7 +3620,7 @@ static ssize_t clearpad_fwdata_write(struct file *file,
 	LOCK(this);
 	memcpy(this->flash.image + this->flash.size, buf, size);
 	this->flash.size += size;
-	dev_info(&this->pdev->dev,
+	dev_dbg(&this->pdev->dev,
 		"got %zu bytes, total %zu bytes\n", size, this->flash.size);
 	UNLOCK(this);
 exit:
@@ -3766,7 +3766,7 @@ error:
 	LOCK(this);
 	this->flash_requested = false;
 	clearpad_firmware_reset(this);
-	dev_info(&this->pdev->dev, "result: %s", this->result_info);
+	dev_dbg(&this->pdev->dev, "result: %s", this->result_info);
 	UNLOCK(this);
 
 	if (this->pdata->watchdog_enable)
@@ -3897,17 +3897,17 @@ static ssize_t clearpad_fwflush_store(struct device *dev,
 	const char **command = (const char **)clearpad_flush_commands;
 	int rc;
 
-	dev_info(&this->pdev->dev, "flush command: %s\n", buf);
+	dev_dbg(&this->pdev->dev, "flush command: %s\n", buf);
 
 	if (!strncmp(buf, command[SYN_LOAD_START], PAGE_SIZE)) {
 		rc = clearpad_command_fw_load_start(this);
 	} else if (!strncmp(buf, command[SYN_LOAD_END], PAGE_SIZE)) {
 		rc = clearpad_command_fw_load_end(this);
 	} else if (!strncmp(buf, command[SYN_FORCE_FLUSH], PAGE_SIZE)) {
-		dev_info(&this->pdev->dev, "start firmware flash\n");
+		dev_dbg(&this->pdev->dev, "start firmware flash\n");
 		rc = clearpad_command_fw_flash(this, SYN_FLASH_MODE_NORMAL);
 	} else if (!strncmp(buf, command[SYN_CONFIG_FLUSH], PAGE_SIZE)) {
-		dev_info(&this->pdev->dev, "start firmware config\n");
+		dev_dbg(&this->pdev->dev, "start firmware config\n");
 		rc = clearpad_command_fw_flash(this, SYN_FLASH_MODE_CONFIG);
 	} else {
 		dev_err(&this->pdev->dev, "illegal command\n");
@@ -3950,7 +3950,7 @@ static ssize_t clearpad_enabled_store(struct device *dev,
 		this->state = SYN_STATE_IRQ_DISABLED;
 	} else {
 		/* No changes */
-		dev_info(&this->pdev->dev, "%s: No changes, state=%s\n",
+		dev_dbg(&this->pdev->dev, "%s: No changes, state=%s\n",
 			 __func__, clearpad_state_name[this->state]);
 	}
 	goto end;
@@ -3987,7 +3987,7 @@ static ssize_t clearpad_glove_enabled_store(struct device *dev,
 	LOCK(this);
 
 	if (!this->glove.supported) {
-		dev_info(&this->pdev->dev, "Glove mode is not supported");
+		dev_dbg(&this->pdev->dev, "Glove mode is not supported");
 		goto exit;
 	}
 
@@ -3999,7 +3999,7 @@ static ssize_t clearpad_glove_enabled_store(struct device *dev,
 			goto exit;
 	}
 
-	dev_info(&this->pdev->dev, "glove mode: %s",
+	dev_dbg(&this->pdev->dev, "glove mode: %s",
 			this->glove.enabled ? "ENABLE" : "DISABLE");
 exit:
 	UNLOCK(this);
@@ -4019,7 +4019,7 @@ static ssize_t clearpad_pen_enabled_store(struct device *dev,
 	LOCK(this);
 
 	if (!this->pen.supported) {
-		dev_info(&this->pdev->dev, "Pen is not supported");
+		dev_dbg(&this->pdev->dev, "Pen is not supported");
 		goto exit;
 	}
 
@@ -4029,7 +4029,7 @@ static ssize_t clearpad_pen_enabled_store(struct device *dev,
 	if (rc)
 		goto exit;
 
-	dev_info(&this->pdev->dev, "pen mode: %s",
+	dev_dbg(&this->pdev->dev, "pen mode: %s",
 			this->pen.enabled ? "ENABLE" : "DISABLE");
 exit:
 	UNLOCK(this);
@@ -4187,7 +4187,7 @@ static ssize_t clearpad_pca_store(struct device *dev,
 		buf += block_size;
 		block_num.block_num++;
 	}
-	dev_info(&this->pdev->dev, "write size = %d", (i * block_size));
+	dev_dbg(&this->pdev->dev, "write size = %d", (i * block_size));
 
 	usleep_range(10000, 11000);
 
@@ -4217,7 +4217,7 @@ static ssize_t clearpad_wakeup_gesture_store(struct device *dev,
 	LOCK(this);
 
 	if (!this->wakeup_gesture.supported) {
-		dev_info(&this->pdev->dev, "Wakeup gesture is not supported");
+		dev_dbg(&this->pdev->dev, "Wakeup gesture is not supported");
 		goto exit;
 	}
 
@@ -4226,7 +4226,7 @@ static ssize_t clearpad_wakeup_gesture_store(struct device *dev,
 	device_init_wakeup(&this->pdev->dev,
 			this->wakeup_gesture.engaged ? 1 : 0);
 
-	dev_info(&this->pdev->dev, "wakeup gesture: %s",
+	dev_dbg(&this->pdev->dev, "wakeup gesture: %s",
 			this->wakeup_gesture.engaged ? "ENABLE" : "DISABLE");
 exit:
 	UNLOCK(this);
@@ -4275,7 +4275,7 @@ static ssize_t clearpad_charger_status_store(struct device *dev,
 	LOCK(this);
 
 	if (!this->charger.supported) {
-		dev_info(&this->pdev->dev, "Charger mode is not supported");
+		dev_dbg(&this->pdev->dev, "Charger mode is not supported");
 		goto exit;
 	}
 
@@ -4285,7 +4285,7 @@ static ssize_t clearpad_charger_status_store(struct device *dev,
 	if (rc)
 		goto exit;
 
-	dev_info(&this->pdev->dev, "charger status: %s",
+	dev_dbg(&this->pdev->dev, "charger status: %s",
 			 this->charger.status ? "CONN" : "DISCONN");
 exit:
 	UNLOCK(this);
@@ -4303,7 +4303,7 @@ static ssize_t clearpad_cover_status_store(struct device *dev,
 	LOCK(this);
 
 	if (!this->cover.supported) {
-		dev_info(&this->pdev->dev, "Cover mode is not supported");
+		dev_dbg(&this->pdev->dev, "Cover mode is not supported");
 		goto exit;
 	}
 
@@ -4321,7 +4321,7 @@ static ssize_t clearpad_cover_status_store(struct device *dev,
 			goto exit;
 	}
 
-	dev_info(&this->pdev->dev, "cover status: %s",
+	dev_dbg(&this->pdev->dev, "cover status: %s",
 			this->cover.status ? "CLOSE" : "OPEN");
 exit:
 	UNLOCK(this);
@@ -4339,7 +4339,7 @@ static ssize_t clearpad_cover_mode_enabled_store(struct device *dev,
 	LOCK(this);
 
 	if (!this->cover.supported) {
-		dev_info(&this->pdev->dev, "Cover mode is not supported");
+		dev_dbg(&this->pdev->dev, "Cover mode is not supported");
 		goto exit;
 	}
 
@@ -4352,11 +4352,11 @@ static ssize_t clearpad_cover_mode_enabled_store(struct device *dev,
 	this->cover.enabled = sysfs_streq(buf, "0") ? false : true;
 
 	if (this->cover.enabled) {
-		dev_info(&this->pdev->dev, "Cover mode Enabled\n");
+		dev_dbg(&this->pdev->dev, "Cover mode Enabled\n");
 	} else {
 		this->cover.status = false;
 		rc = clearpad_set_cover_status(this);
-		dev_info(&this->pdev->dev, "Cover mode Disabled\n");
+		dev_dbg(&this->pdev->dev, "Cover mode Disabled\n");
 	}
 	if (rc)
 		dev_err(&this->pdev->dev, "%s failed\n", __func__);
@@ -4377,7 +4377,7 @@ static ssize_t clearpad_cover_win_store(struct device *dev,
 	LOCK(this);
 
 	if (!this->cover.supported) {
-		dev_info(&this->pdev->dev, "Cover mode is not supported");
+		dev_dbg(&this->pdev->dev, "Cover mode is not supported");
 		goto exit;
 	}
 
@@ -4394,7 +4394,7 @@ static ssize_t clearpad_cover_win_store(struct device *dev,
 		goto exit;
 	}
 
-	dev_info(&this->pdev->dev, "%s: %s = %d\n", __func__,
+	dev_dbg(&this->pdev->dev, "%s: %s = %d\n", __func__,
 					attr->attr.name, win_size);
 
 	if (!strncmp(attr->attr.name, "cover_win_top", PAGE_SIZE))
@@ -4635,7 +4635,7 @@ static int clearpad_input_init(struct clearpad_t *this)
 	set_bit(ABS_MT_TRACKING_ID, this->input->absbit);
 	set_bit(ABS_MT_TOOL_TYPE, this->input->absbit);
 
-	dev_info(&this->pdev->dev, "Touch area [%d, %d, %d, %d]\n",
+	dev_dbg(&this->pdev->dev, "Touch area [%d, %d, %d, %d]\n",
 		 this->extents.x_min, this->extents.y_min,
 		 this->extents.x_max, this->extents.y_max);
 
@@ -4668,7 +4668,7 @@ static void clearpad_input_ev_init(struct clearpad_t *this)
 				dev_err(&this->pdev->dev,
 					"sysfs_create_file failed: %d\n", rc);
 
-			dev_info(&this->pdev->dev, "Touch Wakeup Feature OK\n");
+			dev_dbg(&this->pdev->dev, "Touch Wakeup Feature OK\n");
 			device_init_wakeup(&this->pdev->dev, 0);
 		}
 	}
@@ -4728,7 +4728,7 @@ static int clearpad_pm_suspend(struct device *dev)
 
 	spin_lock_irqsave(&this->slock, flags);
 	if (unlikely(this->dev_busy)) {
-		dev_info(dev, "Busy to suspend\n");
+		dev_dbg(dev, "Busy to suspend\n");
 		spin_unlock_irqrestore(&this->slock, flags);
 		return -EBUSY;
 	}
@@ -4744,7 +4744,7 @@ static int clearpad_pm_suspend(struct device *dev)
 
 	if (device_may_wakeup(dev)) {
 		enable_irq_wake(this->irq);
-		dev_info(&this->pdev->dev, "enable irq wake");
+		dev_dbg(&this->pdev->dev, "enable irq wake");
 	}
 	return 0;
 }
@@ -4758,7 +4758,7 @@ static int clearpad_pm_resume(struct device *dev)
 
 	if (device_may_wakeup(dev)) {
 		disable_irq_wake(this->irq);
-		dev_info(&this->pdev->dev, "disable irq wake");
+		dev_dbg(&this->pdev->dev, "disable irq wake");
 	}
 
 	spin_lock_irqsave(&this->slock, flags);
@@ -4784,7 +4784,7 @@ static int clearpad_pm_suspend_noirq(struct device *dev)
 {
 	struct clearpad_t *this = dev_get_drvdata(dev);
 	if (this->irq_pending && device_may_wakeup(dev)) {
-		dev_info(&this->pdev->dev, "Need to resume\n");
+		dev_dbg(&this->pdev->dev, "Need to resume\n");
 		return -EBUSY;
 	}
 	return 0;
@@ -4944,7 +4944,7 @@ static void clearpad_analog_test_get_loop_count(struct clearpad_t *this,
 	} else {
 		*loop_count_i = *loop_count_j = *data_type = 0;
 	}
-	dev_info(&this->pdev->dev,
+	dev_dbg(&this->pdev->dev,
 			"loop_count_i[%d], loop_count_j[%d], data_type[%d]\n",
 			*loop_count_i, *loop_count_j, *data_type);
 }
@@ -4999,7 +4999,7 @@ static void clearpad_analog_test(struct clearpad_t *this,
 			num_rx = this->num_sensor_rx;
 			num_tx = this->num_sensor_tx;
 		} else {
-			dev_info(&this->pdev->dev,
+			dev_dbg(&this->pdev->dev,
 				 "Analog Test not supported\n");
 			goto err_set_irq_xy;
 		}
@@ -5130,7 +5130,7 @@ static void clearpad_analog_test(struct clearpad_t *this,
 				SYNF(this, F54_ANALOG, COMMAND, 0x00), buf);
 			if (rc || i > 100)
 				goto err_set_irq_xy;
-			dev_info(&this->pdev->dev,
+			dev_dbg(&this->pdev->dev,
 				"Force update flag = %x, loop = %d\n",
 				buf[0], i);
 		}
@@ -5148,7 +5148,7 @@ static void clearpad_analog_test(struct clearpad_t *this,
 				SYNF(this, F54_ANALOG, COMMAND, 0x00), buf);
 			if (rc || i > 100)
 				goto err_set_irq_xy;
-			dev_info(&this->pdev->dev,
+			dev_dbg(&this->pdev->dev,
 				"Force cal flag = %x, loop = %d\n", buf[0], i);
 		}
 	}
@@ -5181,7 +5181,7 @@ static void clearpad_analog_test(struct clearpad_t *this,
 
 	for (k = 0; k < count; k++) {
 		s64 min_val = UINT_MAX, max_val = INT_MIN;
-		dev_info(&this->pdev->dev,
+		dev_dbg(&this->pdev->dev,
 				"ANALOG: mode[%d], num[%d], rx[%d], tx[%d]",
 				mode, k, num_rx, num_tx);
 		LOCK(this);
@@ -5274,9 +5274,9 @@ static void clearpad_analog_test(struct clearpad_t *this,
 					pl += snprintf(pl, sizeof(delimeter),
 								delimeter);
 			}
-			dev_info(&this->pdev->dev, "%s\n", line);
+			dev_dbg(&this->pdev->dev, "%s\n", line);
 		}
-		dev_info(&this->pdev->dev,
+		dev_dbg(&this->pdev->dev,
 			"MIN = %06lld / MAX = %06lld\n", min_val, max_val);
 		msleep(100);
 	}
@@ -5362,7 +5362,7 @@ static int clearpad_debug_read_reg(struct clearpad_t *this,
 	LOCK(this);
 	rc = clearpad_get(this, SYN_PAGE_ADDR(page, reg), &value);
 	if (!rc)
-		dev_info(&this->pdev->dev,
+		dev_dbg(&this->pdev->dev,
 			 "read page=0x%02x, addr=0x%02x, value=0x%02x\n",
 			 page, reg, value);
 	else
@@ -5385,10 +5385,10 @@ static int clearpad_debug_read_packet(struct clearpad_t *this,
 	}
 	rc = clearpad_read_block(this, SYN_PAGE_ADDR(page, reg), pkt, length);
 	if (rc > 0) {
-		dev_info(&this->pdev->dev,
+		dev_dbg(&this->pdev->dev,
 			 "read page=0x%02x, addr=0x%02x\n", page, reg);
 		for (i = 0; i < length; i++)
-			dev_info(&this->pdev->dev,
+			dev_dbg(&this->pdev->dev,
 				 "index[%d]=0x%02x\n", i, pkt[i]);
 		rc = 0;
 	} else {
@@ -5408,7 +5408,7 @@ static int clearpad_debug_write_reg(struct clearpad_t *this,
 	LOCK(this);
 	rc = clearpad_put(this, SYN_PAGE_ADDR(page, reg), value);
 	if (!rc)
-		dev_info(&this->pdev->dev,
+		dev_dbg(&this->pdev->dev,
 			 "write page=0x%02x, addr=0x%02x, value=0x%02x\n",
 			 page, reg, value);
 	else
@@ -5445,7 +5445,7 @@ static int clearpad_debug_write_packet(struct clearpad_t *this,
 			rc = -EINVAL;
 			goto err_free;
 		}
-		dev_info(&this->pdev->dev, "mod index[%d]=0x%02x(0x%02x)\n",
+		dev_dbg(&this->pdev->dev, "mod index[%d]=0x%02x(0x%02x)\n",
 			index, value, pkt[index]);
 		pkt[index] = value;
 	}
@@ -5457,10 +5457,10 @@ static int clearpad_debug_write_packet(struct clearpad_t *this,
 		goto err_free;
 	}
 
-	dev_info(&this->pdev->dev,
+	dev_dbg(&this->pdev->dev,
 		 "write page=0x%02x, addr=0x%02x\n", page, reg);
 	for (i = 0; i < length; i++)
-		dev_info(&this->pdev->dev, "index[%d]=0x%02x\n", i, pkt[i]);
+		dev_dbg(&this->pdev->dev, "index[%d]=0x%02x\n", i, pkt[i]);
 	rc = 0;
 
 err_free:
