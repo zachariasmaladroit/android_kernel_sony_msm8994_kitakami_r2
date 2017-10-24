@@ -1,16 +1,11 @@
 /* linux/drivers/input/touchscreen/clearpad_i2c.c
  *
+ * Copyright (C) 2011 Sony Ericsson Mobile Communications AB.
  * Copyright (c) 2011 Synaptics Incorporated
  * Copyright (c) 2011 Unixphere
+ * Copyright (C) 2012 Sony Mobile Communications AB.
  *
  * Author: Yusuke Yoshimura <Yusuke.Yoshimura@sonyericsson.com>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2, as
- * published by the Free Software Foundation.
- */
-/*
- * Copyright (C) 2014 Sony Mobile Communications Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2, as

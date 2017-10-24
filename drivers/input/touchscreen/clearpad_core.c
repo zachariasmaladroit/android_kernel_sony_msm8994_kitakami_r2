@@ -1,14 +1,9 @@
 /* linux/drivers/input/touchscreen/clearpad_core.c
  *
+ * Copyright (C) 2010 Sony Mobile Communications Inc.
+ *
  * Author: Courtney Cavin <courtney.cavin@sonyericsson.com>
  *         Yusuke Yoshimura <Yusuke.Yoshimura@sonyericsson.com>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2, as
- * published by the Free Software Foundation.
- */
-/*
- * Copyright (C) 2014 Sony Mobile Communications Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2, as
@@ -31,20 +26,19 @@
 #include <linux/slab.h>
 #include <linux/regulator/consumer.h>
 #include <linux/gpio.h>
-#include <linux/vmalloc.h>
 #ifdef CONFIG_DEBUG_FS
 #include <linux/debugfs.h>
 #include <linux/uaccess.h>
 #endif
 #include <linux/sched.h>
-#ifdef CONFIG_ARM
-#include <asm/mach-types.h>
-#endif
-#include <linux/pinctrl/consumer.h>
 #ifdef CONFIG_FB
 #include <linux/notifier.h>
 #include <linux/fb.h>
 #endif
+#ifdef CONFIG_ARM
+#include <asm/mach-types.h>
+#endif
+#include <linux/pinctrl/consumer.h>
 
 #define SYN_CLEARPAD_VENDOR		0x1
 #define SYN_MAX_N_FINGERS		10
@@ -60,11 +54,13 @@
 #define SYN_SUPPORTED_PAGE_NUM		0x04
 #define SYN_MAX_INTERRUPT_SOURCE_COUNT	0x7
 #define SYN_STRING_LENGTH		128
+#define SYN_RETRY_NUM			3
+#define SYN_WAIT_TIME_OF_RESET		20
 #define SYN_RETRY_NUM_OF_INITIAL_CHECK	2
 #define SYN_RETRY_NUM_OF_PROBE_CHECK	3
 #define SYN_RETRY_NUM_OF_RESET 5
-#define SYN_RETRY_NUM			3
-#define SYN_WAIT_TIME_OF_RESET		20
+#define SYN_PCA_ACCESS_MAX_READ_SIZE	15
+#define SYN_PCA_ACCESS_MAX_WRITE_SIZE	16
 #define SYN_FINGER_OFF(n, x, s) \
 	((((n) / 4) + !!(n % 4)) + (s) * (x))
 #define SYN_REG_MAX \
@@ -78,8 +74,7 @@
 #define HWTEST_SIZE_OF_TRX_SHORT_2		7
 #define HWTEST_SIZE_OF_TRX_SHORT_2_TAB		13
 #define HWTEST_MAX_DIGITS			10
-#define HWTEST_LOG_BUF_SIZE			(PAGE_SIZE * 10)
-#define SYN_WATCHDOG_POLL_DEFAULT_INTERVAL	1000
+#define SYN_WATCHDOG_POLL_DEFAULT_INTERVAL	HZ
 #define SYN_WAKEUP_GESTURE			"wakeup_gesture"
 
 #define SYN_PAGE_ADDR(page, addr) ((page) << 8 | (addr))
@@ -99,6 +94,10 @@
 #define SYNS(th, func, type, sym) \
 	SYNSET(th, SYN_F_PAGE_ADDR(th, SYNFUNC(func), SYNTYPE(type), \
 				   SYNOFF(th, func, type, sym)))
+/* only F12 can use SYNA (e.g. F12_2D_CTRL<regid>) */
+#define SYNA(th, func, type, regid) \
+	SYNSET(th, SYN_F_PAGE_ADDR(th, SYNFUNC(func), SYNTYPE(type), \
+		((th)->pdt[SYNFUNC(func)].offset[SYNTYPE(type)][regid])))
 
 #ifdef CONFIG_DEBUG_FS
 #define DEBUG_COMMAND(C0, C1) (((int)C0 << 8) + (int)C1)
@@ -131,6 +130,8 @@
 #define GLOVE_MODE_BIT_ENABLE				0x20
 #define GLOVE_MODE_BIT_DISABLE				0x00
 #define GLOVE_MODE_BIT_MASK				0x20
+#define GLOVE_MODE_FINGER_DET				0x01
+#define CLOSED_COVER_DET				0x02
 #define EW_DOUBLE_TAP_ENABLE				0x01
 #define EW_DOUBLE_TAP_DISABLE				0x00
 #define EW_RPT_GESTURE_ENABLE				0x02
@@ -170,27 +171,11 @@
 #define LOGx(this, LEVEL, X, ...)				\
 	dev_dbg(&this->pdev->dev, LEVEL "%s: %d: " X,		\
 		       __func__, __LINE__, ## __VA_ARGS__);
+
 #define LOG_STAT(this, X, ...) LOGx(this, "stat: ", X, ## __VA_ARGS__)
 #define LOG_EVENT(this, X, ...) LOGx(this, "event: ", X, ## __VA_ARGS__)
 #define LOG_CHECK(this, X, ...) LOGx(this, "check: ", X, ## __VA_ARGS__)
 #define LOG_VERBOSE(this, X, ...) LOGx(this, "verbose: ", X, ## __VA_ARGS__)
-
-#ifdef CONFIG_DEBUG_FS
-#define HWTEST_LOG(this, format, ...) \
-	clearpad_debug_hwtest_log(this, format, ## __VA_ARGS__)
-#else
-#define HWTEST_LOG(this, format, ...)
-#endif
-#define HWTEST_INFO(this, format, ...)				\
-({								\
-	dev_info(&this->pdev->dev, format, ## __VA_ARGS__);	\
-	HWTEST_LOG(this, format, ## __VA_ARGS__);		\
-})
-#define HWTEST_ERR(this, format, ...)				\
-({								\
-	dev_err(&this->pdev->dev, format, ## __VA_ARGS__);	\
-	HWTEST_LOG(this, format, ## __VA_ARGS__);		\
-})
 
 #define LOCK(this)			\
 do {					\
@@ -244,6 +229,8 @@ enum clearpad_chip_e {
 	SYN_CHIP_3500	= 0x38,
 	SYN_CHIP_7300	= 0x37,
 	SYN_CHIP_7500	= 0x39,
+	SYN_CHIP_3330	= 0x3A,
+	SYN_CHIP_332U	= 0x40,
 };
 
 static const char * const clearpad_task_name[] = {
@@ -490,9 +477,6 @@ struct clearpad_cover_t {
 	int win_bottom;
 	int win_right;
 	int win_left;
-	u32 tag_x_max;
-	u32 tag_y_max;
-	u32 convert_window_size;
 };
 
 struct clearpad_wakeup_gesture_t {
@@ -503,19 +487,12 @@ struct clearpad_wakeup_gesture_t {
 	bool large_panel;
 	unsigned long time_started;
 	u32 timeout_delay;
-	bool suspend_with_enabled;
 };
 
 struct clearpad_pinctrl_t {
 	struct pinctrl *pinctrl;
 	struct pinctrl_state *reset_active;
 	struct pinctrl_state *reset_reset;
-};
-
-struct clearpad_hwtest_t {
-	struct mutex lock;
-	char log_buf[HWTEST_LOG_BUF_SIZE];
-	size_t log_size;
 };
 
 enum clearpad_hwtest_data_type_e {
@@ -603,11 +580,14 @@ struct clearpad_t {
 	struct clearpad_glove_t glove;
 	struct clearpad_cover_t cover;
 	bool fwdata_available;
+	bool pca_busy;
 	enum clearpad_flash_mode_e flash_mode;
 	struct clearpad_extents_t extents;
 	int active;
 	int irq;
 	int irq_mask;
+	bool use_pinctrl;
+
 #ifdef CONFIG_FB
 	struct notifier_block fb_notif;
 	struct work_struct notify_resume;
@@ -623,9 +603,9 @@ struct clearpad_t {
 	u8 reg_buf[SYN_REG_MAX];
 #ifdef CONFIG_DEBUG_FS
 	struct dentry *debugfs;
-	struct clearpad_hwtest_t hwtest;
 #endif
 	u32 gpio_reset;
+	u32 reset_l2h;
 	u32 num_sensor_rx;
 	u32 num_sensor_tx;
 	u32 flip_config;
@@ -650,7 +630,8 @@ struct clearpad_t {
 };
 
 static void clearpad_funcarea_initialize(struct clearpad_t *this);
-static int clearpad_reset_power(struct clearpad_t *this, const char *cause);
+static void clearpad_reset_power(struct clearpad_t *this,
+					   const char *cause);
 
 static int clearpad_resume(struct device *dev);
 static int clearpad_suspend(struct device *dev);
@@ -1011,18 +992,31 @@ static int clearpad_set_glove_mode(struct clearpad_t *this,
 					GLOVE_MODE_BIT_ENABLE :
 					GLOVE_MODE_BIT_DISABLE,
 					GLOVE_MODE_BIT_MASK);
+
+		if (this->chip_id == SYN_CHIP_3330 ||
+		    this->chip_id == SYN_CHIP_332U) {
+			/* F12_2D_CTRL26: Feature Enable */
+			rc = clearpad_put_bit(SYNF(this, F12_2D, CTRL, 0x0C),
+					enable ?
+					GLOVE_MODE_FINGER_DET : 0,
+					GLOVE_MODE_FINGER_DET);
+			if (rc)
+				pr_err("%s: Cannot set glove mode finger det\n",
+					__func__);
+		}
 	} else if (clearpad_is_valid_function(this, SYN_F51_CUSTOM))
 		rc = clearpad_put(SYNF(this, F51_CUSTOM,
 					CTRL, 0x03),
 					enable ?
 					GLOVE_MODE_ENABLE :
 					GLOVE_MODE_DISABLE);
-	else {
+	else
 		dev_warn(&this->pdev->dev, "glove mode is not supported\n");
-	}
+
 exit:
 	if (rc)
 		dev_err(&this->pdev->dev, "failed to set glove mode");
+
 	return rc;
 }
 
@@ -1031,10 +1025,28 @@ static int clearpad_set_cover_status(struct clearpad_t *this)
 	int rc = 0;
 	u8 bufstr[3] = {0};
 
+	if (this->chip_id == SYN_CHIP_3330 ||
+	    this->chip_id == SYN_CHIP_332U) {
+		/* F12_2D_CTRL26: Feature Enable */
+		rc = clearpad_put_bit(SYNF(this, F12_2D, CTRL, 0x0C),
+				this->cover.status ?
+				CLOSED_COVER_DET : 0,
+				CLOSED_COVER_DET);
+		if (rc) {
+			pr_err("%s: Cannot set closed_cover_det\n", __func__);
+			goto exit;
+		}
+	}
+
 	rc = clearpad_set_glove_mode(this,
 			this->cover.status ? true : this->glove.enabled);
 	if (rc)
 		goto exit;
+
+	/* S3330/S332U won't need the glove as finger settings */
+	if (this->chip_id == SYN_CHIP_3330 ||
+	    this->chip_id == SYN_CHIP_332U)
+		goto update;
 
 	rc = clearpad_get_block(SYNF(this, F12_2D, CTRL, 0x09), bufstr, 3);
 	if (rc)
@@ -1051,11 +1063,12 @@ static int clearpad_set_cover_status(struct clearpad_t *this)
 	if (rc)
 		goto exit;
 
+
 	rc = clearpad_put(SYNF(this, F51_CUSTOM, CTRL, 0x00),
 			this->cover.status ? 0x03 : 0x00);
 	if (rc)
 		goto exit;
-
+update:
 	rc = clearpad_put_bit(SYNF(this, F54_ANALOG, COMMAND, 0x00),
 			ANALOG_COMMAND_FORCE_UPDATE,
 			ANALOG_COMMAND_FORCE_UPDATE);
@@ -1069,44 +1082,61 @@ exit:
 static int clearpad_set_cover_window(struct clearpad_t *this)
 {
 	int rc;
+	u8 block_buf[8];
 
-	rc = clearpad_put(SYNF(this, F51_CUSTOM,
-			CTRL, 0x03), this->cover.win_top);
-	if (rc)
-		goto exit;
-	rc = clearpad_put(SYNF(this, F51_CUSTOM,
-			CTRL, 0x04), this->cover.win_top >> 8);
-	if (rc)
-		goto exit;
-	rc = clearpad_put(SYNF(this, F51_CUSTOM,
-			CTRL, 0x07), this->cover.win_bottom);
-	if (rc)
-		goto exit;
-	rc = clearpad_put(SYNF(this, F51_CUSTOM,
-			CTRL, 0x08), this->cover.win_bottom >> 8);
-	if (rc)
-		goto exit;
-	rc = clearpad_put(SYNF(this, F51_CUSTOM,
-			CTRL, 0x05), this->cover.win_right);
-	if (rc)
-		goto exit;
-	rc = clearpad_put(SYNF(this, F51_CUSTOM,
-			CTRL, 0x06), this->cover.win_right >> 8);
-	if (rc)
-		goto exit;
-	rc = clearpad_put(SYNF(this, F51_CUSTOM,
-			CTRL, 0x01), this->cover.win_left);
-	if (rc)
-		goto exit;
-	rc = clearpad_put(SYNF(this, F51_CUSTOM,
-			CTRL, 0x02), this->cover.win_left >> 8);
-	if (rc)
-		goto exit;
+	if (this->chip_id == SYN_CHIP_3330 ||
+	    this->chip_id == SYN_CHIP_332U) {
+		/* Cover window size register F12_2D_CTRL25 */
+		if (!clearpad_is_valid_function(this, SYN_F12_2D)) {
+			pr_err("%s: F12_2D is required to set cover window",
+				__func__);
+			rc = -EPERM;
+			goto end;
+		}
+
+		block_buf[0] = this->cover.win_left;
+		block_buf[1] = this->cover.win_left >> 8;
+		block_buf[2] = this->cover.win_right;
+		block_buf[3] = this->cover.win_right >> 8;
+		block_buf[4] = this->cover.win_top;
+		block_buf[5] = this->cover.win_top >> 8;
+		block_buf[6] = this->cover.win_bottom;
+		block_buf[7] = this->cover.win_bottom >> 8;
+
+		/* F12_2D_CTRL25: Closed Xmin/Xmax/Ymin/Ymax */
+		rc = clearpad_put_block(SYNA(this, F12_2D, CTRL, 25),
+				block_buf, 8);
+		if (rc)
+			goto end;
+	} else {
+		/* Cover window size register F51_CUSTOM_CTRL05.01 */
+		if (!clearpad_is_valid_function(this, SYN_F51_CUSTOM)) {
+			pr_err("%s: F51 is required to set cover window",
+				__func__);
+			rc = -EPERM;
+			goto end;
+		}
+
+		block_buf[0] = this->cover.win_left;
+		block_buf[1] = this->cover.win_left >> 8;
+		block_buf[2] = this->cover.win_top;
+		block_buf[3] = this->cover.win_top >> 8;
+		block_buf[4] = this->cover.win_right;
+		block_buf[5] = this->cover.win_right >> 8;
+		block_buf[6] = this->cover.win_bottom;
+		block_buf[7] = this->cover.win_bottom >> 8;
+
+		/* F51_CUSTOM_CTRL05: Cover Left/Top/Right/Bottom */
+		rc = clearpad_put_block(SYNF(this, F51_CUSTOM, CTRL, 0x01),
+				block_buf, 8);
+		if (rc)
+			goto end;
+	}
 
 	rc = clearpad_set_cover_status(this);
-exit:
+end:
 	if (rc)
-		dev_err(&this->pdev->dev, "failed to set cover window");
+		pr_err("%s: failed to set cover window", __func__);
 	return rc;
 }
 
@@ -1120,6 +1150,104 @@ static int clearpad_set_wakeup_gesture(struct clearpad_t *this, int enable)
 		dev_err(&this->pdev->dev, "failed to set wakeup gesture");
 	return rc;
 }
+
+static ssize_t clearpad_pca_show(struct device *dev,
+					      struct device_attribute *attr,
+					      char *buf)
+{
+	struct clearpad_t *this = dev_get_drvdata(dev);
+	int rc, i, block_count, null_pos;
+	u8 tmp_buf[2];
+	union {
+		unsigned short block_num;
+		unsigned char data[2];
+	} block_num;
+	unsigned int block_size;
+
+	LOCK(this);
+	if (this->pca_busy) {
+		dev_err(&this->pdev->dev, "pca is still busy\n");
+		rc = -EBUSY;
+		UNLOCK(this);
+		goto exit;
+	}
+	this->pca_busy = true;
+
+	/* get block size */
+	if (this->chip_id == SYN_CHIP_3400 ||
+		this->chip_id == SYN_CHIP_3500 ||
+		this->chip_id == SYN_CHIP_7500) {
+		rc = clearpad_get_block(SYNF(this, F34_FLASH, QUERY, 0x02),
+				    tmp_buf, 2);
+	} else {
+		rc = clearpad_get(SYNF(this, F34_FLASH, QUERY, 0x03),
+				  &tmp_buf[0]);
+		if (rc)
+			goto err_unlock;
+		rc = clearpad_get(SYNF(this, F34_FLASH, QUERY, 0x04),
+				  &tmp_buf[1]);
+	}
+	if (rc)
+		goto err_unlock;
+
+	block_size = ((tmp_buf[1] << 8) | tmp_buf[0]);
+
+	/* calc need block num with round up */
+	block_count = ((SYN_PCA_ACCESS_MAX_READ_SIZE + 1) +
+		       (block_size - 1)) / block_size;
+	null_pos = block_size -
+	    (SYN_PCA_ACCESS_MAX_READ_SIZE % block_size);
+
+	block_num.block_num = 0;
+	for (i = 0; i < block_count; i++) {
+		block_num.data[1] &= 0x1F;
+		block_num.data[1] |= (FLASH_DATA_CONFIGURATION_AREA << 5);
+
+		/* write block number */
+		rc = clearpad_put_block(SYNF(this, F34_FLASH, DATA, 0x00),
+				     block_num.data, 2);
+		if (rc)
+			break;
+
+		usleep_range(10000, 11000);
+
+		/* issue read configuration block command */
+		rc = clearpad_put(SYNF(this, F34_FLASH, DATA,
+				(this->chip_id == SYN_CHIP_3400 ||
+				this->chip_id == SYN_CHIP_3500  ||
+				this->chip_id == SYN_CHIP_7500) ? 0x02 : 0x12),
+				FLASH_CONTROL_READ_CONFIGURATION_BLOCK);
+		if (rc)
+			break;
+
+		msleep(100);
+
+		/* data read */
+		rc = clearpad_get_block(SYNF(this, F34_FLASH, DATA,
+				(this->chip_id == SYN_CHIP_3400 ||
+				 this->chip_id == SYN_CHIP_3500 ||
+				 this->chip_id == SYN_CHIP_7500) ? 0x01 : 0x02),
+				buf, block_size);
+		if (rc)
+			break;
+
+		usleep_range(10000, 11000);
+
+		buf += block_size;
+		block_num.block_num++;
+	}
+	buf -= null_pos;
+	dev_info(&this->pdev->dev, "read size = %d",
+			 (i * block_size) - null_pos);
+err_unlock:
+	if (rc)
+		dev_err(&this->pdev->dev, "failed to read from touch device");
+	this->pca_busy = false;
+	UNLOCK(this);
+exit:
+	return rc ? rc : ((i * block_size) - null_pos);
+}
+
 
 static int clearpad_set_feature_settings(struct clearpad_t *this)
 {
@@ -1178,6 +1306,10 @@ static int clearpad_prepare_f11_2d(struct clearpad_t *this)
 
 	if (this->extents.n_bytes_per_object == 0)
 		this->extents.n_bytes_per_object = SYN_FINGER_DATA_SIZE;
+
+	if (this->chip_id == SYN_CHIP_3000)
+		this->default_reporting_mode =
+				XY_REPORTING_MODE_REDUCED_REPORTING_MODE;
 
 	if (this->default_reporting_mode) {
 		rc = clearpad_put_bit(SYNF(this, F11_2D, CTRL, 0x00),
@@ -1356,7 +1488,7 @@ err_ret:
 
 static void clearpad_firmware_reset(struct clearpad_t *this)
 {
-	vfree(this->flash.image);
+	kfree(this->flash.image);
 	memset(&this->flash, 0, sizeof(this->flash));
 	this->fwdata_available = false;
 	dev_info(&this->pdev->dev, "firmware image has been reset\n");
@@ -1369,10 +1501,6 @@ static int clearpad_initialize(struct clearpad_t *this)
 	int rc;
 	u8 buf[4];
 	struct clearpad_device_info_t *info = &this->device_info;
-
-	rc = clearpad_set_page(this, 0);
-	if (rc)
-		goto exit;
 
 	rc = clearpad_read_pdt(this);
 	if (rc)
@@ -1417,7 +1545,7 @@ static int clearpad_initialize(struct clearpad_t *this)
 
 	if (this->state != SYN_STATE_RUNNING) {
 		dev_info(&this->pdev->dev,
-			"device mid %d, prop %d, family 0x%02x, "
+			"device mid %d, prop %d, family 0x%02x, " \
 			"rev 0x%02x.%02x, extra 0x%02x\n",
 			info->manufacturer_id, info->product_properties,
 			info->customer_family, info->firmware_revision_major,
@@ -1496,7 +1624,7 @@ static int clearpad_flash_enable(struct clearpad_t *this)
 	if (rc)
 		goto exit;
 
-	clearpad_set_delay(10);
+	usleep_range(10000, 11000);
 
 	/* issue a flash program enable */
 	rc = clearpad_put(SYNF(this, F34_FLASH, DATA,
@@ -1509,7 +1637,7 @@ static int clearpad_flash_enable(struct clearpad_t *this)
 		goto exit;
 
 	this->state = SYN_STATE_FLASH_ENABLE;
-	clearpad_set_delay(100);
+	msleep(100);
 
 	clearpad_set_irq(this, this->pdt[SYN_F34_FLASH].irq_mask, true);
 exit:
@@ -1565,7 +1693,7 @@ static int clearpad_flash_program(struct clearpad_t *this)
 	if (rc)
 		goto exit;
 
-	clearpad_set_delay(10);
+	usleep_range(10000, 11000);
 
 	if (this->flash_mode == SYN_FLASH_MODE_NORMAL)
 		/* issue a firmware and configuration erase */
@@ -1775,7 +1903,7 @@ static int clearpad_flash_disable(struct clearpad_t *this)
 		goto exit;
 	}
 
-	clearpad_set_delay(10);
+	usleep_range(10000, 11000);
 
 	/* send a reset to the device to complete the flash procedure */
 	rc = clearpad_soft_reset(this);
@@ -1785,6 +1913,7 @@ static int clearpad_flash_disable(struct clearpad_t *this)
 	dev_info(&this->pdev->dev,
 			"flashing finished, resetting\n");
 	this->state = SYN_STATE_FLASH_DISABLE;
+	msleep(100);
 exit:
 	return rc;
 }
@@ -1897,7 +2026,7 @@ static int clearpad_flash(struct clearpad_t *this)
 				 this->pdt[SYN_F34_FLASH].irq_mask, false);
 
 		snprintf(this->result_info, SYN_STRING_LENGTH,
-			"%s, family 0x%02x, fw rev 0x%02x.%02x, "
+			"%s, family 0x%02x, fw rev 0x%02x.%02x, " \
 			"extra 0x%02x, failed fw update\n",
 			clearpad_s(this->device_info.product_id,
 			HEADER_PRODUCT_ID_SIZE),
@@ -1999,6 +2128,12 @@ static int clearpad_vreg_suspend(struct clearpad_t *this, int enable)
 {
 	int rc = 0;
 
+	if (this->chip_id == SYN_CHIP_3330 ||
+	    this->chip_id == SYN_CHIP_332U) {
+		/* vreg_suspend not needed on S3330/S332U */
+		return 0;
+	}
+
 	if (IS_ERR(this->vreg_touch_vdd)) {
 		dev_err(&this->pdev->dev,
 				"%s: vreg_touch_vdd is not initialized\n",
@@ -2031,6 +2166,12 @@ static int clearpad_vreg_configure(struct clearpad_t *this, int enable)
 {
 	int rc = 0;
 	struct device *dev = this->pdev->dev.parent;
+
+	if (this->chip_id == SYN_CHIP_3330 ||
+	    this->chip_id == SYN_CHIP_332U) {
+		/* vreg_configure not needed on S3330/S332U */
+		return 0;
+	}
 
 	if (enable) {
 		this->vreg_touch_vdd = regulator_get(dev, CLEARPAD_VDD);
@@ -2093,7 +2234,7 @@ err_ret:
 	return rc;
 }
 
-static int clearpad_gpio_configure(struct clearpad_t *this, int enable)
+static int clearpad_pinctrl_configure(struct clearpad_t *this, int enable)
 {
 	int rc = 0;
 	struct pinctrl *pinctrl = this->pctrl.pinctrl;
@@ -2111,6 +2252,7 @@ static int clearpad_gpio_configure(struct clearpad_t *this, int enable)
 			rc = -EINVAL;
 			goto exit;
 		}
+
 		rc = pinctrl_select_state(pinctrl, irq_active);
 		if (rc) {
 			dev_err(&this->pdev->dev,
@@ -2127,12 +2269,14 @@ static int clearpad_gpio_configure(struct clearpad_t *this, int enable)
 				rc = -EINVAL;
 				goto exit;
 			}
+
 			rc = pinctrl_select_state(pinctrl, reset_active);
 			if (rc) {
 				dev_err(&this->pdev->dev,
 				"%s: cannot select reset_active\n", __func__);
 				goto exit;
 			}
+
 			reset_reset = pinctrl_lookup_state(pinctrl,
 						"reset_gpio-reset");
 			if (IS_ERR(reset_reset)) {
@@ -2141,6 +2285,7 @@ static int clearpad_gpio_configure(struct clearpad_t *this, int enable)
 				rc = -EINVAL;
 				goto exit;
 			}
+
 			/* save handles for possibility of reset later */
 			this->pctrl.reset_active = reset_active;
 			this->pctrl.reset_reset = reset_reset;
@@ -2153,12 +2298,14 @@ static int clearpad_gpio_configure(struct clearpad_t *this, int enable)
 			rc = -EINVAL;
 			goto exit;
 		}
+
 		rc = pinctrl_select_state(pinctrl, irq_suspend);
 		if (rc) {
 			dev_err(&this->pdev->dev,
 			"%s: cannot select irq_suspend\n", __func__);
 			goto exit;
 		}
+
 		if (gpio_is_valid(this->gpio_reset)) {
 			reset_suspend = pinctrl_lookup_state(pinctrl,
 						"reset_gpio-suspend");
@@ -2168,6 +2315,7 @@ static int clearpad_gpio_configure(struct clearpad_t *this, int enable)
 				rc = -EINVAL;
 				goto exit;
 			}
+
 			rc = pinctrl_select_state(pinctrl, reset_suspend);
 			if (rc) {
 				dev_err(&this->pdev->dev,
@@ -2178,6 +2326,52 @@ static int clearpad_gpio_configure(struct clearpad_t *this, int enable)
 		}
 	}
 exit:
+	return rc;
+}
+
+static int clearpad_gpio_configure(struct clearpad_t *this, int enable)
+{
+	int rc = 0;
+
+	if (enable) {
+		rc = gpio_request(this->pdata->irq_gpio, CLEARPAD_NAME);
+		if (rc) {
+			dev_err(&this->pdev->dev,
+					"%s: gpio_requeset failed, rc=%d\n",
+					__func__, rc);
+			return rc;
+		}
+
+		if (this->gpio_reset) {
+			rc = gpio_request(this->gpio_reset, CLEARPAD_NAME);
+			if (rc) {
+				dev_err(&this->pdev->dev,
+					"%s: gpio_request(%d) failed, rc=%d\n",
+					__func__, this->gpio_reset, rc);
+				gpio_free(this->pdata->irq_gpio);
+				return rc;
+			}
+
+			rc = gpio_direction_output(this->gpio_reset,
+						this->reset_l2h ? 1 : 0);
+			if (rc) {
+				dev_err(&this->pdev->dev,
+				"%s: gpio_direction_output(%d) failed, rc=%d\n",
+					__func__, this->gpio_reset, rc);
+				gpio_free(this->pdata->irq_gpio);
+				gpio_free(this->gpio_reset);
+				return rc;
+			}
+		}
+	} else {
+		gpio_free(this->pdata->irq_gpio);
+		if (this->gpio_reset) {
+			gpio_direction_output(this->gpio_reset,
+						this->reset_l2h ? 0 : 1);
+			gpio_free(this->gpio_reset);
+		}
+	}
+
 	return rc;
 }
 
@@ -2193,28 +2387,74 @@ static int clearpad_reset_power_core(struct clearpad_t *this)
 		goto exit;
 	}
 
-	clearpad_set_delay(this->delay_on_hw_reset);
+	if (this->use_pinctrl) {
+		clearpad_set_delay(this->delay_on_hw_reset);
 
-	if (gpio_is_valid(this->gpio_reset)) {
-		rc = pinctrl_select_state(this->pctrl.pinctrl,
-				this->pctrl.reset_reset);
-		if (rc) {
-			dev_err(&this->pdev->dev,
-			"%s: cannot select reset_reset state\n", __func__);
-			clearpad_vreg_configure(this, 1);
-			goto exit;
+		if (gpio_is_valid(this->gpio_reset)) {
+			rc = pinctrl_select_state(this->pctrl.pinctrl,
+					this->pctrl.reset_reset);
+			if (rc) {
+				dev_err(&this->pdev->dev,
+				"%s: cannot select reset_reset state\n",
+				__func__);
+				clearpad_vreg_configure(this, 1);
+				goto exit;
+			}
+
+			clearpad_set_delay(this->delay_on_gpio_reset);
+			rc = pinctrl_select_state(this->pctrl.pinctrl,
+					this->pctrl.reset_active);
+			if (rc) {
+				dev_err(&this->pdev->dev,
+				"%s: cannot select reset_active state\n",
+				__func__);
+				clearpad_vreg_configure(this, 1);
+				goto exit;
+			}
 		}
-		clearpad_set_delay(this->delay_on_gpio_reset);
-		rc = pinctrl_select_state(this->pctrl.pinctrl,
-				this->pctrl.reset_active);
-		if (rc) {
-			dev_err(&this->pdev->dev,
-			"%s: cannot select reset_active state\n", __func__);
-			clearpad_vreg_configure(this, 1);
-			goto exit;
-		}
+
+		goto conf_done;
 	}
 
+	switch (this->chip_id) {
+	case SYN_CHIP_3000:
+	case SYN_CHIP_3200:
+	case SYN_CHIP_7300:
+	case SYN_CHIP_7500:
+		usleep_range(10000, 11000);
+		break;
+
+	case SYN_CHIP_3400:
+		msleep(1000);
+		break;
+
+	case SYN_CHIP_3500:
+		/* Note: This is being executed only if not pinctrl mode */
+		rc = clearpad_gpio_configure(this, 0);
+		if (rc) {
+			dev_err(&this->pdev->dev,
+				"%s: GPIO disable configure error\n",
+				__func__);
+			clearpad_vreg_configure(this, 1);
+			goto exit;
+		}
+		msleep(400);
+		rc = clearpad_gpio_configure(this, 1);
+		if (rc) {
+			dev_err(&this->pdev->dev,
+				"%s: GPIO enable configure error\n",
+				__func__);
+			clearpad_vreg_configure(this, 1);
+			goto exit;
+		}
+		break;
+
+	default:
+		dev_err(&this->pdev->dev, "Unknown chip id:0x%x\n",
+			this->chip_id);
+		break;
+	}
+conf_done:
 	rc = clearpad_vreg_configure(this, 1);
 	if (rc)
 		dev_err(&this->pdev->dev,
@@ -2228,15 +2468,45 @@ static int clearpad_set_normal_mode(struct clearpad_t *this)
 {
 	int rc = 0;
 	u8 irq, buf[4] = {0};
+	bool s33_series = (this->chip_id == SYN_CHIP_3330 ||
+			   this->chip_id == SYN_CHIP_332U);
 
 	dev_dbg(&this->pdev->dev, "%s\n", __func__);
 
-	if (this->wakeup_gesture.suspend_with_enabled) {
+	if (!this->wakeup_gesture.enabled || s33_series) {
+		rc = clearpad_vreg_suspend(this, 0);
+		if (rc)
+			goto exit;
+		usleep_range(10000, 11000);
+		clearpad_set_irq(this, this->pdt[SYN_F01_RMI].irq_mask,
+								true);
+		rc = clearpad_get(SYNF(this, F01_RMI, DATA, 0x01), &irq);
+		if (rc) {
+			dev_err(&this->pdev->dev,
+				"failed to read interrupt status\n");
+			goto exit;
+		}
+		rc = clearpad_put_bit(SYNF(this, F01_RMI, CTRL, 0x00),
+			DEVICE_CONTROL_SLEEP_MODE_NORMAL_OPERATION,
+			DEVICE_CONTROL_SLEEP_MODE);
+		if (rc) {
+			dev_err(&this->pdev->dev,
+				"failed to exit sleep mode\n");
+			goto exit;
+		}
+		usleep_range(10000, 11000);
+
+		if (s33_series)
+			goto end;
+	}
+		
+
+	if (this->wakeup_gesture.enabled) {
 		if (!this->wakeup_gesture.lpm_disabled) {
 			rc = clearpad_vreg_suspend(this, 0);
 			if (rc)
 				goto exit;
-			clearpad_set_delay(10);
+			usleep_range(10000, 11000);
 
 			clearpad_set_irq(this, this->pdt[SYN_F01_RMI].irq_mask,
 									true);
@@ -2278,7 +2548,9 @@ static int clearpad_set_normal_mode(struct clearpad_t *this)
 				"failed to exit wakeup gesture mode\n");
 				goto exit;
 			}
-			if (this->force_cal_on_resume) {
+			if (this->chip_id == SYN_CHIP_3500 ||
+			    this->chip_id == SYN_CHIP_7500 ||
+			    this->force_cal_on_resume) {
 				rc = clearpad_put_bit(SYNF(this, F54_ANALOG,
 					COMMAND, 0x00),
 					ANALOG_COMMAND_FORCE_CAL,
@@ -2290,36 +2562,14 @@ static int clearpad_set_normal_mode(struct clearpad_t *this)
 				}
 			}
 		}
-	} else {
-		rc = clearpad_vreg_suspend(this, 0);
-		if (rc)
-			goto exit;
-		clearpad_set_delay(10);
-		clearpad_set_irq(this, this->pdt[SYN_F01_RMI].irq_mask,
-								true);
-		rc = clearpad_get(SYNF(this, F01_RMI, DATA, 0x01), &irq);
-		if (rc) {
-			dev_err(&this->pdev->dev,
-				"failed to read interrupt status\n");
-			goto exit;
-		}
-		rc = clearpad_put_bit(SYNF(this, F01_RMI, CTRL, 0x00),
-			DEVICE_CONTROL_SLEEP_MODE_NORMAL_OPERATION,
-			DEVICE_CONTROL_SLEEP_MODE);
-		if (rc) {
-			dev_err(&this->pdev->dev,
-				"failed to exit sleep mode\n");
-			goto exit;
-		}
-		clearpad_set_delay(10);
 	}
-
+end:
 	if (clearpad_is_valid_function(this, SYN_F51_CUSTOM)
 	    && this->cover.enabled)
 		rc = clearpad_set_cover_status(this);
 
 	this->active |= SYN_ACTIVE_POWER;
-	dev_dbg(&this->pdev->dev, "normal mode OK\n");
+	dev_info(&this->pdev->dev, "normal mode OK\n");
 exit:
 	return rc;
 }
@@ -2355,16 +2605,15 @@ static int clearpad_set_suspend_mode(struct clearpad_t *this)
 				"failed to enter wake-up gesture mode\n");
 			goto exit;
 		}
+		this->wakeup_gesture.enabled = true;
 		this->wakeup_gesture.time_started = jiffies - 1;
-		clearpad_set_delay(10);
+		usleep_range(10000, 11000);
 		LOG_CHECK(this, "enter doze mode\n");
 		if (!this->wakeup_gesture.lpm_disabled) {
 			rc = clearpad_vreg_suspend(this, 1);
 			if (rc)
 				goto exit;
 		}
-		this->wakeup_gesture.enabled = true;
-		this->wakeup_gesture.suspend_with_enabled = true;
 	} else {
 		rc = clearpad_put_bit(SYNF(this, F01_RMI, CTRL, 0x00),
 			DEVICE_CONTROL_SLEEP_MODE_SENSOR_SLEEP,
@@ -2374,18 +2623,17 @@ static int clearpad_set_suspend_mode(struct clearpad_t *this)
 				"failed to exit normal mode\n");
 			goto exit;
 		}
-		clearpad_set_delay(10);
+		this->wakeup_gesture.enabled = false;
+		usleep_range(10000, 11000);
 		clearpad_set_irq(this, this->pdt[SYN_F01_RMI].irq_mask, false);
 		LOG_CHECK(this, "enter sleep mode\n");
 		rc = clearpad_vreg_suspend(this, 1);
 		if (rc)
 			goto exit;
-		this->wakeup_gesture.enabled = false;
-		this->wakeup_gesture.suspend_with_enabled = false;
 	}
 
 	this->active &= ~SYN_ACTIVE_POWER;
-	dev_dbg(&this->pdev->dev, "suspend mode OK\n");
+	dev_info(&this->pdev->dev, "suspend mode OK\n");
 exit:
 	return rc;
 }
@@ -2404,7 +2652,7 @@ static int clearpad_set_power(struct clearpad_t *this)
 		 this->input->users,
 		 !!(active & SYN_STANDBY));
 
-	dev_dbg(&this->pdev->dev, "%s: state=%s\n", __func__,
+	dev_info(&this->pdev->dev, "%s: state=%s\n", __func__,
 		 clearpad_state_name[this->state]);
 	should_wake = !(active & SYN_STANDBY);
 
@@ -2413,7 +2661,7 @@ static int clearpad_set_power(struct clearpad_t *this)
 	else if (!should_wake && (active & SYN_ACTIVE_POWER))
 		rc = clearpad_set_suspend_mode(this);
 	else
-		dev_dbg(&this->pdev->dev, "no change (%d)\n", should_wake);
+		dev_info(&this->pdev->dev, "no change (%d)\n", should_wake);
 
 	if (rc)
 		clearpad_reset_power(this, __func__);
@@ -2427,21 +2675,17 @@ static int clearpad_set_power(struct clearpad_t *this)
 	return rc;
 }
 
-static int clearpad_reset_power(struct clearpad_t *this, const char *cause)
+static void clearpad_reset_power(struct clearpad_t *this, const char *cause)
 {
 	unsigned long flags;
-	int rc = 0;
 
-	if (this->flash_requested) {
-		rc = -EBUSY;
-		goto end;
-	}
+	if (this->flash_requested)
+		return;
 
 	if (cause && cause == this->reset_cause) {
 		if (this->reset_count >= SYN_RETRY_NUM_OF_RESET) {
 			dev_info(&this->pdev->dev, "ignore reset request\n");
-			rc = -EINVAL;
-			goto end;
+			return;
 		} else {
 			this->reset_count++;
 		}
@@ -2464,14 +2708,11 @@ static int clearpad_reset_power(struct clearpad_t *this, const char *cause)
 
 	if (clearpad_reset_power_core(this)) {
 		dev_err(&this->pdev->dev, "vreg reset failed\n");
-		rc = -EIO;
 	} else {
-		clearpad_set_delay(this->delay_after_hw_reset);
+		msleep(this->delay_after_hw_reset);
 		clearpad_set_page(this, 0);
 		clearpad_set_irq(this, this->pdt[SYN_F01_RMI].irq_mask, true);
 	}
-end:
-	return rc;
 }
 
 static int clearpad_gpio_export(struct clearpad_t *this,
@@ -2534,8 +2775,6 @@ static void clearpad_funcarea_initialize(struct clearpad_t *this)
 				pointer_area.y1 -= pointer_data->offset_y;
 				pointer_area.y2 -= pointer_data->offset_y;
 			}
-			input_mt_init_slots(this->input,
-						this->extents.n_fingers, 0);
 			input_set_abs_params(this->input, ABS_MT_TRACKING_ID,
 					0, this->extents.n_fingers, 0, 0);
 			input_set_abs_params(this->input, ABS_MT_POSITION_X,
@@ -2599,7 +2838,7 @@ clearpad_funcarea_search(struct clearpad_t *this,
 		goto exit;
 
 	/* get new funcarea */
-	for (; funcarea->func != SYN_FUNCAREA_END; funcarea++) {
+	for ( ; funcarea->func != SYN_FUNCAREA_END; funcarea++) {
 		if (clearpad_funcarea_test(&funcarea->original,
 						&pointer->cur))
 			goto exit;
@@ -2675,8 +2914,8 @@ static void clearpad_funcarea_down(struct clearpad_t *this,
 			break;
 		touch_major = max(cur->wx, cur->wy) + 1;
 		touch_minor = min(cur->wx, cur->wy) + 1;
-		input_mt_slot(idev, cur->id);
-		input_mt_report_slot_state(idev, cur->tool, true);
+		input_report_abs(idev, ABS_MT_TRACKING_ID, cur->id);
+		input_report_abs(idev, ABS_MT_TOOL_TYPE, cur->tool);
 		input_report_abs(idev, ABS_MT_POSITION_X, cur->x);
 		input_report_abs(idev, ABS_MT_POSITION_Y, cur->y);
 		if (this->touch_pressure_enabled)
@@ -2688,6 +2927,7 @@ static void clearpad_funcarea_down(struct clearpad_t *this,
 		if (this->touch_orientation_enabled)
 			input_report_abs(idev, ABS_MT_ORIENTATION,
 				 (cur->wx > cur->wy));
+		input_mt_sync(idev);
 		break;
 	case SYN_FUNCAREA_BUTTON:
 		LOG_EVENT(this, "button\n");
@@ -2717,8 +2957,7 @@ static void clearpad_funcarea_up(struct clearpad_t *this,
 		LOG_EVENT(this, "%s up\n", valid ? "pt" : "unused pt");
 		if (!valid)
 			break;
-		input_mt_slot(idev, pointer->cur.id);
-		input_mt_report_slot_state(idev, pointer->cur.tool, false);
+		input_mt_sync(idev);
 		break;
 	case SYN_FUNCAREA_BUTTON:
 		LOG_EVENT(this, "button up\n");
@@ -2736,7 +2975,7 @@ static void clearpad_funcarea_up(struct clearpad_t *this,
 static void clearpad_funcarea_out(struct clearpad_t *this,
 				  struct clearpad_pointer_t *pointer)
 {
-	struct clearpad_funcarea_t *new_funcarea;
+	struct clearpad_funcarea_t *new_funcarea ;
 
 	clearpad_funcarea_up(this, pointer);
 
@@ -2945,7 +3184,7 @@ static int clearpad_read_fingers_f11(struct clearpad_t *this)
 	rc = clearpad_get_block(SYNF(this, F11_2D, DATA, 0x00), buf, size);
 	if (rc)
 		goto exit;
-	for (i = this->extents.n_fingers - 1; i > 0; i--) {
+	for (i = this->extents.n_fingers - 1 ; i > 0; i--) {
 		if (SYN_FINGER_STATE(buf, i)) {
 			/* read remained fingers */
 			rc = clearpad_get_block(
@@ -3075,7 +3314,7 @@ static int clearpad_process_F01_RMI(struct clearpad_t *this)
 		} else {
 			dev_info(&this->pdev->dev,
 					"check fail: retry = %d\n", i);
-			clearpad_set_delay(100);
+			msleep(100);
 		}
 	}
 exit:
@@ -3166,7 +3405,7 @@ static int clearpad_process_irq(struct clearpad_t *this)
 			rc = clearpad_vreg_suspend(this, 0);
 			if (rc)
 				goto unlock;
-			clearpad_set_delay(10);
+			usleep_range(10000, 11000);
 		}
 	}
 
@@ -3209,7 +3448,7 @@ static int clearpad_process_irq(struct clearpad_t *this)
 
 	rc = 0;
 
-	dev_dbg(&this->pdev->dev, "no work, interrupt=[0x%02x]\n", interrupt);
+	dev_info(&this->pdev->dev, "no work, interrupt=[0x%02x]\n", interrupt);
 unlock:
 	if (rc) {
 		dev_err(&this->pdev->dev, "%s: error %d\n", __func__, rc);
@@ -3308,7 +3547,7 @@ static int clearpad_command_open(struct clearpad_t *this,
 	int rc = 0;
 	LOCK(this);
 	/* allocate image buffer */
-	this->flash.image = vmalloc(image_size);
+	this->flash.image = kmalloc(image_size, GFP_KERNEL);
 	if (this->flash.image == NULL) {
 		dev_err(&this->pdev->dev,
 		       "buffer allocation error (%zu bytes)\n", image_size);
@@ -3516,7 +3755,7 @@ static int clearpad_command_fw_flash(struct clearpad_t *this,
 error:
 	clearpad_set_irq(this, this->pdt[SYN_F01_RMI].irq_mask, true);
 	snprintf(this->result_info, SYN_STRING_LENGTH,
-		"%s, family 0x%02x, fw rev 0x%02x.%02x, extra 0x%02x, "
+		"%s, family 0x%02x, fw rev 0x%02x.%02x, extra 0x%02x, " \
 		"failed fw update\n",
 		clearpad_s(this->device_info.product_id,
 					HEADER_PRODUCT_ID_SIZE),
@@ -3570,7 +3809,7 @@ static ssize_t clearpad_state_show(struct device *dev,
 
 	if (!strncmp(attr->attr.name, __stringify(fwinfo), PAGE_SIZE))
 		snprintf(buf, PAGE_SIZE,
-			"%s, family 0x%02x, fw rev 0x%02x.%02x, extra 0x%02x,"
+			"%s, family 0x%02x, fw rev 0x%02x.%02x, extra 0x%02x," \
 			" task=%s, state=%s\n",
 			clearpad_s(this->device_info.product_id,
 				HEADER_PRODUCT_ID_SIZE),
@@ -3798,10 +4037,179 @@ exit:
 	return rc ? rc : strnlen(buf, PAGE_SIZE);
 }
 
+static ssize_t clearpad_pca_store(struct device *dev,
+		struct device_attribute *attr,
+		const char *buf, size_t size)
+{
+	struct clearpad_t *this = dev_get_drvdata(dev);
+	int rc, i, block_count;
+	u8 tmp_buf[2] = {0};
+	union {
+		unsigned short block_num;
+		unsigned char data[2];
+	} block_num;
+	unsigned int block_size;
+
+	LOCK(this);
+	if (this->pca_busy) {
+		dev_err(&this->pdev->dev,
+				"pca is still busy\n");
+		rc = -EBUSY;
+		UNLOCK(this);
+		goto exit;
+	}
+	this->pca_busy = true;
+
+	if (size > SYN_PCA_ACCESS_MAX_WRITE_SIZE) {
+		rc = -EINVAL;
+		dev_err(&this->pdev->dev,
+		       "Input data size is large (size = %zu)\n", size);
+		goto err_unlock;
+	}
+
+	/* get block size */
+	if (this->chip_id == SYN_CHIP_3400 ||
+		this->chip_id == SYN_CHIP_3500 ||
+		this->chip_id == SYN_CHIP_7500) {
+		rc = clearpad_get_block(SYNF(this, F34_FLASH, QUERY, 0x02),
+				    tmp_buf, 2);
+	} else {
+		rc = clearpad_get(SYNF(this, F34_FLASH, QUERY, 0x03),
+				  &tmp_buf[0]);
+		if (rc)
+			goto err_unlock;
+		rc = clearpad_get(SYNF(this, F34_FLASH, QUERY, 0x04),
+				  &tmp_buf[1]);
+	}
+	if (rc)
+		goto err_unlock;
+
+	block_size = ((tmp_buf[1] << 8) | tmp_buf[0]);
+
+	/* calc need block num with round up */
+	block_count = (size + (block_size - 1)) / block_size;
+	if (size % block_size) {
+		rc = -EINVAL;
+		dev_err(&this->pdev->dev,
+		       "Written data size is not multiples of block_size" \
+			"(size = %zu, block_size = %d)\n", size, block_size);
+		goto err_unlock;
+	}
+
+	/* change to bootloader mode start */
+	/* read bootloader id */
+	rc = clearpad_get_block(SYNF(this, F34_FLASH, QUERY, 0x00), tmp_buf, 2);
+	if (rc)
+		goto err_unlock;
+
+	/* write bootloader id to block data */
+	rc = clearpad_put_block(SYNF(this, F34_FLASH, DATA,
+				(this->chip_id == SYN_CHIP_3400 ||
+				 this->chip_id == SYN_CHIP_3500 ||
+				 this->chip_id == SYN_CHIP_7500) ? 0x01 : 0x02),
+				tmp_buf, 2);
+	if (rc)
+		goto err_unlock;
+
+	usleep_range(10000, 11000);
+
+	/* issue a flash program enable */
+	rc = clearpad_put(SYNF(this, F34_FLASH, DATA,
+			(this->chip_id == SYN_CHIP_3400 ||
+			 this->chip_id == SYN_CHIP_3500 ||
+			 this->chip_id == SYN_CHIP_7500) ? 0x02 : 0x12),
+			FLASH_CONTROL_ENABLE_FLASH_PROGRAMMING);
+	if (rc)
+		goto err_unlock;
+
+	msleep(100);
+
+	/* PDT have changed, re-read. when success, driver can reset.*/
+	rc = clearpad_read_pdt(this);
+	if (rc)
+		goto err_unlock;
+
+	 /* make sure that we are in programming mode and there are no issues */
+	rc = clearpad_get(SYNF(this, F34_FLASH, DATA,
+		(this->chip_id == SYN_CHIP_3400 ||
+		 this->chip_id == SYN_CHIP_3500 ||
+		 this->chip_id == SYN_CHIP_7500) ? 0x03 : 0x12), tmp_buf);
+	if (rc)
+		goto err_unlock;
+
+	if (tmp_buf[0] != FLASH_CONTROL_PROGRAM_ENABLED) {
+		dev_err(&this->pdev->dev,
+		       "failed enabling flash (%s)\n",
+			(this->chip_id == SYN_CHIP_3400 ||
+			 this->chip_id == SYN_CHIP_3500 ||
+			 this->chip_id == SYN_CHIP_7500) ?
+			clearpad_flash_status[tmp_buf[0] & 7] :
+			clearpad_flash_status[(tmp_buf[0] >> 4) & 7]);
+		rc = -EIO;
+		goto err_unlock;
+	}
+	/* change to bootloader mode end */
+
+	/* check write block position */
+	block_num.block_num = 0;
+	for (i = 0; i < block_count; i++) {
+		block_num.data[1] &= 0x1F;
+		block_num.data[1] |= (FLASH_DATA_CONFIGURATION_AREA << 5);
+
+		/* write block number */
+		rc = clearpad_put_block(SYNF(this, F34_FLASH, DATA, 0x00),
+				     block_num.data, 2);
+		if (rc)
+			break;
+
+		/* write block data */
+		rc = clearpad_put_block(SYNF(this, F34_FLASH, DATA,
+			(this->chip_id == SYN_CHIP_3400 ||
+			 this->chip_id == SYN_CHIP_3500 ||
+			 this->chip_id == SYN_CHIP_7500) ? 0x01 : 0x02),
+				     buf, block_size);
+		if (rc)
+			break;
+
+		usleep_range(10000, 11000);
+
+		/* issue a write configuration block command */
+		rc = clearpad_put(SYNF(this, F34_FLASH, DATA,
+				(this->chip_id == SYN_CHIP_3400 ||
+				 this->chip_id == SYN_CHIP_3500 ||
+				 this->chip_id == SYN_CHIP_7500) ? 0x02 : 0x12),
+				FLASH_CONTROL_WRITE_CONFIGURATION_BLOCK);
+		if (rc)
+			break;
+
+		msleep(100);
+
+		buf += block_size;
+		block_num.block_num++;
+	}
+	dev_info(&this->pdev->dev, "write size = %d", (i * block_size));
+
+	usleep_range(10000, 11000);
+
+	/* send a reset to the device to complete the flash procedure */
+	clearpad_put(SYNF(this, F01_RMI, COMMAND, 0x00),
+						DEVICE_COMMAND_RESET);
+	msleep(100);
+
+err_unlock:
+	if (rc)
+		dev_err(&this->pdev->dev, "failed to write to touch device");
+	this->pca_busy = false;
+	UNLOCK(this);
+exit:
+	return rc ? rc : (i * block_size);
+}
+
 static ssize_t clearpad_wakeup_gesture_store(struct device *dev,
 		struct device_attribute *attr,
 		const char *buf, size_t size)
 {
+	int rc = 0;
 	struct clearpad_t *this = dev_get_drvdata(dev);
 
 	dev_dbg(&this->pdev->dev, "%s: start\n", __func__);
@@ -3823,7 +4231,7 @@ static ssize_t clearpad_wakeup_gesture_store(struct device *dev,
 exit:
 	UNLOCK(this);
 
-	return size;
+	return rc ? rc : size;
 }
 
 static ssize_t clearpad_screen_status_store(struct device *dev,
@@ -3836,13 +4244,7 @@ static ssize_t clearpad_screen_status_store(struct device *dev,
 
 	LOCK(this);
 
-	if (sscanf(buf, "%d", &this->screen_status) != 1) {
-		dev_err(&this->pdev->dev, "%s: %s sscanf failed ",
-						__func__, attr->attr.name);
-		UNLOCK(this);
-		return -EINVAL;
-	}
-
+	sscanf(buf, "%d", &this->screen_status);
 	dev_dbg(&this->pdev->dev, "%s: screen_status = %d\n", __func__,
 				this->screen_status);
 
@@ -3956,6 +4358,8 @@ static ssize_t clearpad_cover_mode_enabled_store(struct device *dev,
 		rc = clearpad_set_cover_status(this);
 		dev_info(&this->pdev->dev, "Cover mode Disabled\n");
 	}
+	if (rc)
+		dev_err(&this->pdev->dev, "%s failed\n", __func__);
 exit:
 	UNLOCK(this);
 
@@ -3966,7 +4370,7 @@ static ssize_t clearpad_cover_win_store(struct device *dev,
 		struct device_attribute *attr,
 		const char *buf, size_t size)
 {
-	int win_size = 0, win_size_org = 0;
+	int win_size = 0;
 	int rc = 0;
 	struct clearpad_t *this = dev_get_drvdata(dev);
 
@@ -3989,28 +4393,19 @@ static ssize_t clearpad_cover_win_store(struct device *dev,
 		rc = -EINVAL;
 		goto exit;
 	}
-	win_size_org = win_size;
 
-	if (!strncmp(attr->attr.name, "cover_win_top", PAGE_SIZE)) {
-		if (this->cover.convert_window_size && this->cover.tag_y_max)
-			win_size = win_size * (this->extents.y_max + 1) / this->cover.tag_y_max;
+	dev_info(&this->pdev->dev, "%s: %s = %d\n", __func__,
+					attr->attr.name, win_size);
+
+	if (!strncmp(attr->attr.name, "cover_win_top", PAGE_SIZE))
 		this->cover.win_top = win_size;
-	} else if (!strncmp(attr->attr.name, "cover_win_bottom", PAGE_SIZE)) {
-		if (this->cover.convert_window_size && this->cover.tag_y_max)
-			win_size = win_size * (this->extents.y_max + 1) / this->cover.tag_y_max;
+	else if (!strncmp(attr->attr.name, "cover_win_bottom", PAGE_SIZE))
 		this->cover.win_bottom = win_size;
-	} else if (!strncmp(attr->attr.name, "cover_win_right", PAGE_SIZE)) {
-		if (this->cover.convert_window_size && this->cover.tag_x_max)
-			win_size = win_size * (this->extents.x_max + 1) / this->cover.tag_x_max;
+	else if (!strncmp(attr->attr.name, "cover_win_right", PAGE_SIZE))
 		this->cover.win_right = win_size;
-	} else if (!strncmp(attr->attr.name, "cover_win_left", PAGE_SIZE)) {
-		if (this->cover.convert_window_size && this->cover.tag_x_max)
-			win_size = win_size * (this->extents.x_max + 1) / this->cover.tag_x_max;
+	else if (!strncmp(attr->attr.name, "cover_win_left", PAGE_SIZE))
 		this->cover.win_left = win_size;
-	}
 	rc = clearpad_set_cover_window(this);
-	dev_info(&this->pdev->dev, "%s: %s = %d (org %d) rc = %d\n", __func__,
-			attr->attr.name, win_size, win_size_org, rc);
 exit:
 	UNLOCK(this);
 
@@ -4036,6 +4431,8 @@ static struct device_attribute clearpad_sysfs_attrs[] = {
 				clearpad_screen_status_store),
 	__ATTR(charger_status, S_IRUGO | S_IWUSR, clearpad_state_show,
 				clearpad_charger_status_store),
+	__ATTR(pca, S_IRUGO | S_IWUSR, clearpad_pca_show,
+				clearpad_pca_store),
 	__ATTR(cover_status, S_IRUGO | S_IWUSR,
 				clearpad_state_show,
 				clearpad_cover_status_store),
@@ -4104,6 +4501,13 @@ static int clearpad_touch_config_dt(struct clearpad_t *this)
 		this->gpio_reset = 0;
 	}
 
+	this->use_pinctrl = of_property_read_bool(devnode,
+						"synaptics,use-pinctrl");
+
+	if (of_property_read_u32(devnode, "reset_l2h",
+		&this->reset_l2h))
+		dev_warn(&this->pdev->dev, "no reset_l2h config\n");
+
 	if (of_property_read_u32(devnode, "num_sensor_rx",
 		&this->num_sensor_rx))
 		dev_warn(&this->pdev->dev, "no num_sensor_rx config\n");
@@ -4148,21 +4552,10 @@ static int clearpad_touch_config_dt(struct clearpad_t *this)
 		(u32 *)&this->cover.supported))
 		dev_warn(&this->pdev->dev, "no cover_supported config\n");
 
-	if (of_property_read_u32(devnode, "cover_tag_x_max",
-		&this->cover.tag_x_max))
-		dev_warn(&this->pdev->dev, "no cover_tag_x_max\n");
-
-	if (of_property_read_u32(devnode, "cover_tag_y_max",
-		&this->cover.tag_y_max))
-		dev_warn(&this->pdev->dev, "no cover_tag_y_max\n");
-
-	if (of_property_read_u32(devnode, "convert_cover_win_size",
-		&this->cover.convert_window_size))
-		dev_warn(&this->pdev->dev, "no convert_cover_win_size\n");
-
 	if (of_property_read_u32(devnode, "touch_pressure_enabled",
 		&this->touch_pressure_enabled))
-		dev_warn(&this->pdev->dev, "no touch_pressure_enabled\n");
+		dev_warn(&this->pdev->dev, "no touch_pressure_enabled " \
+			 "config\n");
 
 	if (of_property_read_u32(devnode, "touch_size_enabled",
 		&this->touch_size_enabled))
@@ -4170,7 +4563,8 @@ static int clearpad_touch_config_dt(struct clearpad_t *this)
 
 	if (of_property_read_u32(devnode, "touch_orientation_enabled",
 		&this->touch_orientation_enabled))
-		dev_warn(&this->pdev->dev, "no touch_orientation_enabled\n");
+		dev_warn(&this->pdev->dev, "no touch_orientation_enabled " \
+			 "config\n");
 
 	if (of_property_read_u32(devnode, "preset_x_max", &this->extents.x_max))
 		dev_warn(&this->pdev->dev, "no preset_x_max config\n");
@@ -4350,9 +4744,8 @@ static int clearpad_pm_suspend(struct device *dev)
 
 	if (device_may_wakeup(dev)) {
 		enable_irq_wake(this->irq);
-		dev_dbg(&this->pdev->dev, "enable irq wake");
+		dev_info(&this->pdev->dev, "enable irq wake");
 	}
-
 	return 0;
 }
 
@@ -4365,7 +4758,7 @@ static int clearpad_pm_resume(struct device *dev)
 
 	if (device_may_wakeup(dev)) {
 		disable_irq_wake(this->irq);
-		dev_dbg(&this->pdev->dev, "disable irq wake");
+		dev_info(&this->pdev->dev, "disable irq wake");
 	}
 
 	spin_lock_irqsave(&this->slock, flags);
@@ -4379,7 +4772,12 @@ static int clearpad_pm_resume(struct device *dev)
 		rc = clearpad_process_irq(this);
 	}
 
-	return rc;
+#ifdef CONFIG_FB
+	if (irq_pending)
+#endif
+	(void)(rc ? rc : clearpad_resume(&this->pdev->dev));
+
+	return 0;
 }
 
 static int clearpad_pm_suspend_noirq(struct device *dev)
@@ -4438,26 +4836,6 @@ static int fb_notifier_callback(struct notifier_block *self,
 #endif
 
 #ifdef CONFIG_DEBUG_FS
-static int clearpad_debug_hwtest_log(struct clearpad_t *this,
-				     const char *format, ...)
-{
-	va_list args;
-	struct clearpad_hwtest_t *hwt = &this->hwtest;
-	int remain = sizeof(hwt->log_buf) - hwt->log_size;
-	int length = 0;
-
-	if (remain <= 1)
-		goto end;
-
-	va_start(args, format);
-	length =  vscnprintf(hwt->log_buf + hwt->log_size, remain,
-			     format, args);
-	va_end(args);
-	hwt->log_size += length;
-end:
-	return length;
-}
-
 static int clearpad_get_num_tx_physical(struct clearpad_t *this, int num_tx)
 {
 	int i, rc;
@@ -4471,7 +4849,7 @@ static int clearpad_get_num_tx_physical(struct clearpad_t *this, int num_tx)
 			buf, num_tx);
 	if (rc)
 		goto error_free;
-	for (i = 0; i < num_tx; i++) {
+	for (i = 0 ; i < num_tx ; i++) {
 		if (num_tx_physical < buf[i])
 			num_tx_physical = buf[i];
 		dev_dbg(&this->pdev->dev, "buf[%d], read data[%x], max = %d\n",
@@ -4566,9 +4944,9 @@ static void clearpad_analog_test_get_loop_count(struct clearpad_t *this,
 	} else {
 		*loop_count_i = *loop_count_j = *data_type = 0;
 	}
-	HWTEST_INFO(this,
-		    "loop_count_i[%d], loop_count_j[%d], data_type[%d]\n",
-		    *loop_count_i, *loop_count_j, *data_type);
+	dev_info(&this->pdev->dev,
+			"loop_count_i[%d], loop_count_j[%d], data_type[%d]\n",
+			*loop_count_i, *loop_count_j, *data_type);
 }
 
 static void clearpad_analog_test(struct clearpad_t *this,
@@ -4602,7 +4980,7 @@ static void clearpad_analog_test(struct clearpad_t *this,
 		goto set_power;
 
 	/* Wait until sleep mode is completely changed to NO_SLEEP */
-	clearpad_set_delay(20);
+	msleep(20);
 
 	rc = clearpad_put(SYNF(this, F01_RMI, CTRL, 0x01),
 			this->pdt[f_analog].irq_mask);
@@ -4621,7 +4999,8 @@ static void clearpad_analog_test(struct clearpad_t *this,
 			num_rx = this->num_sensor_rx;
 			num_tx = this->num_sensor_tx;
 		} else {
-			HWTEST_INFO(this, "Analog Test not supported\n");
+			dev_info(&this->pdev->dev,
+				 "Analog Test not supported\n");
 			goto err_set_irq_xy;
 		}
 	}
@@ -4744,15 +5123,16 @@ static void clearpad_analog_test(struct clearpad_t *this,
 		rc = clearpad_get(SYNF(this, F54_ANALOG, COMMAND, 0x00), buf);
 		if (rc)
 			goto err_set_irq_xy;
-		for (i = 0; (buf[0] & ANALOG_COMMAND_FORCE_UPDATE) != 0;
+		for (i = 0 ; (buf[0] & ANALOG_COMMAND_FORCE_UPDATE) != 0 ;
 				i++) {
-			clearpad_set_delay(10);
+			usleep_range(10000, 11000);
 			rc = clearpad_get(
 				SYNF(this, F54_ANALOG, COMMAND, 0x00), buf);
 			if (rc || i > 100)
 				goto err_set_irq_xy;
-			HWTEST_INFO(this, "Force update flag = %x, loop = %d\n",
-				    buf[0], i);
+			dev_info(&this->pdev->dev,
+				"Force update flag = %x, loop = %d\n",
+				buf[0], i);
 		}
 		rc = clearpad_put_bit(SYNF(this, F54_ANALOG, COMMAND, 0x00),
 				ANALOG_COMMAND_FORCE_CAL,
@@ -4762,14 +5142,14 @@ static void clearpad_analog_test(struct clearpad_t *this,
 		rc = clearpad_get(SYNF(this, F54_ANALOG, COMMAND, 0x00), buf);
 		if (rc || buf[0] & ANALOG_COMMAND_GET_REPORT)
 			goto err_set_irq_xy;
-		for (i = 0; (buf[0] & ANALOG_COMMAND_FORCE_CAL) != 0; i++) {
-			clearpad_set_delay(10);
+		for (i = 0 ; (buf[0] & ANALOG_COMMAND_FORCE_CAL) != 0 ; i++) {
+			usleep_range(10000, 11000);
 			rc = clearpad_get(
 				SYNF(this, F54_ANALOG, COMMAND, 0x00), buf);
 			if (rc || i > 100)
 				goto err_set_irq_xy;
-			HWTEST_INFO(this, "Force cal flag = %x, loop = %d\n",
-				    buf[0], i);
+			dev_info(&this->pdev->dev,
+				"Force cal flag = %x, loop = %d\n", buf[0], i);
 		}
 	}
 
@@ -4787,7 +5167,7 @@ static void clearpad_analog_test(struct clearpad_t *this,
 		data_size = sizeof(u32);
 		break;
 	default:
-		HWTEST_ERR(this, "unsupported command\n");
+		dev_err(&this->pdev->dev, "unsupported command\n");
 		goto err_set_irq_xy;
 	}
 
@@ -4801,8 +5181,9 @@ static void clearpad_analog_test(struct clearpad_t *this,
 
 	for (k = 0; k < count; k++) {
 		s64 min_val = UINT_MAX, max_val = INT_MIN;
-		HWTEST_INFO(this, "ANALOG: mode[%d], num[%d], rx[%d], tx[%d]",
-			 mode, k, num_rx, num_tx);
+		dev_info(&this->pdev->dev,
+				"ANALOG: mode[%d], num[%d], rx[%d], tx[%d]",
+				mode, k, num_rx, num_tx);
 		LOCK(this);
 		this->state = SYN_STATE_WAIT_FOR_INT;
 		UNLOCK(this);
@@ -4893,11 +5274,11 @@ static void clearpad_analog_test(struct clearpad_t *this,
 					pl += snprintf(pl, sizeof(delimeter),
 								delimeter);
 			}
-			HWTEST_INFO(this, "%s\n", line);
+			dev_info(&this->pdev->dev, "%s\n", line);
 		}
-		HWTEST_INFO(this,
-			    "MIN = %06lld / MAX = %06lld\n", min_val, max_val);
-		clearpad_set_delay(100);
+		dev_info(&this->pdev->dev,
+			"MIN = %06lld / MAX = %06lld\n", min_val, max_val);
+		msleep(100);
 	}
 
 err_reset:
@@ -4967,7 +5348,7 @@ static int clearpad_hextou8(struct clearpad_t *this,
 		goto exit;
 	}
 	*value = (u8)v;
-	*ptr = skip_spaces(p);
+	*ptr = p;
 exit:
 	return rc;
 }
@@ -4981,11 +5362,11 @@ static int clearpad_debug_read_reg(struct clearpad_t *this,
 	LOCK(this);
 	rc = clearpad_get(this, SYN_PAGE_ADDR(page, reg), &value);
 	if (!rc)
-		HWTEST_INFO(this,
-			"read page=0x%02x, addr=0x%02x, value=0x%02x\n",
-			page, reg, value);
+		dev_info(&this->pdev->dev,
+			 "read page=0x%02x, addr=0x%02x, value=0x%02x\n",
+			 page, reg, value);
 	else
-		HWTEST_ERR(this, "Error in reading single register\n");
+		dev_err(&this->pdev->dev, "Error in reading single register\n");
 	UNLOCK(this);
 	return rc;
 }
@@ -5004,12 +5385,14 @@ static int clearpad_debug_read_packet(struct clearpad_t *this,
 	}
 	rc = clearpad_read_block(this, SYN_PAGE_ADDR(page, reg), pkt, length);
 	if (rc > 0) {
-		HWTEST_INFO(this, "read page=0x%02x, addr=0x%02x\n", page, reg);
+		dev_info(&this->pdev->dev,
+			 "read page=0x%02x, addr=0x%02x\n", page, reg);
 		for (i = 0; i < length; i++)
-			HWTEST_INFO(this, "index[%d]=0x%02x\n", i, pkt[i]);
+			dev_info(&this->pdev->dev,
+				 "index[%d]=0x%02x\n", i, pkt[i]);
 		rc = 0;
 	} else {
-		HWTEST_ERR(this, "Error in reading packet register\n");
+		dev_err(&this->pdev->dev, "Error in reading packet register\n");
 	}
 	kzfree(pkt);
 exit:
@@ -5025,11 +5408,11 @@ static int clearpad_debug_write_reg(struct clearpad_t *this,
 	LOCK(this);
 	rc = clearpad_put(this, SYN_PAGE_ADDR(page, reg), value);
 	if (!rc)
-		HWTEST_INFO(this,
-			"write page=0x%02x, addr=0x%02x, value=0x%02x\n",
-			page, reg, value);
+		dev_info(&this->pdev->dev,
+			 "write page=0x%02x, addr=0x%02x, value=0x%02x\n",
+			 page, reg, value);
 	else
-		HWTEST_ERR(this, "Error in writing to register\n");
+		dev_err(&this->pdev->dev, "Error in writing to register\n");
 	UNLOCK(this);
 	return rc;
 }
@@ -5058,25 +5441,26 @@ static int clearpad_debug_write_packet(struct clearpad_t *this,
 		if (clearpad_hextou8(this, &b, guard, &index) ||
 		    clearpad_hextou8(this, &b, guard, &value) ||
 		    index >= length) {
-			HWTEST_ERR(this, "invalid arguments > %s\n", b);
+			dev_err(&this->pdev->dev, "invalid arguments\n");
 			rc = -EINVAL;
 			goto err_free;
 		}
-		HWTEST_INFO(this, "mod index[%d]=0x%02x(0x%02x)\n",
-			 index, value, pkt[index]);
+		dev_info(&this->pdev->dev, "mod index[%d]=0x%02x(0x%02x)\n",
+			index, value, pkt[index]);
 		pkt[index] = value;
 	}
 
 	/* write back packet*/
 	rc = clearpad_put_block(this, SYN_PAGE_ADDR(page, reg), pkt, length);
 	if (rc) {
-		HWTEST_ERR(this, "Error in writing to pkt register\n");
+		dev_err(&this->pdev->dev, "Error in writing to pkt register\n");
 		goto err_free;
 	}
 
-	HWTEST_INFO(this, "write page=0x%02x, addr=0x%02x\n", page, reg);
+	dev_info(&this->pdev->dev,
+		 "write page=0x%02x, addr=0x%02x\n", page, reg);
 	for (i = 0; i < length; i++)
-		HWTEST_INFO(this, "index[%d]=0x%02x\n", i, pkt[i]);
+		dev_info(&this->pdev->dev, "index[%d]=0x%02x\n", i, pkt[i]);
 	rc = 0;
 
 err_free:
@@ -5090,39 +5474,28 @@ static ssize_t clearpad_debug_hwtest_write(struct file *file,
 		const char __user *buf, size_t count, loff_t *pos)
 {
 	struct clearpad_t *this = (struct clearpad_t *)file->private_data;
-	struct clearpad_hwtest_t *hwt = &this->hwtest;
 	int rc;
 	unsigned long arg;
 	u8 page, reg, value, length;
 	char *bhead = NULL;
 	char *b;
 	char *guard;
+	long l;
 
-	mutex_lock(&hwt->lock);
-	if (count <= HWTEST_SIZE_OF_COMMAND_PREFIX || *pos != 0)
+	if (count <= HWTEST_SIZE_OF_COMMAND_PREFIX)
 		goto err_invalid_arg;
 
-	b = bhead = kzalloc(count + 1, GFP_KERNEL);
+	l = strnlen_user(buf, count - 1);
+	b = bhead = kzalloc(l, GFP_KERNEL);
 	if (!b) {
 		rc = -ENOMEM;
-		goto exit_ret;
+		goto exit;
 	}
-	rc = strncpy_from_user(b, buf, count);
+	rc = strncpy_from_user(b, buf, l);
 	if (!rc)
-		goto exit_free;
+		goto err_free;
 
-	guard = b + count;
-	while (guard > b) {
-		if (isascii(guard[-1]) && isgraph(guard[-1]))
-			break;
-		guard[-1] = '\0';
-		guard--; /* remove garbages */
-	}
-
-
-	/* init hwtest log_buf with command */
-	hwt->log_size =
-		scnprintf(hwt->log_buf, sizeof(hwt->log_buf), "%s\n", b);
+	guard = b + l;
 
 	switch (DEBUG_COMMAND(b[0], b[1])) {
 	case DEBUG_COMMAND('R', '0'):
@@ -5201,52 +5574,22 @@ static ssize_t clearpad_debug_hwtest_write(struct file *file,
 	case DEBUG_COMMAND('P', '0'):
 		/* P0 */
 		LOCK(this);
-		rc = clearpad_reset_power(this, NULL);
+		clearpad_reset_power(this, NULL);
 		UNLOCK(this);
-		if (!rc)
-			HWTEST_INFO(this, "power on reset (hwtest)\n");
-		else
-			HWTEST_ERR(this, "reset failed (hwtest)\n");
 		break;
 	default:
 		goto err_invalid_arg;
 		break;
 	}
-	goto exit_free;
+	goto exit;
 
 err_invalid_arg:
-	HWTEST_ERR(this, "illegal command\n");
+	dev_err(&this->pdev->dev, "illegal command\n");
 	rc = -EINVAL;
-exit_free:
+err_free:
 	kzfree(bhead);
-exit_ret:
-	mutex_unlock(&hwt->lock);
+exit:
 	return rc ? rc : count;
-}
-
-static ssize_t clearpad_debug_hwtest_read(struct file *file,
-		char __user *buf, size_t count, loff_t *pos)
-{
-	struct clearpad_t *this = (struct clearpad_t *)file->private_data;
-	struct clearpad_hwtest_t *hwt = &this->hwtest;
-	ssize_t readable_size = min((ssize_t)hwt->log_size - (ssize_t)*pos,
-				    (ssize_t)count);
-	ssize_t rc;
-
-	mutex_lock(&hwt->lock);
-	if (readable_size <= 0) {
-		rc = 0;
-		goto end;
-	}
-	if (copy_to_user(buf, &hwt->log_buf[*pos], readable_size)) {
-		rc = -EFAULT;
-		goto end;
-	}
-	*pos += readable_size;
-	rc = readable_size;
-end:
-	mutex_unlock(&hwt->lock);
-	return rc;
 }
 
 static long clearpad_debug_pca_ioctl(struct file *file,
@@ -5448,7 +5791,6 @@ static const struct file_operations clearpad_debug_hwtest_fops = {
 	.owner = THIS_MODULE,
 	.open = clearpad_debug_hwtest_open,
 	.write = clearpad_debug_hwtest_write,
-	.read = clearpad_debug_hwtest_read,
 	.unlocked_ioctl = clearpad_debug_pca_ioctl,
 };
 
@@ -5456,12 +5798,11 @@ static void clearpad_debug_init(struct clearpad_t *this)
 {
 	struct dentry *dent = NULL;
 
-	mutex_init(&this->hwtest.lock);
 	dent = debugfs_create_dir("clearpad", 0);
 	if (!dent || IS_ERR(dent)) {
 		dev_err(&this->pdev->dev,
-			"%s: debugfs_create_dir error: dent=0x%p\n",
-			__func__, dent);
+			"%s: debugfs_create_dir error: dent=0x%lx\n",
+			__func__, PTR_ERR(dent));
 		goto exit;
 	}
 
@@ -5472,8 +5813,8 @@ static void clearpad_debug_init(struct clearpad_t *this)
 				&clearpad_debug_hwtest_fops);
 	if (!dent || IS_ERR(dent)) {
 		dev_err(&this->pdev->dev,
-			"%s: debugfs_create_file error: dent=0x%p\n",
-			__func__, dent);
+			"%s: debugfs_create_file error: dent=0x%lx\n",
+			__func__, PTR_ERR(dent));
 		goto error;
 	}
 
@@ -5564,26 +5905,34 @@ static int clearpad_probe(struct platform_device *pdev)
 		goto err_device_del;
 	}
 
-	this->pctrl.pinctrl = devm_pinctrl_get(this->bdata->dev);
-	if (IS_ERR(this->pctrl.pinctrl)) {
-		dev_err(&this->pdev->dev, "%s: devm_pinctrl_get error\n",
-			__func__);
-		rc = -EINVAL;
-		goto err_vreg_teardown;
+	if (this->use_pinctrl) {
+		this->pctrl.pinctrl = devm_pinctrl_get(this->bdata->dev);
+		if (IS_ERR(this->pctrl.pinctrl)) {
+			dev_err(&this->pdev->dev, "%s: devm_pinctrl_get error\n",
+				__func__);
+			rc = -EINVAL;
+			goto err_vreg_teardown;
+		}
+
+		rc = clearpad_pinctrl_configure(this, 1);
+		if (rc) {
+			dev_err(&this->pdev->dev, "pinctrl init failed\n");
+			goto err_pinctrl_put;
+		}
+	} else {
+		rc = clearpad_gpio_configure(this, 1);
+		if (rc) {
+			dev_err(&this->pdev->dev, "failed gpio init\n");
+			goto err_vreg_teardown;
+		}
 	}
 
-	rc = clearpad_gpio_configure(this, 1);
-	if (rc) {
-		dev_err(&this->pdev->dev, "failed gpio init\n");
-		goto err_pinctrl_put;
-	}
-
-	clearpad_set_delay(400);
+	msleep(400);
 
 	if (this->pdata->watchdog_enable) {
 		this->wd_poll_t_jf = this->pdata->watchdog_poll_t_ms ?
 			msecs_to_jiffies(this->pdata->watchdog_poll_t_ms) :
-			msecs_to_jiffies(SYN_WATCHDOG_POLL_DEFAULT_INTERVAL);
+			SYN_WATCHDOG_POLL_DEFAULT_INTERVAL;
 		INIT_DELAYED_WORK(&this->wd_poll_work, clearpad_wd_status_poll);
 	}
 
@@ -5653,13 +6002,16 @@ static int clearpad_probe(struct platform_device *pdev)
 		goto err_irq;
 	}
 
-	if (this->rezero_on_init) {
+	if (this->chip_id == SYN_CHIP_3200 ||
+	    this->chip_id == SYN_CHIP_7300 ||
+	    this->rezero_on_init) {
 		rc = clearpad_put_bit(SYNF(this, F11_2D, COMMAND, 0x00),
 				DEVICE_COMMAND_REZERO, DEVICE_COMMAND_REZERO);
 		if (rc)
 			goto err_irq;
 	}
-	if (this->reset_on_init) {
+	if (this->chip_id == SYN_CHIP_3500 ||
+	    this->reset_on_init) {
 		LOCK(this);
 		rc = clearpad_soft_reset(this);
 		UNLOCK(this);
@@ -5684,9 +6036,13 @@ err_input_device:
 #endif
 	input_unregister_device(this->input);
 err_gpio_teardown:
-	clearpad_gpio_configure(this, 0);
+	if (this->use_pinctrl)
+		clearpad_pinctrl_configure(this, 0);
+	else
+		clearpad_gpio_configure(this, 0);
 err_pinctrl_put:
-	devm_pinctrl_put(this->pctrl.pinctrl);
+	if (this->use_pinctrl)
+		devm_pinctrl_put(this->pctrl.pinctrl);
 err_vreg_teardown:
 	clearpad_vreg_configure(this, 0);
 err_device_del:
@@ -5705,7 +6061,7 @@ exit:
 		if (cdata->probe_retry < SYN_RETRY_NUM_OF_PROBE_CHECK) {
 			rc = -EPROBE_DEFER;
 			cdata->probe_retry++;
-			clearpad_set_delay(50);
+			msleep(50);
 		}
 	}
 	return rc;
@@ -5733,8 +6089,11 @@ static int clearpad_remove(struct platform_device *pdev)
 	cancel_work_sync(&this->notify_suspend);
 #endif
 	input_unregister_device(this->input);
-	clearpad_gpio_configure(this, 0);
-	devm_pinctrl_put(this->pctrl.pinctrl);
+	if (this->use_pinctrl) {
+		clearpad_pinctrl_configure(this, 0);
+		devm_pinctrl_put(this->pctrl.pinctrl);
+	} else
+		clearpad_gpio_configure(this, 0);
 	clearpad_vreg_configure(this, 0);
 #ifdef CONFIG_TOUCHSCREEN_CLEARPAD_RMI_DEV
 	platform_device_put(cdata->rmi_dev);
