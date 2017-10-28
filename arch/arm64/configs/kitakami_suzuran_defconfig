@@ -531,7 +531,7 @@ CONFIG_MSM_AVTIMER=y
 CONFIG_MSM_BUS_SCALING=y
 CONFIG_BUS_TOPOLOGY_ADHOC=y
 CONFIG_DEBUG_BUS_VOTER=y
-CONFIG_SEEMP_CORE=y
+
 CONFIG_PON_SOMC_ORG=y
 CONFIG_MSM_CLK_SDCC2_CLK_SRC_40MHZ=y
 CONFIG_MSM_MDSS_PLL=y
@@ -1276,3 +1276,8 @@ CONFIG_RCU_NOCB_CPU=y
 # CONFIG_RCU_NOCB_CPU_NONE is not set
 # CONFIG_RCU_NOCB_CPU_ZERO is not set
 CONFIG_RCU_NOCB_CPU_ALL=y
+
+# "enables malware protection component to log on-device software API activity"
+# costs performance, perhaps drains battery and other things
+# does this daemon even run ? or is it already deprecated and cruft ?!
+# CONFIG_SEEMP_CORE is not set
