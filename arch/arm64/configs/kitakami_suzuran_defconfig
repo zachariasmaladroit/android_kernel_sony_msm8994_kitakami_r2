@@ -20,7 +20,7 @@ CONFIG_NAMESPACES=y
 CONFIG_BLK_DEV_INITRD=y
 CONFIG_RD_BZIP2=y
 CONFIG_RD_LZMA=y
-CONFIG_CC_OPTIMIZE_FOR_SIZE=y
+
 CONFIG_PANIC_TIMEOUT=5
 # CONFIG_PCI_QUIRKS is not set
 CONFIG_EMBEDDED=y
@@ -1281,3 +1281,6 @@ CONFIG_RCU_NOCB_CPU_ALL=y
 # costs performance, perhaps drains battery and other things
 # does this daemon even run ? or is it already deprecated and cruft ?!
 # CONFIG_SEEMP_CORE is not set
+
+# "fly bitch!"
+# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
