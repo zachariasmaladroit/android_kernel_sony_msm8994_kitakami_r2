@@ -386,8 +386,6 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fisolate-erroneous-paths-dereference \
 		   -fisolate-erroneous-paths-attribute \
 		   -fno-pic \
-		   -fnoprefetch-loop-arrays \
-		   -fnoalign-functions -fnoalign-jumps -fnoalign-loops -fnoalign-labels \
 		   -mtune=cortex-a53 \
 		   -march=armv8-a+crc+crypto \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
