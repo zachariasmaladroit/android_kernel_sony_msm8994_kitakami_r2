@@ -97,9 +97,6 @@ extern void cpuset_print_task_mems_allowed(struct task_struct *p);
  */
 static inline unsigned int get_mems_allowed(void)
 {
-	if (!cpusets_enabled())
-		return 0;
-
 	return read_seqcount_begin(&current->mems_allowed_seq);
 }
 
@@ -110,9 +107,6 @@ static inline unsigned int get_mems_allowed(void)
  */
 static inline bool put_mems_allowed(unsigned int seq)
 {
-	if (!cpusets_enabled())
-		return false;
-
 	return !read_seqcount_retry(&current->mems_allowed_seq, seq);
 }
 
