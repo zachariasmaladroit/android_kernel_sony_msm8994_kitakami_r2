@@ -673,10 +673,16 @@ CONFIG_RESOURCE_COUNTERS=y
 CONFIG_HAVE_CC_STACKPROTECTOR=y
 CONFIG_CC_STACKPROTECTOR=y
 # CONFIG_CC_STACKPROTECTOR_NONE is not set
-CONFIG_CC_STACKPROTECTOR_REGULAR=y
+# CONFIG_CC_STACKPROTECTOR_REGULAR is not set
 
-# NOPE: causes deterioration of sound output quality
-# CONFIG_CC_STACKPROTECTOR_STRONG is not set
+# NOPE: potentially causes deterioration of sound output quality
+# raises coverage of functions from ~ 2.2% to 20+%
+# see: 
+# https://outflux.net/blog/archives/2014/01/27/fstack-protector-strong/
+# https://mudongliang.github.io/2016/05/24/stack-protector.html
+# https://wiki.debian.org/Hardening
+# http://man7.org/linux/man-pages/man1/dpkg-buildflags.1.html
+CONFIG_CC_STACKPROTECTOR_STRONG=y
 
 CONFIG_HAVE_ARCH_MMAP_RND_BITS=y
 CONFIG_ARCH_MMAP_RND_BITS=24
