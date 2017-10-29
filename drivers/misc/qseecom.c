@@ -1027,8 +1027,7 @@ static void qseecom_bw_inactive_req_work(struct work_struct *work)
 
 static void qseecom_scale_bus_bandwidth_timer_callback(unsigned long data)
 {
-	queue_delayed_work(system_power_efficient_wq,
-			&qseecom.bw_inactive_req_ws);
+	schedule_work(&qseecom.bw_inactive_req_ws);
 	return;
 }
 
