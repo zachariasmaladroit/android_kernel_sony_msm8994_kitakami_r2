@@ -647,7 +647,7 @@ CONFIG_STRICT_MEMORY_RWX=y
 	SunKernel Facula
 ##########################
 
-CONFIG_LOCALVERSION="-N_RR_Facula_I.2.44"
+CONFIG_LOCALVERSION="-N_RR_Facula_I.2.49"
 # CONFIG_LOCALVERSION_AUTO is not set
 
 # android: recommended.cfg: enable taskstats
@@ -1294,7 +1294,6 @@ CONFIG_RCU_NOCB_CPU_ALL=y
 # KALLSYMS_ALL isn't set - DEBUG_INFO is though
 # is this mutually exclusive with the latter ?
 CONFIG_STRIP_ASM_SYMS=y
-# CONFIG_FTRACE is not set
 
 # kswapd: limit it to the first 4 cores
 # by doing so also avoid an error/issue with vmscan
