@@ -1299,3 +1299,6 @@ CONFIG_STRIP_ASM_SYMS=y
 # kswapd: limit it to the first 4 cores
 # by doing so also avoid an error/issue with vmscan
 CONFIG_KSWAPD_CPU_AFFINITY_MASK="f"
+
+# slim down kernel to speed up boot
+# CONFIG_VGA_ARB is not set
