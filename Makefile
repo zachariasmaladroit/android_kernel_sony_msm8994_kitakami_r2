@@ -388,10 +388,17 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-pic \
 		   -fno-prefetch-loop-arrays \
 		   -fno-align-functions -fno-align-jumps -fno-align-loops -fno-align-labels \
+		   -funswitch-loops -ftree-loop-im -fpredictive-commoning \
+		   -fgcse -fgcse-after-reload -fgcse-sm -fgcse-las \
+		   -ftree-partial-pre \
+		   -fsplit-paths \
 		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
 		   -mtune=cortex-a53 \
 		   -march=armv8-a+crc+crypto \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
+#
+# O2 ?
+#		   -fsplit-paths \
 #
 #		   -mcpu=cortex-a53+crc+crypto \
 #
