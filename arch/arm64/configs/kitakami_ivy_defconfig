@@ -1291,3 +1291,12 @@ CONFIG_RCU_NOCB_CPU_ALL=y
 
 # "fly bitch!"
 # CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
+
+# KALLSYMS_ALL isn't set - DEBUG_INFO is though
+# is this mutually exclusive with the latter ?
+CONFIG_STRIP_ASM_SYMS=y
+# CONFIG_FTRACE is not set
+
+# kswapd: limit it to the first 4 cores
+# by doing so also avoid an error/issue with vmscan
+CONFIG_KSWAPD_CPU_AFFINITY_MASK="f"
