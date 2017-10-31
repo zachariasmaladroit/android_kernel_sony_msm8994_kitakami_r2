@@ -636,7 +636,7 @@ int scm_call2(u32 fn_id, struct scm_desc *desc)
 	int ret, retry_count = 0;
 	u64 x0;
 
-	ret = allocate_extra_arg_buffer(desc, GFP_KERNEL);
+	ret = allocate_extra_arg_buffer(desc, GFP_NOIO);
 	if (ret)
 		return ret;
 
