@@ -30,7 +30,7 @@
 #include <sound/soc.h>
 
 #define SOUND_CONTROL_MAJOR_VERSION	3
-#define SOUND_CONTROL_MINOR_VERSION	6
+#define SOUND_CONTROL_MINOR_VERSION	7
 
 extern struct snd_soc_codec *fauxsound_codec_ptr;
 extern int wcd9xxx_hw_revision;
@@ -290,12 +290,12 @@ static ssize_t headphone_gain_store(struct kobject *kobj,
 
 	if (lval < 0)
 		lval -= 256;
-	else if (lval > 20)
+	else if (lval > 30)
 		lval = 0;
 
 	if (rval < 0)
 		rval -= 256;
-	else if (rval > 20)
+	else if (rval > 30)
 		rval = 0;
 
 	snd_ctrl_locked = 0;
