@@ -392,6 +392,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fgcse -fgcse-after-reload -fgcse-sm -fgcse-las \
 		   -ftree-partial-pre \
 		   -fsplit-paths \
+		   -fsched-pressure -fno-tree-reassoc -fivopts \
 		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
 		   -mtune=cortex-a53 \
 		   -march=armv8-a+crc+crypto \
