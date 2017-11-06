@@ -1298,3 +1298,7 @@ CONFIG_STRIP_ASM_SYMS=y
 # kswapd: limit it to the first 4 cores
 # by doing so also avoid an error/issue with vmscan
 CONFIG_KSWAPD_CPU_AFFINITY_MASK="f"
+
+# raise readahead of pages via swap in a single attempt
+# can and will cut down i/o related delays (latency!)
+CONFIG_CUSTOM_PAGE_CLUSTER=y
