@@ -40,10 +40,6 @@
 #include <linux/swapops.h>
 #include <linux/page_cgroup.h>
 
-#ifdef CONFIG_CUSTOM_PAGE_CLUSTER
-int page-cluster = 16
-#endif
-
 static bool swap_count_continued(struct swap_info_struct *, pgoff_t,
 				 unsigned char);
 static void free_swap_count_continuations(struct swap_info_struct *);
