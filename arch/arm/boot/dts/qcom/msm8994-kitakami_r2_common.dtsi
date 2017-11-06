@@ -21,6 +21,7 @@
 	/* SPI : BLSP1 */
 	spi@f9923000 {
 		/delete-property/ qcom,use-pinctrl;
+		qcom,rt-priority;
 		pinctrl-0 = <>;
 		pinctrl-1 = <>;
 		status = "ok";
