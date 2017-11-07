@@ -384,7 +384,6 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fdiagnostics-color=always \
 		   -fdelete-null-pointer-checks -ftree-vrp \
 		   -fisolate-erroneous-paths-dereference \
-		   -fisolate-erroneous-paths-attribute \
 		   -fno-pic \
 		   -fno-prefetch-loop-arrays \
 		   -fno-align-functions -fno-align-jumps -fno-align-loops -fno-align-labels \
@@ -400,6 +399,9 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 #
 # O2 ?
 #		   -fsplit-paths \
+#
+# potentially leads to "illegal instruction" errors
+#		   -fisolate-erroneous-paths-attribute \
 #
 #		   -mcpu=cortex-a53+crc+crypto \
 #
