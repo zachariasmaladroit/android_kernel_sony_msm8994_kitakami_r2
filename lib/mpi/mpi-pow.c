@@ -26,6 +26,7 @@
  *	 however I decided to publish this code under the plain GPL.
  */
 
+#include <linux/sched.h>
 #include <linux/string.h>
 #include "mpi-internal.h"
 #include "longlong.h"
@@ -251,6 +252,7 @@ int mpi_powm(MPI res, MPI base, MPI exp, MPI mod)
 				}
 				e <<= 1;
 				c--;
+				cond_resched();
 			}
 
 			i--;
