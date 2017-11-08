@@ -107,7 +107,8 @@ static void handle_pending_softirqs(u32 pending, int cpu)
  "huh, entered softirq %u %s %p with preempt_count %08x exited with %08x?\n",
 			       vec_nr, softirq_to_name[vec_nr], h->action,
 			       prev_count, (unsigned int) preempt_count());
-			preempt_count() = prev_count;
+//			preempt_count() = prev_count;
+			prev_count = preempt_count();
 		}
 		rcu_bh_qs(cpu);
 	}
