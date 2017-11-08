@@ -232,7 +232,7 @@ static int __kprobes do_page_fault(unsigned long addr, unsigned int esr,
 	 * If we're in an interrupt or have no user context, we must not take
 	 * the fault.
 	 */
-	if (in_atomic() || !mm)
+	if (in_atomic() || !mm || current->pagefault_disabled)
 		goto no_context;
 
 	if (user_mode(regs))
