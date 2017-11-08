@@ -22,7 +22,7 @@ static inline void raw_pagefault_enable(void)
 	preempt_check_resched();
 }
 
-#ifndef CONFIG_PREEMPT_RT_FULL
+/*#ifndef CONFIG_PREEMPT_RT_FULL
 static inline void pagefault_disable(void)
 {
 	raw_pagefault_disable();
@@ -32,10 +32,10 @@ static inline void pagefault_enable(void)
 {
 	raw_pagefault_enable();
 }
-#else
+#else*/
 extern void pagefault_disable(void);
 extern void pagefault_enable(void);
-#endif
+//#endif
 
 #ifndef ARCH_HAS_NOCACHE_UACCESS
 

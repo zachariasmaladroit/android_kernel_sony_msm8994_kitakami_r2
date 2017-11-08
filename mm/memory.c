@@ -3785,7 +3785,7 @@ unlock:
 	return 0;
 }
 
-#ifdef CONFIG_PREEMPT_RT_FULL
+//#ifdef CONFIG_PREEMPT_RT_FULL
 void pagefault_disable(void)
 {
 	current->pagefault_disabled++;
@@ -3807,7 +3807,7 @@ void pagefault_enable(void)
 	current->pagefault_disabled--;
 }
 EXPORT_SYMBOL(pagefault_enable);
-#endif
+//#endif
 
 /*
  * By the time we get here, we already hold the mm semaphore

@@ -1551,9 +1551,9 @@ struct task_struct {
 	/* mutex deadlock detection */
 	struct mutex_waiter *blocked_on;
 #endif
-#ifdef CONFIG_PREEMPT_RT_FULL
+//#ifdef CONFIG_PREEMPT_RT_FULL
 	int pagefault_disabled;
-#endif
+//#endif
 #ifdef CONFIG_TRACE_IRQFLAGS
 	unsigned int irq_events;
 	unsigned long hardirq_enable_ip;
@@ -1745,11 +1745,11 @@ static inline void set_numabalancing_state(bool enabled)
 }
 #endif
 
-#ifdef CONFIG_PREEMPT_RT_FULL
+//#ifdef CONFIG_PREEMPT_RT_FULL
 static inline bool cur_pf_disabled(void) { return current->pagefault_disabled; }
-#else
+/*#else
 static inline bool cur_pf_disabled(void) { return false; }
-#endif
+#endif*/
 
 static inline bool pagefault_disabled(void)
 {
