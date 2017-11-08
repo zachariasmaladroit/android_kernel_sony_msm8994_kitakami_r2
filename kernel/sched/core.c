@@ -6779,12 +6779,15 @@ recheck:
 	}
 
 	/*
-	 * If not changing anything there's no need to proceed further:
+	 * If not changing anything there's no need to proceed
+	 * further, but store a possible modification of
+	 * reset_on_fork.
 	 */
 	if (unlikely(policy == p->policy)) {
 		if (fair_policy(policy) && attr->sched_nice != TASK_NICE(p))
 			goto change;
 		if (rt_policy(policy) && attr->sched_priority != p->rt_priority)
+			p->sched_reset_on_fork = reset_on_fork;
 			goto change;
 		if (dl_policy(policy) && dl_param_changed(p, attr))
 			goto change;
