@@ -1212,9 +1212,6 @@ struct sched_rt_entity {
 	/* rq "owned" by this entity/group: */
 	struct rt_rq		*my_q;
 #endif
-//#ifdef CONFIG_PREEMPT_RT_BASE
-	struct rcu_head put_rcu;
-//#endif
 };
 
 struct sched_dl_entity {
@@ -1741,6 +1738,9 @@ struct task_struct {
 #ifdef CONFIG_TASK_CPUFREQ_STATS
 	struct task_cpufreq_stats cpufreq_stats[NR_CPUS];
 #endif
+//#ifdef CONFIG_PREEMPT_RT_BASE
+	struct rcu_head put_rcu;
+//#endif
 };
 
 /* Future-safe accessor for struct task_struct's cpus_allowed. */
