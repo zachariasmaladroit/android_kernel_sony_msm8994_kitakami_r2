@@ -4,7 +4,7 @@
 #include <linux/percpu.h>
 #include <linux/spinlock.h>
 
-#ifdef CONFIG_PREEMPT_RT_BASE
+//#ifdef CONFIG_PREEMPT_RT_BASE
 
 #ifdef CONFIG_DEBUG_SPINLOCK
 # define LL_WARN(cond)	WARN_ON(cond)
@@ -221,8 +221,8 @@ static inline int __local_unlock_irqrestore(struct local_irq_lock *lv,
 
 #define local_unlock_cpu(lvar)			local_unlock(lvar)
 
-#else /* PREEMPT_RT_BASE */
-
+//#else /* PREEMPT_RT_BASE */
+/*
 #define DEFINE_LOCAL_IRQ_LOCK(lvar)		__typeof__(const int) lvar
 #define DECLARE_LOCAL_IRQ_LOCK(lvar)		extern __typeof__(const int) lvar
 
@@ -249,6 +249,6 @@ static inline void local_irq_lock_init(int lvar) { }
 #define local_lock_cpu(lvar)			get_cpu()
 #define local_unlock_cpu(lvar)			put_cpu()
 
-#endif
+#endif*/
 
 #endif
