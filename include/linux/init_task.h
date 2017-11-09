@@ -140,11 +140,11 @@ extern struct task_group root_task_group;
 # define INIT_PERF_EVENTS(tsk)
 #endif
 
-#ifdef CONFIG_PREEMPT_RT_BASE
+//#ifdef CONFIG_PREEMPT_RT_BASE
 # define INIT_TIMER_LIST		.posix_timer_list = NULL,
-#else
+/*#else
 # define INIT_TIMER_LIST
-#endif
+#endif*/
 
 #ifdef CONFIG_VIRT_CPU_ACCOUNTING_GEN
 # define INIT_VTIME(tsk)						\
