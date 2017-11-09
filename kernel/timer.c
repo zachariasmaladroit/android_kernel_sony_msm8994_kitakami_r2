@@ -740,10 +740,10 @@ __mod_timer(struct timer_list *timer, unsigned long expires,
 		if (base != new_base) {
 			/*
 			 * We are trying to schedule the timer on the local CPU.
-			 * However we can't change timer's base while it is
-			 * running, otherwise del_timer_sync() can't detect that
-			 * the timer's * handler yet has not finished. This also
-			 * guarantees that * the timer is serialized wrt itself.
+			 * However we can't change timer's base while it is running,
+			 * otherwise del_timer_sync() can't detect that the timer's
+			 * handler yet has not finished. This also guarantees that
+			 * the timer is serialized wrt itself.
 			 */
 			if (likely(base->running_timer != timer)) {
 				/* See the comment in lock_timer_base() */
