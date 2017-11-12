@@ -43,7 +43,6 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
 	struct zz_dbs_tuners *zz_tuners = dbs_data->tuners;
 	struct ac_dbs_tuners *ac_tuners = dbs_data->tuners;
 	struct cpufreq_policy *policy;
-	unsigned int sampling_rate;
 	unsigned int max_load = 0;
 	unsigned int ignore_nice;
 	unsigned int j;
