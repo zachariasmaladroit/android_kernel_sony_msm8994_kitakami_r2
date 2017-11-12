@@ -43,12 +43,25 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
 	struct zz_dbs_tuners *zz_tuners = dbs_data->tuners;
 	struct ac_dbs_tuners *ac_tuners = dbs_data->tuners;
 	struct cpufreq_policy *policy;
+	unsigned int sampling_rate;
 	unsigned int max_load = 0;
 	unsigned int ignore_nice;
 	unsigned int j;
 	struct cpufreq_govinfo govinfo;
 
 	if (dbs_data->cdata->governor == GOV_ONDEMAND) {
+		struct od_cpu_dbs_info_s *od_dbs_info =
+				dbs_data->cdata->get_cpu_dbs_info_s(cpu);
+
+		/*
+		 * Sometimes, the ondemand governor uses an additional
+		 * multiplier to give long delays. So apply this multiplier to
+		 * the 'sampling_rate', so as to keep the wake-up-from-idle
+		 * detection logic a bit conservative.
+		 */
+		sampling_rate = od_tuners->sampling_rate;
+		sampling_rate *= od_dbs_info->rate_mult;
+
 		ignore_nice = od_tuners->ignore_nice_load;
 	} else if (dbs_data->cdata->governor == GOV_ELEMENTALX) {
 		sampling_rate = ex_tuners->sampling_rate;
@@ -60,6 +73,7 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
 		sampling_rate = ac_tuners->sampling_rate;
 		ignore_nice = ac_tuners->ignore_nice_load;
 	} else {
+		sampling_rate = cs_tuners->sampling_rate;
 		ignore_nice = cs_tuners->ignore_nice_load;
 	}
 
@@ -117,7 +131,33 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
 		if (unlikely(!wall_time || wall_time < idle_time))
 			continue;
 
-		load = 100 * (wall_time - idle_time) / wall_time;
+		/*
+		 * If the CPU had gone completely idle, and a task just woke up
+		 * on this CPU now, it would be unfair to calculate 'load' the
+		 * usual way for this elapsed time-window, because it will show
+		 * near-zero load, irrespective of how CPU intensive that task
+		 * actually is. This is undesirable for latency-sensitive bursty
+		 * workloads.
+		 *
+		 * To avoid this, we calculate 'load' only on the last
+		 * sampling period.
+		 *
+		 * Detecting this situation is easy: the governor's deferrable
+		 * timer would not have fired during CPU-idle periods. Hence
+		 * an unusually large 'wall_time' (as compared to the sampling
+		 * rate) indicates this scenario.
+		 *
+		 */
+		if (unlikely(wall_time > (2 * sampling_rate))) {
+			unsigned int busy = wall_time - idle_time;
+
+			if (busy > sampling_rate)
+				load = 100;
+			else
+				load = 100 * busy / sampling_rate;
+		} else {
+			load = 100 * (wall_time - idle_time) / wall_time;
+		}
 
 		/*
 		 * Send govinfo notification.
