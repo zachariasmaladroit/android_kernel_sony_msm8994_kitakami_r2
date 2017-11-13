@@ -1341,6 +1341,7 @@ static int syslog_print_all(char __user *buf, int size, bool clear)
 	char *text;
 	int oops_len;
 	int len = 0;
+	int attempts = 0;
 
 	text = kmalloc(LOG_LINE_MAX + PREFIX_MAX, GFP_KERNEL);
 	if (!text)
@@ -1358,7 +1359,14 @@ static int syslog_print_all(char __user *buf, int size, bool clear)
 		u64 start_seq;
 		u32 start_idx;
 		enum log_flags prev;
-
+		int num_msg;
+try_again:
+		attempts++;
+		if (attempts > 10) {
+			len = -EBUSY;
+			goto out;
+		}
+		num_msg = 0;
 		if (clear_seq < log_first_seq) {
 			/* messages are gone, move to first available one */
 			start_seq = log_first_seq;
@@ -1382,6 +1390,14 @@ static int syslog_print_all(char __user *buf, int size, bool clear)
 			prev = msg->flags;
 			idx = log_next(idx, true);
 			seq++;
+			num_msg++;
+			if (num_msg > 5) {
+				num_msg = 0;
+				raw_spin_unlock_irq(&logbuf_lock);
+				raw_spin_lock_irq(&logbuf_lock);
+				if (clear_seq < log_first_seq)
+					goto try_again;
+			}
 		}
 
 		/* move first record forward until length fits into the buffer */
@@ -1395,6 +1411,14 @@ static int syslog_print_all(char __user *buf, int size, bool clear)
 			prev = msg->flags;
 			idx = log_next(idx, true);
 			seq++;
+			num_msg++;
+			if (num_msg > 5) {
+				num_msg = 0;
+				raw_spin_unlock_irq(&logbuf_lock);
+				raw_spin_lock_irq(&logbuf_lock);
+				if (clear_seq < log_first_seq)
+					goto try_again;
+			}
 		}
 
 		/* last message fitting into this dump */
@@ -1436,6 +1460,7 @@ static int syslog_print_all(char __user *buf, int size, bool clear)
 		clear_seq = log_next_seq;
 		clear_idx = log_next_idx;
 	}
+out:
 	raw_spin_unlock_irq(&logbuf_lock);
 
 	kfree(text);
