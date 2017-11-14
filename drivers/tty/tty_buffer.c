@@ -339,7 +339,7 @@ void tty_schedule_flip(struct tty_port *port)
 	if (buf->tail != NULL)
 		buf->tail->commit = buf->tail->used;
 	spin_unlock_irqrestore(&buf->lock, flags);
-	schedule_work(&buf->work);
+	queue_work(system_unbound_wq, &buf->work);
 }
 EXPORT_SYMBOL(tty_schedule_flip);
 
@@ -525,7 +525,7 @@ void tty_flip_buffer_push(struct tty_port *port)
 	if (port->low_latency)
 		flush_to_ldisc(&buf->work);
 	else
-		schedule_work(&buf->work);
+		queue_work(system_unbound_wq, &buf->work);
 }
 EXPORT_SYMBOL(tty_flip_buffer_push);
 
