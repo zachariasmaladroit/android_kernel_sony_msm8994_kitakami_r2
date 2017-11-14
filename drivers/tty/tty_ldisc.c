@@ -600,7 +600,7 @@ int tty_set_ldisc(struct tty_struct *tty, int ldisc)
 
 	/* Restart the work queue in case no characters kick it off. Safe if
 	   already running */
-	schedule_work(&tty->port->buf.work);
+	queue_work(system_unbound_wq, &tty->port->buf.work);
 
 	tty_unlock(tty);
 	return retval;
