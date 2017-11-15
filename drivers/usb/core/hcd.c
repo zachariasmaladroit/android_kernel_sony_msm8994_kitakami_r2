@@ -2175,7 +2175,8 @@ void usb_hcd_resume_root_hub (struct usb_hcd *hcd)
 	spin_lock_irqsave (&hcd_root_hub_lock, flags);
 	if (hcd->rh_registered) {
 		set_bit(HCD_FLAG_WAKEUP_PENDING, &hcd->flags);
-		queue_work(pm_wq, &hcd->wakeup_work);
+		queue_delayed_work(system_power_efficient_wq,
+			pm_wq, &hcd->wakeup_work);
 	}
 	spin_unlock_irqrestore (&hcd_root_hub_lock, flags);
 }
