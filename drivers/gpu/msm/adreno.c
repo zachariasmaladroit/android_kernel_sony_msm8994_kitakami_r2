@@ -271,8 +271,7 @@ static void adreno_input_event(struct input_handle *handle, unsigned int type,
 		mod_timer(&device->idle_timer,
 			jiffies + device->pwrctrl.interval_timeout);
 	} else if (device->state == KGSL_STATE_SLUMBER) {
-		queue_work(system_highpri_wq,
-				&adreno_dev->input_work);
+		schedule_work(&adreno_dev->input_work);
 	}
 }
 
