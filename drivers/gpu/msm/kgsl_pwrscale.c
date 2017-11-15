@@ -101,7 +101,8 @@ void kgsl_pwrscale_wake(struct kgsl_device *device)
 			KGSL_GOVERNOR_CALL_INTERVAL);
 
 	/* to call devfreq_resume_device() from a kernel thread */
-	queue_work(psc->devfreq_wq, &psc->devfreq_resume_ws);
+	queue_work(system_unbound_wq,
+			psc->devfreq_wq, &psc->devfreq_resume_ws);
 }
 EXPORT_SYMBOL(kgsl_pwrscale_wake);
 
@@ -217,7 +218,8 @@ void kgsl_pwrscale_enable(struct kgsl_device *device)
 	BUG_ON(!mutex_is_locked(&device->mutex));
 
 	if (device->pwrscale.devfreqptr) {
-		queue_work(device->pwrscale.devfreq_wq,
+		queue_work(system_unbound_wq,
+			device->pwrscale.devfreq_wq,
 			&device->pwrscale.devfreq_resume_ws);
 		device->pwrscale.enabled = true;
 	} else {
