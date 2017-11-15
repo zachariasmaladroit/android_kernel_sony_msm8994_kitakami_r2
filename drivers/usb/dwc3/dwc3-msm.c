@@ -1770,8 +1770,7 @@ static void dwc3_chg_detect_work(struct work_struct *w)
 		return;
 	}
 
-	queue_delayed_work(system_power_efficient_wq,
-			system_nrt_wq, &mdwc->chg_work, delay);
+	queue_delayed_work(system_nrt_wq, &mdwc->chg_work, delay);
 }
 
 static void dwc3_start_chg_det(struct dwc3_charger *charger, bool start)
@@ -1793,8 +1792,7 @@ static void dwc3_start_chg_det(struct dwc3_charger *charger, bool start)
 
 	mdwc->chg_state = USB_CHG_STATE_UNDEFINED;
 	charger->chg_type = DWC3_INVALID_CHARGER;
-	queue_delayed_work(system_power_efficient_wq,
-			system_nrt_wq, &mdwc->chg_work, 0);
+	queue_delayed_work(system_nrt_wq, &mdwc->chg_work, 0);
 }
 
 static void dwc3_msm_power_collapse_por(struct dwc3_msm *mdwc)
@@ -2897,8 +2895,7 @@ static void dwc3_ext_notify_online(void *ctx, int on)
 	}
 
 	if (notify_otg)
-		queue_delayed_work(system_power_efficient_wq,
-			system_nrt_wq, &mdwc->resume_work, 0);
+		queue_delayed_work(system_nrt_wq, &mdwc->resume_work, 0);
 }
 
 static void dwc3_id_work(struct work_struct *w)
@@ -3088,8 +3085,7 @@ static void dwc3_init_adc_work(struct work_struct *w)
 	mdwc->adc_tm_dev = qpnp_get_adc_tm(mdwc->dev, "dwc_usb3-adc_tm");
 	if (IS_ERR(mdwc->adc_tm_dev)) {
 		if (PTR_ERR(mdwc->adc_tm_dev) == -EPROBE_DEFER)
-			queue_delayed_work(system_power_efficient_wq,
-					system_nrt_wq, to_delayed_work(w),
+			queue_delayed_work(system_nrt_wq, to_delayed_work(w),
 					msecs_to_jiffies(100));
 		else
 			mdwc->adc_tm_dev = NULL;
