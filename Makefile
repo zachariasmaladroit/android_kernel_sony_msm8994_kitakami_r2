@@ -392,7 +392,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-align-functions -fno-align-jumps -fno-align-loops -fno-align-labels \
 		   -funroll-loops -frename-registers \
 		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model \
-		   -ftree-ch -floop-parallelize-all -ftree-loop-distribute-patterns -funswitch-loops -ftree-loop-im \
+		   -ftree-ch -ftree-loop-distribute-patterns -funswitch-loops -ftree-loop-im \
 		   -fno-tree-loop-if-convert-stores \
 		   -fpredictive-commoning \
 		   -ffast-math \
