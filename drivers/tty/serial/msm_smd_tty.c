@@ -391,8 +391,7 @@ static void smd_tty_notify(void *priv, unsigned event)
 			tasklet_hi_schedule(&info->tty_tsklt);
 
 			if (tty->index == LOOPBACK_IDX)
-				queue_delayed_work(system_power_efficient_wq,
-						&loopback_work,
+				schedule_delayed_work(&loopback_work,
 						msecs_to_jiffies(1000));
 		}
 		tty_kref_put(tty);
@@ -1128,8 +1127,7 @@ static int __init smd_tty_init(void)
 	}
 
 	INIT_DELAYED_WORK(&smd_tty_probe_work, smd_tty_probe_worker);
-	queue_delayed_work(system_power_efficient_wq,
-				&smd_tty_probe_work,
+	schedule_delayed_work(&smd_tty_probe_work,
 				msecs_to_jiffies(SMD_TTY_PROBE_WAIT_TIMEOUT));
 
 	wakeup_source_init(&read_in_suspend_ws, "SMDTTY_READ_IN_SUSPEND");
