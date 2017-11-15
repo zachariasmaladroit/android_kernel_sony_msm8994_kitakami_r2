@@ -4957,8 +4957,7 @@ static void pp_ad_vsync_handler(struct mdss_mdp_ctl *ctl, ktime_t t)
 		ad = &mdata->ad_cfgs[ctl->mixer_left->num];
 		if (!ad || !ad->mfd || !mdata->ad_calc_wq)
 			return;
-		queue_work(system_highpri_wq,
-				mdata->ad_calc_wq, &ad->calc_work);
+		queue_work(mdata->ad_calc_wq, &ad->calc_work);
 	}
 }
 
