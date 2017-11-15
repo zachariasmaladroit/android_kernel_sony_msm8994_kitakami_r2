@@ -4823,11 +4823,11 @@ static int fb_notifier_callback(struct notifier_block *self,
 		if (*blank == FB_BLANK_UNBLANK) {
 			cancel_work_sync(&this->notify_suspend);
 			cancel_work_sync(&this->notify_resume);
-			schedule_work(&this->notify_resume);
+			queue_work(system_unbound_wq, &this->notify_resume);
 		} else if (*blank == FB_BLANK_POWERDOWN) {
 			cancel_work_sync(&this->notify_resume);
 			cancel_work_sync(&this->notify_suspend);
-			schedule_work(&this->notify_suspend);
+			queue_work(system_unbound_wq, &this->notify_suspend);
 		}
 	}
 
