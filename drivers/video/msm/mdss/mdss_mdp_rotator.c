@@ -710,7 +710,8 @@ static int mdss_mdp_rotator_queue(struct mdss_mdp_rotator_session *rot)
 				rot->rot_sync_pt_data->temp_fen,
 				&rot->rot_sync_pt_data->temp_fen_cnt);
 		atomic_inc(&rot->rot_sync_pt_data->commit_cnt);
-		queue_work(rot_mgr->rot_work_queue, &rot->commit_work);
+		queue_work(system_highpri_wq,
+				rot_mgr->rot_work_queue, &rot->commit_work);
 	} else {
 		ret = mdss_mdp_rotator_queue_helper(rot);
 	}
