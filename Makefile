@@ -386,6 +386,17 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fisolate-erroneous-paths-dereference \
 		   -fno-pic \
 		   -fivopts \
+		   -ftree-partial-pre \
+		   -ftree-loop-ivcanon \
+		   -fvariable-expansion-in-unroller \
+		   -fno-align-functions -fno-align-jumps -fno-align-loops -fno-align-labels \
+		   -funroll-loops -frename-registers \
+		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model \
+		   -ftree-ch -floop-parallelize-all -ftree-loop-distribute-patterns -funswitch-loops -ftree-loop-im \
+		   -fno-tree-loop-if-convert-stores \
+		   -fpredictive-commoning \
+		   -ffast-math \
+		   -fsplit-paths \
 		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
 		   -mtune=cortex-a53 \
 		   -march=armv8-a+crc+crypto \
@@ -393,6 +404,9 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 #
 # O2 ?
 #		   -fsplit-paths \
+#
+# O2 + no regression:
+# -fno-align-functions -fno-align-jumps -fno-align-loops -fno-align-labels
 #
 # potentially leads to "illegal instruction" errors
 #		   -fisolate-erroneous-paths-attribute \
