@@ -2073,7 +2073,8 @@ static void clearpad_wd_status_poll(struct work_struct *work)
 		} else {
 			this->reset_count = 0;
 		}
-		schedule_delayed_work(&this->wd_poll_work, this->wd_poll_t_jf);
+		queue_delayed_work(system_power_efficient_wq,
+				&this->wd_poll_work, this->wd_poll_t_jf);
 	}
 	UNLOCK(this);
 }
@@ -2087,7 +2088,8 @@ static void clearpad_wd_update(struct clearpad_t *this, bool sync)
 
 	LOCK(this);
 	if ((this->active & SYN_ACTIVE_POWER) && !this->flash_requested)
-		schedule_delayed_work(&this->wd_poll_work, this->wd_poll_t_jf);
+		queue_delayed_work(system_power_efficient_wq,
+				&this->wd_poll_work, this->wd_poll_t_jf);
 	UNLOCK(this);
 }
 
