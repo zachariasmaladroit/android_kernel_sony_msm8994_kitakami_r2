@@ -239,16 +239,12 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 	  else if [ -x /bin/bash ]; then echo /bin/bash; \
 	  else echo sh; fi ; fi)
 
-#SUNRISE6 = -freschedule-modulo-scheduled-loops -fmodulo-sched -fmodulo-sched-allow-regmoves -fsingle-precision-constant -fgcse-after-reload
-#GRAPHITE = -fgraphite-identity -floop-interchange -floop-strip-mine -floop-block -floop-nest-optimize
-GRAPHITE = -pipe
-# -floop-parallelize-all -ftree-parallelize-loops=3
+CCACHE := $(shell which ccache)
 
-HOSTCC       = gcc
-HOSTCXX      = g++
-HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -Os -pipe -fomit-frame-pointer -std=gnu89 $(call cc-option,-fno-PIE)
-HOSTCXXFLAGS = -Os -pipe
-# -DNDEBUG -fgcse-las $(GRAPHITE)
+HOSTCC       = $(CCACHE) gcc
+HOSTCXX      = $(CCACHE) g++
+HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -Ofast -fomit-frame-pointer -std=gnu89
+HOSTCXXFLAGS = -Ofast
 
 # Decide whether to build built-in, modular, or both.
 # Normally, just do built-in.
@@ -332,7 +328,7 @@ include $(srctree)/scripts/Kbuild.include
 
 AS		= $(CROSS_COMPILE)as
 LD		= $(CROSS_COMPILE)ld
-CC		= $(CROSS_COMPILE)gcc
+CC		= $(CCACHE) $(CROSS_COMPILE)gcc
 CPP		= $(CC) -E
 AR		= $(CROSS_COMPILE)ar
 NM		= $(CROSS_COMPILE)nm
@@ -346,16 +342,18 @@ DEPMOD		= /sbin/depmod
 PERL		= perl
 CHECK		= sparse
 
+# Use the wrapper for the compiler.  This wrapper scans for new
+# warnings and causes the build to stop upon encountering them.
+#CC		= $(srctree)/scripts/gcc-wrapper.py $(REAL_CC)
+
 CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
 		  -Wbitwise -Wno-return-void $(CF)
 CFLAGS_MODULE   =
 AFLAGS_MODULE   =
-LDFLAGS_MODULE  = --strip-debug
+LDFLAGS_MODULE  =
 CFLAGS_KERNEL	=
 AFLAGS_KERNEL	=
 CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
-# -march=armv8-a+crc -mtune=cortex-a57.cortex-a53
-# -ftree-parallelize-loops=3 -pthread -fopenmp
 
 
 # Use USERINCLUDE when you must reference the UAPI directories only.
@@ -381,183 +379,10 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-strict-aliasing -fno-common \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
-		   -fdiagnostics-color=always \
-		   -fdelete-null-pointer-checks -ftree-vrp \
-		   -fisolate-erroneous-paths-dereference \
-		   -fno-pic \
-		   -fivopts \
-		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
-		   -mtune=cortex-a53 \
-		   -march=armv8-a+crc+crypto \
-		   -std=gnu89 $(call cc-option,-fno-PIE)
-#
-# O2 ?
-#		   -fsplit-paths \
-#
-# potentially leads to "illegal instruction" errors
-#		   -fisolate-erroneous-paths-attribute \
-#
-#		   -mcpu=cortex-a53+crc+crypto \
-#
-#		   -mpc-relative-literal-loads \
-#		   -fno-aggressive-loop-optimizations \
-#		   -fsched-interblock -fsched-spec -fno-schedule-insns -fschedule-insns2 \
-#		   -fsched-pressure -fno-tree-reassoc -fmodulo-sched -fmodulo-sched-allow-regmoves \
-# 		   -ftracer \
-#		   -fivopts \
-#
-#		   -fsplit-paths \
-#		   -ftree-loop-distribution -ftree-loop-distribute-patterns \
-#		   -fno-code-hoisting \
-#		   -fgcse-after-reload \
-#		   -fivopts \
-#		   -fpredictive-commoning \
-#		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
-#
-#KBUILD_CFLAGS   := $(GRAPHITE) -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
-#		   -fno-strict-aliasing -fno-common \
-#		   -Werror-implicit-function-declaration \
-#		   -Wno-format-security \
-#		   -fdiagnostics-color=always \
-#		   -fno-var-tracking-assignments \
-#		   -fno-delete-null-pointer-checks \
-#		   -fno-aggressive-loop-optimizations \
-#		   -pipe \
-#		   -fomit-frame-pointer \
-#		   -march=armv8-a+crc \
-#		   -mtune=cortex-a57.cortex-a53 \
-#		   -fno-pic \
-#		   -std=gnu89 $(call cc-option,-fno-PIE)
-#
-#		  Remove for now (?), might worsen sound output quality
-#		   -fdelete-null-pointer-checks -ftree-vrp \
-#		   -fisolate-erroneous-paths-dereference \
-#		   -fisolate-erroneous-paths-attribute \
-#
-#
-#		 GCC 5.x specific optimizations
-#		   -fipa-ra -fipa-icf -fipa-reference -flra-remat \
-#
-#		  Needs libubsan* and other stuff ?!
-#		   -fsanitize=undefined \
-#
-#		  GCC 6.x
-#		  Value range propagation now assumes that the this pointer in
-#		  C++ member functions is non-null. This eliminates common
-#		  null pointer checks but also breaks some non-conforming
-#		  code-bases (such as Qt-5, Chromium, KDevelop). As a temporary
-#		  work-around -fno-delete-null-pointer-checks can be used. 
-#		  Wrong code can be identified by using -fsanitize=undefined.
-#
-#		   -fsanitize=undefined \
-#
-#			pessimistic:
-#
-#		   -g0 -DNDEBUG \
-#		
-#		   -ffast-math \
-#		   -fsingle-precision-constant \
-#		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
-#			#
-#			too much size:
-#
-#		   -fipa-cp-clone
-#			#
-#		   	GCC6
-#
-#		   -Wno-unused-const-variable -Wno-misleading-indentation \
-#		   -Wno-memset-transposed-args  -Wno-bool-compare -Wno-logical-not-parentheses \
-#		   -Wno-switch-bool \
-#		   -Wno-bool-operation -Wno-nonnull -Wno-switch-unreachable -Wno-format-truncation -Wno-format-overflow -Wno-duplicate-decl-specifier -Wno-memset-elt-size -Wno-int-in-bool-context \
-#
-#
-#		   -mlow-precision-recip-sqrt \
-#		   -mpc-relative-literal-loads \
-#		   -fdiagnostics-color=always \
-#		   -fno-var-tracking-assignments \
-#		   -pipe \
-#		   -fdelete-null-pointer-checks -ftree-vrp \
-#		   -fisolate-erroneous-paths-dereference \
-#		   -fcaller-saves \
-#		   -fipa-cp -fipa-cp-clone \
-#		   -freorder-blocks -freorder-blocks-and-partition -freorder-functions \
-#		   -fdevirtualize -fdevirtualize-speculatively \
-#		   -fexpensive-optimizations \
-#		   -fgcse -fgcse-lm -fgcse-after-reload -frerun-cse-after-loop \
-#		   -fcse-follow-jumps -fcse-skip-blocks \
-#		   -finline-small-functions -fpartial-inlining -findirect-inlining \
-#		   -foptimize-sibling-calls \
-#		   -fsched-interblock -fsched-spec -fno-schedule-insns -fschedule-insns2 \
-#		   -fsched-pressure -fno-tree-reassoc -fmodulo-sched -fmodulo-sched-allow-regmoves \
-#  		   -ftracer \
-#		   -fivopts \
-#		   -ffast-math \
-#		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
-#		   -march=armv8-a+crc \
-#		   -mtune=cortex-a57.cortex-a53 \
-#		   -std=gnu89 $(call cc-option,-fno-PIE)
-#		   
-# floating-point stuff:
-#		   -mfpu=neon-fp-armv8 -mfloat-abi=hard \
-#		   -ffast-math \
-#		   -fivopts -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
-#
-#		   -fno-aggressive-loop-optimizations \
-#		   -fno-delete-null-pointer-checks \
-#		   -fisolate-erroneous-paths-dereference -fisolate-erroneous-paths-attribute \
-#		   -fdevirtualize-speculatively \
-# BUG:		   -fschedule-insns
-#		   -fprefetch-loop-arrays
-#		   -mno-unaligned-access \
-#		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
-#		   -freorder-blocks -freorder-blocks-and-partition \
-#		   -ftree-loop-im -funswitch-loops -fpredictive-commoning -fgcse -fgcse-after-reload \
-#		   -fno-tree-pre \
-#		   -fno-sched-pressure \
-#		   -fsched-pressure -fschedule-insns -fno-tree-reassoc \
-#		   -fno-tree-pre \
-#		   -fno-sched-pressure \
-#		   -falign-functions=16 -falign-jumps=16 -falign-loops=16 -falign-labels=16 \
-#		   -fmodulo-sched \
-#		   -fmodulo-sched-allow-regmoves \
-#		   -fivopts \
-#		   -fipa-pta \
-#		   -fgcse -fgcse-las -fgcse-lm -fgcse-sm -fgcse-after-reload \
-#		   -fgcse -fgcse-las -fgcse-after-reload \
-#		   -ftree-loop-im -funswitch-loops \
-#		   -ftree-pre -ftree-forwprop -ftree-fre -ftree-phiprop -ftree-partial-pre \
-#		   -freschedule-modulo-scheduled-loops \
-#		   -funswitch-loops -ftree-loop-im -fpredictive-commoning \
-#		   -fsched-pressure -fschedule-insns \
-#		   -fbranch-target-load-optimize \
-#		   -fsingle-precision-constant \
-#		   -frename-registers -fweb \
-#		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
-#		   -fprefetch-loop-arrays \
-#		   -freorder-blocks \
-#		   -fno-strict-overflow \
-#		   -mfpu=neon-fp-armv8 \
-#
-#
-#		  previous:
-#		   -fno-aggressive-loop-optimizations \
-#		   -fdelete-null-pointer-checks -ftree-vrp \
-#		   -fisolate-erroneous-paths-dereference \
-#		   -fcaller-saves \
-#		   -fipa-cp \
-#		   -freorder-blocks -freorder-blocks-and-partition -freorder-functions \
-#		   -fdevirtualize -fdevirtualize-speculatively \
-#		   -fexpensive-optimizations \
-#		   -fgcse -fgcse-lm -fgcse-after-reload -frerun-cse-after-loop \
-#		   -fcse-follow-jumps -fcse-skip-blocks \
-#		   -finline-small-functions -fpartial-inlining -findirect-inlining \
-#		   -foptimize-sibling-calls \
-#		   -fsched-interblock -fsched-spec -fno-schedule-insns -fschedule-insns2 \
-#		   -fsched-pressure -fno-tree-reassoc -fmodulo-sched -fmodulo-sched-allow-regmoves \
-# 		   -ftracer \
-#		   -fivopts \
-#		   -ffast-math \
-#		   -ftree-vectorize -ftree-loop-vectorize -ftree-slp-vectorize -fvect-cost-model=dynamic \
+		   -fno-delete-null-pointer-checks \
+		   -std=gnu89 \
+		   -march=armv8-a+crc \
+		   -mcpu=cortex-a57.cortex-a53+crc+crypto -mtune=cortex-a57.cortex-a53
 
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
@@ -755,12 +580,6 @@ endif # $(dot-config)
 # Defaults to vmlinux, but the arch makefile usually adds further targets
 all: vmlinux
 
-# force no-pie for distro compilers that enable pie by default
-KBUILD_CFLAGS += $(call cc-option, -fno-pie)
-KBUILD_CFLAGS += $(call cc-option, -no-pie)
-KBUILD_AFLAGS += $(call cc-option, -fno-pie)
-KBUILD_CPPFLAGS += $(call cc-option, -fno-pie)
-
 # Disable maybe-uninitialized warnings
 KBUILD_CFLAGS	+= $(call cc-disable-warning,maybe-uninitialized,)
 
@@ -770,27 +589,10 @@ KBUILD_CFLAGS	+= $(call cc-disable-warning,unused-const-variable,)
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
 KBUILD_CFLAGS	+= -Os
 else
-KBUILD_CFLAGS	+= -O2 $(call cc-disable-warning,maybe-uninitialized,)
+KBUILD_CFLAGS	+= -O2
 endif
 
-# conserve stack if available
-# do this early so that an architecture can override it.
-KBUILD_CFLAGS   += $(call cc-option,-fconserve-stack)
-
-# Needed to unbreak GCC 7.x and above
-KBUILD_CFLAGS   += $(call cc-option,-fno-store-merging,)
-
-# Tell gcc to never replace conditional load with a non-conditional one
-KBUILD_CFLAGS	+= $(call cc-option,--param=allow-store-data-races=0)
-
-# conserve stack if available
-# do this early so that an architecture can override it.
-KBUILD_CFLAGS   += $(call cc-option,-fconserve-stack)
-
 include $(srctree)/arch/$(SRCARCH)/Makefile
-
-# Tell gcc to never replace conditional load with a non-conditional one
-KBUILD_CFLAGS	+= $(call cc-option,--param=allow-store-data-races=0)
 
 ifdef CONFIG_READABLE_ASM
 # Disable optimizations that make assembler listings hard to read.
@@ -891,18 +693,13 @@ KBUILD_CFLAGS	+= $(call cc-option,-fno-strict-overflow)
 # conserve stack if available
 KBUILD_CFLAGS   += $(call cc-option,-fconserve-stack)
 
-# disallow errors like 'EXPORT_GPL(foo);' with missing header
-KBUILD_CFLAGS   += $(call cc-option,-Werror=implicit-int)
-
-# require functions to have arguments in prototypes, not empty 'int foo()'
-KBUILD_CFLAGS   += $(call cc-option,-Werror=strict-prototypes)
-
 # use the deterministic mode of AR if available
 KBUILD_ARFLAGS := $(call ar-option,D)
 
 # check for 'asm goto'
 ifeq ($(shell $(CONFIG_SHELL) $(srctree)/scripts/gcc-goto.sh $(CC) $(KBUILD_CFLAGS)), y)
 	KBUILD_CFLAGS += -DCC_HAVE_ASM_GOTO
+	KBUILD_AFLAGS += -DCC_HAVE_ASM_GOTO
 endif
 
 # Add user supplied CPPFLAGS, AFLAGS and CFLAGS as the last assignments
