@@ -13,10 +13,10 @@ export PATH=~/android/z5_build-environment/gcc-linaro-6.4.1-2017.08-x86_64_aarch
 export CROSS_COMPILE=aarch64-linux-gnu-
 
 export KBUILD_DIFFCONFIG=sumire_diffconfig
-make msm8994-perf_defconfig O=./out
+make msm8994-perf_defconfig
 #make kitakami_sumire_defconfig
 ###make oldconfig
-make -j8 O=./out
+make -j8
 
 echo "checking for compiled kernel..."
 if [ -f arch/arm64/boot/Image.gz-dtb ]
