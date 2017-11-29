@@ -583,7 +583,7 @@ all: vmlinux
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
 KBUILD_CFLAGS	+= -Os
 else
-KBUILD_CFLAGS	+= -O2
+KBUILD_CFLAGS	+= -O2 -finline-functions -Wno-maybe-uninitialized
 endif
 
 # Disable all maybe-uninitialized warnings
