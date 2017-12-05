@@ -322,3 +322,40 @@ CONFIG_HID_SENSOR_HUB=y
 
 # Enable FiiO HID Quirk
 CONFIG_HID_FIIO=y
+
+# kswapd: limit it to the first 4 cores
+# by doing so also avoid an error/issue with vmscan
+CONFIG_KSWAPD_CPU_AFFINITY_MASK="f"
+
+# disable support for printing out the last state upon modem failure
+# (sensitive data, also: non-Stock ROM, thus useless)
+# CONFIG_AMSS_ERR_LOG is not set
+
+# enable Panic on data corruption, if there's data corruption we better
+# crash the system as soon as it occurs, otherwise the context is lost
+# to track the (potentially fixable) origin down, also it's a
+# surefire way to screw up the system anyway
+CONFIG_PANIC_ON_DATA_CORRUPTION=y
+
+# disable MMC CMD debug feature
+# CONFIG_MMC_CMD_DEBUG is not set
+
+# watchdog related setup, prefer bark over panicking instantly
+# CONFIG_MSM_FORCE_PANIC_ON_WDOG_BARK is not set
+
+# CMA, allocating framebuffer, etc. memory [CMA_SIZE_MBYTES 16 -> 32]
+CONFIG_CMA_SIZE_MBYTES=64
+
+# KSM / UKSM
+# CONFIG_KSM is not set
+# CONFIG_KSM_CHECK_PAGE=y
+
+# zram & other mm related
+CONFIG_ZRAM=y
+CONFIG_ZRAM_LZ4_COMPRESS=y
+# CONFIG_ZRAM_DEBUG is not set
+
+# zpool & backends
+CONFIG_Z3FOLD=y
+CONFIG_ZPOOL=y
+CONFIG_ZSMALLOC=y
