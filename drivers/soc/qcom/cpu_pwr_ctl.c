@@ -152,7 +152,9 @@ static int kick_l2spm_8994(struct device_node *l2ccc_node,
 	while (readl_relaxed(l2spm_base + L2_SPM_STS) & 0xFFFF0000) {
 		int timeout = 10;
 
-		BUG_ON(!timeout--);
+		if (WARN_ON(!timeout--)) {
+			return -EINVAL;
+		}
 		cpu_relax();
 		usleep(100);
 	}
