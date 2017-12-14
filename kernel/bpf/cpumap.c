@@ -551,13 +551,15 @@ void cpu_map_free(struct bpf_map *map)
 struct bpf_cpu_map_entry *__cpu_map_lookup_elem(struct bpf_map *map, u32 key)
 {
 	struct bpf_cpu_map *cmap = container_of(map, struct bpf_cpu_map, map);
-	struct bpf_cpu_map_entry *rcpu;
+	struct bpf_cpu_map_entry **ptr, **high;
 
 	if (key >= map->max_entries)
 		return NULL;
 
-	rcpu = READ_ONCE(cmap->cpu_map[key]);
-	return rcpu;
+	ptr = cmap->cpu_map + key;
+	high = cmap->cpu_map + map->max_entries;
+
+	return READ_ONCE(*nospec_ptr(ptr, cmap->cpu_map, high));
 }
 
 static void *cpu_map_lookup_elem(struct bpf_map *map, void *key)

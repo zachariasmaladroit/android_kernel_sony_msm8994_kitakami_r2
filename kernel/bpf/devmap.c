@@ -250,11 +250,15 @@ struct net_device  *__dev_map_lookup_elem(struct bpf_map *map, u32 key)
 {
 	struct bpf_dtab *dtab = container_of(map, struct bpf_dtab, map);
 	struct bpf_dtab_netdev *dev;
+	struct bpf_dtab_netdev **ptr, **high;
 
 	if (key >= map->max_entries)
 		return NULL;
 
-	dev = READ_ONCE(dtab->netdev_map[key]);
+	ptr = dtab->netdev_map + key;
+	high = dtab->netdev_map + map->max_entries;
+
+	dev = READ_ONCE(*nospec_ptr(ptr, dtab->netdev_map, high));
 	return dev ? dev->dev : NULL;
 }
 

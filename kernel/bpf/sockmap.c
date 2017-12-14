@@ -626,11 +626,15 @@ static int sock_map_get_next_key(struct bpf_map *map, void *key, void *next_key)
 struct sock  *__sock_map_lookup_elem(struct bpf_map *map, u32 key)
 {
 	struct bpf_stab *stab = container_of(map, struct bpf_stab, map);
+	struct sock **ptr, **high;
 
 	if (key >= map->max_entries)
 		return NULL;
 
-	return READ_ONCE(stab->sock_map[key]);
+	ptr = stab->sock_map + key;
+	high = stab->sock_map + map->max_entries;
+
+	return READ_ONCE(*nospec_ptr(ptr, stab->sock_map, high));
 }
 
 static int sock_map_delete_elem(struct bpf_map *map, void *key)
