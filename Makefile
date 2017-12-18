@@ -379,10 +379,15 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-strict-aliasing -fno-common \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
-		   -fno-delete-null-pointer-checks \
-		   -std=gnu89 \
-		   -march=armv8-a+crc \
-		   -mcpu=cortex-a57.cortex-a53+crc+crypto -mtune=cortex-a57.cortex-a53
+		   -fdiagnostics-color=always \
+		   -fdelete-null-pointer-checks -ftree-vrp \
+		   -fisolate-erroneous-paths-dereference \
+		   -fno-pic \
+		   -fivopts \
+		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
+		   -std=gnu89 $(call cc-option,-fno-PIE) \
+		   -march=armv8-a+crc+crypto \
+		   -mtune=cortex-a57.cortex-a53
 
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
