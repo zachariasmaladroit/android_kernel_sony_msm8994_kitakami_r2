@@ -1,0 +1,99 @@
+This document explains potential effects of speculation, and how undesirable
+effects can be mitigated portably using common APIs.
+
+===========
+Speculation
+===========
+
+To improve performance and minimize average latencies, many contemporary CPUs
+employ speculative execution techniques such as branch prediction, performing
+work which may be discarded at a later stage.
+
+Typically speculative execution cannot be observed from architectural state,
+such as the contents of registers. However, in some cases it is possible to
+observe its impact on microarchitectural state, such as the presence or
+absence of data in caches. Such state may form side-channels which can be
+observed to extract secret information.
+
+For example, in the presence of branch prediction, it is possible for bounds
+checks to be ignored by code which is speculatively executed. Consider the
+following code:
+
+	int load_array(int *array, unsigned int idx) {
+		if (idx >= MAX_ARRAY_ELEMS)
+			return 0;
+		else
+			return array[idx];
+	}
+
+Which, on arm64, may be compiled to an assembly sequence such as:
+
+	CMP	<idx>, #MAX_ARRAY_ELEMS
+	B.LT	less
+	MOV	<returnval>, #0
+	RET
+  less:
+	LDR	<returnval>, [<array>, <idx>]
+	RET
+
+It is possible that a CPU mis-predicts the conditional branch, and
+speculatively loads array[idx], even if idx >= MAX_ARRAY_ELEMS. This value
+will subsequently be discarded, but the speculated load may affect
+microarchitectural state which can be subsequently measured.
+
+More complex sequences involving multiple dependent memory accesses may result
+in sensitive information being leaked. Consider the following code, building on
+the prior example:
+
+	int load_dependent_arrays(int *arr1, int *arr2, int idx) {
+		int val1, val2,
+
+		val1 = load_array(arr1, idx);
+		val2 = load_array(arr2, val1);
+
+		return val2;
+	}
+
+Under speculation, the first call to load_array() may return the value of an
+out-of-bounds address, while the second call will influence microarchitectural
+state dependent on this value. This may provide an arbitrary read primitive.
+
+====================================
+Mitigating speculation side-channels
+====================================
+
+The kernel provides a generic API to ensure that bounds checks are respected
+even under speculation. Architectures which are affected by speculation-based
+side-channels are expected to implement these primitives.
+
+The following helpers found in <asm/barrier.h> can be used to prevent
+information from being leaked via side-channels.
+
+* nospec_load(ptr, lo, hi)
+
+  Returns the data at *ptr only if ptr falls in the [lo, hi) interval. When
+  ptr < lo or ptr >= hi, typeof(*ptr)0 is returned, even under speculation.
+
+  This does not prevent an out-of-bounds load from being speculated, but does
+  prevent its value from influencing code which is subsequently speculated,
+  preventing the value from being leaked.
+
+* nospec_array_load(arr, idx, sz)
+
+  Returns the data at arr[idx] only if idx falls in the [0, sz) interval. When
+  idx < 0 or idx > sz, typeof(*arr)0 is returned, even under speculation.
+
+  This is a wrapper around nospec_load() provided for convenience.
+
+* nospec_ptr(ptr, lo, hi)
+
+  Returns a sanitized pointer that is bounded by the [lo, hi) interval, even
+  under speculation. If ptr < lo, or ptr >= hi, NULL is returned.
+
+  This is expected to be used by code which computes a pointer to an element
+  of a data structure, or where multiple fields of a data structure will be
+  accessed.
+
+  Note that it is not safe to compare the returned value to the original
+  pointer, as compiler optimizations may infer that the original unsanitized
+  pointer is safe to use when the two compare equal.
