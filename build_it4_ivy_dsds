@@ -14,7 +14,7 @@ export CROSS_COMPILE=aarch64-linux-gnu-
 
 export KBUILD_DIFFCONFIG=ivy_dsds_diffconfig
 make msm8994-perf_defconfig
-#make kitakami_ivy_dsds_defconfig
+#make kitakami_ivy_defconfig
 ###make oldconfig
 make -j8
 
@@ -31,10 +31,15 @@ then
 
 	echo "okay"
 
-	### E6533
-	../final_files/mkqcdtbootimg --cmdline "androidboot.hardware=qcom user_debug=31 msm_rtb.filter=0x237 ehci-hcd.park=3 lpm_levels.sleep_disabled=1 boot_cpus=0-3 dwc3_msm.prop_chg_detect=Y zram.backend=z3fold coherent_pool=2M dwc3_msm.hvdcp_max_current=1500 androidboot.selinux=enforcing enforcing=1 buildvariant=userdebug buildvariant=user rcu_nocbs=1-7 threadirqs" --base 0x00000000 --kernel arch/arm64/boot/Image.gz-dtb --ramdisk ../final_files/boot_RR_5.8.4_7.1.2_ivy.img-ramdisk.cpio.gz --ramdisk_offset 0x02000000 --pagesize 4096 -o ../final_files/boot_E6533.img --tags_offset 0x01E00000
+	### E6653
+	../final_files/mkqcdtbootimg --cmdline "androidboot.hardware=qcom user_debug=31 msm_rtb.filter=0x237 ehci-hcd.park=3 lpm_levels.sleep_disabled=1 boot_cpus=0-3 dwc3_msm.prop_chg_detect=Y zram.backend=zsmalloc coherent_pool=2M dwc3_msm.hvdcp_max_current=1500 androidboot.selinux=enforcing enforcing=1 buildvariant=userdebug buildvariant=user rcu_nocbs=1-7 threadirqs" --base 0x00000000 --kernel arch/arm64/boot/Image.gz-dtb --ramdisk ../final_files/32.4.A.1.54_boot_ivy_dsds.img-ramdisk.cpio.gz --ramdisk_offset 0x02000000 --pagesize 4096 -o ../final_files/Z5_7.1.1_stock/boot_E6533.img --tags_offset 0x01E00000
 	### Enforcing build
-	#../final_files/mkqcdtbootimg --cmdline "androidboot.hardware=qcom user_debug=31 msm_rtb.filter=0x237 ehci-hcd.park=3 lpm_levels.sleep_disabled=1 boot_cpus=0-3 dwc3_msm.prop_chg_detect=Y zram.backend=z3fold coherent_pool=2M dwc3_msm.hvdcp_max_current=1500 androidboot.selinux=enforcing enforcing=1 buildvariant=userdebug buildvariant=user rcu_nocbs=1-7 threadirqs" --base 0x00000000 --kernel arch/arm64/boot/Image.gz-dtb --ramdisk ../final_files/boot_RR_5.8.4_7.1.2_ivy.img-ramdisk.cpio.gz --ramdisk_offset 0x02000000 --pagesize 4096 -o ../final_files/boot_E6533_E.img --tags_offset 0x01E00000
+	#../final_files/mkqcdtbootimg --cmdline "androidboot.hardware=qcom user_debug=31 msm_rtb.filter=0x237 ehci-hcd.park=3 lpm_levels.sleep_disabled=1 boot_cpus=0-3 dwc3_msm.prop_chg_detect=Y zram.backend=zsmalloc coherent_pool=2M dwc3_msm.hvdcp_max_current=1500 androidboot.selinux=enforcing enforcing=1 buildvariant=userdebug rcu_nocbs=1-7 threadirqs" --base 0x00000000 --kernel arch/arm64/boot/Image.gz-dtb --ramdisk ../final_files/32.4.A.1.54_boot_ivy_dsds.img-ramdisk.cpio.gz --ramdisk_offset 0x02000000 --pagesize 4096 -o ../final_files/Z5_7.1.1_stock/boot_E6533_E.img --tags_offset 0x01E00000
+
+	cp drivers/bluetooth/broadcom/bt_protocol_driver/brcm_bt_drv.ko ../final_files/Z5_7.1.1_stock/modules/
+	cp drivers/bluetooth/broadcom/v4l2_ant_driver/ant_drv.ko ../final_files/Z5_7.1.1_stock/modules/
+	cp drivers/bluetooth/broadcom/line_discipline_driver/brcm_hci_ldisc.ko ../final_files/Z5_7.1.1_stock/modules/
+	cp drivers/bluetooth/broadcom/v4l2_fm_driver/fm_drv.ko ../final_files/Z5_7.1.1_stock/modules/
 
 	### Version number
 	echo -n "Enter version number: "
@@ -43,23 +48,25 @@ then
 	echo "Packaging 'ENForcing' kernel"
 	echo " "
 
-	if [ -e ../final_files/boot_E6533.img ]
+	if [ -e ../final_files/Z5_7.1.1_stock/boot_E6533.img ]
 	then
 
 		### Zip boot.img
-		cd ../final_files/
+		cd ../final_files/Z5_7.1.1_stock/
 		mv boot_E6533.img boot.img
-		zip -r Z4_Z3P-DSDS_SK_ENF_v.zip boot.img META-INF/
+		zip -r Z5-DSDS_SK_ENF_v.zip boot.img modules/ META-INF/
 		rm -f boot.img
 
 		echo " "
 		echo "Copying to z5-kernelbuild"
 		echo " "
 
-		cp ~/android/final_files/Z4_Z3P-DSDS_SK_ENF_v.zip ~/android/z5-kernelbuild/Z4_Z3P-DSDS_SK_ENF_v$version.zip
+		cp ~/android/final_files/Z5_7.1.1_stock/Z5-DSDS_SK_ENF_v.zip ~/android/z5-kernelbuild/Z5-DSDS_SK_ENF_v$version.zip
 
-	fi
+		rm -f ../final_files/Z5_7.1.1_stock/Z5-DSDS_SK_ENF_v.zip
 	
+	fi
+
 #		echo "Packaging 'Enforcing' kernel"
 #		echo " "
 
@@ -69,15 +76,15 @@ then
 	### Zip boot.img
 	#cd ../final_files/
 	#mv boot_E6533_E.img boot.img
-	#zip -r Z4_Z3P-DSDS_SK_Enf_v.zip boot.img META-INF/
+	#zip -r Z5-DSDS_SK_Enf_v.zip boot.img META-INF/
 	#rm -f boot.img
 	#
 	#echo " "
 	#echo "Copying to z5-kernelbuild"
 	#echo " "
 	#
-	#cp ~/android/final_files/Z4_Z3P-DSDS_SK_Enf_v.zip ~/android/z5-kernelbuild/Z4_Z3P-DSDS_SK_Enf_v$version.zip
+	#cp ~/android/final_files/Z5-DSDS_SK_Enf_v.zip ~/android/z5-kernelbuild/Z5-DSDS_SK_Enf_v$version.zip
 	#
-	#fi
+#fi
 
 fi
