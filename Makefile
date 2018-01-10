@@ -386,8 +386,9 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fivopts \
 		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
 		   -std=gnu89 $(call cc-option,-fno-PIE) \
+		   -fno-sched-spec-insn-heuristic -fno-devirtualize -fno-devirtualize-speculatively -fno-sched-spec \
 		   -march=armv8-a+crc+crypto \
-		   -mtune=cortex-a57.cortex-a53
+		   -mtune=cortex-a53
 
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
