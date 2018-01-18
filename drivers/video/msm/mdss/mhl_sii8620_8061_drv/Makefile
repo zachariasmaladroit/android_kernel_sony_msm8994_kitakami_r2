@@ -1,6 +1,6 @@
 # MHL SII8620/SII8061 chip support
 
-obj-y += mhl_sii8620_8061_drv.o
+obj-m += mhl_sii8620_8061_drv.o
 
 mhl_sii8620_8061_drv-objs := mhl_sii8620_8061_device.o \
 		mhl_sii8620_device_edid.o mhl_driver.o mhl_tx.o mhl_tx_rcp.o \
