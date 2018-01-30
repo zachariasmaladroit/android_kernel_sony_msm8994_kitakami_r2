@@ -179,6 +179,11 @@ static struct cpufreq_interactive_tunables *cached_common_tunables;
 
 static struct attribute_group *get_sysfs_attr(void);
 
+static bool is_perfd(const char* c)
+{
+	return strncmp(c, "vendor.qti.hardware.perf@1.0-service", 36);
+}
+
 /* Round to starting jiffy of next evaluation window */
 static u64 round_to_nw_start(u64 jif,
 			     struct cpufreq_interactive_tunables *tunables)
@@ -965,6 +970,9 @@ static ssize_t store_target_loads(
 	unsigned int *new_target_loads = NULL;
 	unsigned long flags;
 
+	if (!is_perfd(current->comm))
+		return 0;
+
 	new_target_loads = get_tokenized_data(buf, &ntokens);
 	if (IS_ERR(new_target_loads))
 		return PTR_RET(new_target_loads);
@@ -1008,6 +1016,9 @@ static ssize_t store_above_hispeed_delay(
 	unsigned int *new_above_hispeed_delay = NULL;
 	unsigned long flags;
 
+	if (!is_perfd(current->comm))
+		return 0;
+
 	new_above_hispeed_delay = get_tokenized_data(buf, &ntokens);
 	if (IS_ERR(new_above_hispeed_delay))
 		return PTR_RET(new_above_hispeed_delay);
@@ -1033,6 +1044,9 @@ static ssize_t store_hispeed_freq(struct cpufreq_interactive_tunables *tunables,
 {
 	int ret;
 	long unsigned int val;
+
+	if (!is_perfd(current->comm))
+		return 0;
 
 	ret = kstrtoul(buf, 0, &val);
 	if (ret < 0)
@@ -1077,6 +1091,9 @@ static ssize_t store_go_hispeed_load(struct cpufreq_interactive_tunables
 	int ret;
 	unsigned long val;
 
+	if (!is_perfd(current->comm))
+		return 0;
+
 	ret = kstrtoul(buf, 0, &val);
 	if (ret < 0)
 		return ret;
@@ -1095,6 +1112,9 @@ static ssize_t store_min_sample_time(struct cpufreq_interactive_tunables
 {
 	int ret;
 	unsigned long val;
+
+	if (!is_perfd(current->comm))
+		return;
 
 	ret = kstrtoul(buf, 0, &val);
 	if (ret < 0)
@@ -1116,6 +1136,9 @@ static ssize_t store_timer_rate(struct cpufreq_interactive_tunables *tunables,
 	unsigned long val, val_round;
 	struct cpufreq_interactive_tunables *t;
 	int cpu;
+
+	if (!is_perfd(current->comm))
+		return 0;
 
 	ret = kstrtoul(buf, 0, &val);
 	if (ret < 0)
@@ -1157,6 +1180,9 @@ static ssize_t store_timer_slack(struct cpufreq_interactive_tunables *tunables,
 	int ret;
 	unsigned long val;
 
+	if (!is_perfd(current->comm))
+		return 0;
+
 	ret = kstrtol(buf, 10, &val);
 	if (ret < 0)
 		return ret;
@@ -1176,6 +1202,9 @@ static ssize_t store_boost(struct cpufreq_interactive_tunables *tunables,
 {
 	int ret;
 	unsigned long val;
+
+	if (!is_perfd(current->comm))
+		return 0;
 
 	ret = kstrtoul(buf, 0, &val);
 	if (ret < 0)
@@ -1201,6 +1230,9 @@ static ssize_t store_boostpulse(struct cpufreq_interactive_tunables *tunables,
 	int ret;
 	unsigned long val;
 
+	if (!is_perfd(current->comm))
+		return 0;
+
 	ret = kstrtoul(buf, 0, &val);
 	if (ret < 0)
 		return ret;
@@ -1225,6 +1257,9 @@ static ssize_t store_boostpulse_duration(struct cpufreq_interactive_tunables
 	int ret;
 	unsigned long val;
 
+	if (!is_perfd(current->comm))
+		return 0;
+
 	ret = kstrtoul(buf, 0, &val);
 	if (ret < 0)
 		return ret;
@@ -1246,6 +1281,9 @@ static ssize_t store_io_is_busy(struct cpufreq_interactive_tunables *tunables,
 	unsigned long val;
 	struct cpufreq_interactive_tunables *t;
 	int cpu;
+
+	if (!is_perfd(current->comm))
+		return 0;
 
 	ret = kstrtoul(buf, 0, &val);
 	if (ret < 0)
@@ -1342,6 +1380,9 @@ static ssize_t store_use_sched_load(
 	int ret;
 	unsigned long val;
 
+	if (!is_perfd(current->comm))
+		return 0;
+
 	ret = kstrtoul(buf, 0, &val);
 	if (ret < 0)
 		return ret;
@@ -1377,6 +1418,9 @@ static ssize_t store_use_migration_notif(
 {
 	int ret;
 	unsigned long val;
+
+	if (!is_perfd(current->comm))
+		return 0;
 
 	ret = kstrtoul(buf, 0, &val);
 	if (ret < 0)
@@ -1421,6 +1465,9 @@ static ssize_t store_fastlane(
 	int ret;
 	unsigned long val;
 
+	if (!is_perfd(current->comm))
+		return 0;	
+
 	ret = kstrtoul(buf, 0, &val);
 	if (ret < 0)
 		return ret;
@@ -1440,6 +1487,9 @@ static ssize_t store_fastlane_threshold(
 {
 	int ret;
 	unsigned long val;
+
+	if (!is_perfd(current->comm))
+		return 0;
 
 	ret = kstrtoul(buf, 0, &val);
 	if (ret < 0 || ret > 100)
