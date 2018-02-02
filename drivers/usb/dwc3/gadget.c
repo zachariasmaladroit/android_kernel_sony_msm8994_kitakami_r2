@@ -1076,7 +1076,12 @@ static void dwc3_prepare_trbs(struct dwc3_ep *dep, bool starting)
 					struct dwc3_request *nreq = n;
 					struct usb_request *ureq;
 					bool mpkt = false;
-
+// 3.10.71 upstream linux [android inherited lots of additional changes]
+// [...]
+					if (list_empty(&dep->request_list))
+						last_one = true;
+// [...]
+// 3.10.71 upstream linux.	
 					chain = false;
 					if (last_req) {
 						last_one = true;
