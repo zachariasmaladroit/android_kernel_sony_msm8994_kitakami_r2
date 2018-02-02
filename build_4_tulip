@@ -1,0 +1,90 @@
+
+
+echo "setting up ccache	"
+echo "					"
+
+export USE_CCACHE=1
+
+export CACHE_DIR=~/.ccache
+
+export PATH=~/android/z5_build-environment/mdalexca-aarch64-linux-android-4.9-kernel-linaro-09c6758022e7/bin/:$PATH
+export CROSS_COMPILE=aarch64-linux-android-
+
+echo "preparing defconfig"
+echo "					"
+
+make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE nautilus_kanuti-tulip_defconfig
+
+echo "building kernel	"
+echo "					"
+
+time make ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE -j$(grep -c ^processor /proc/cpuinfo)
+
+#export ARCH=arm64
+#export ARCH=arm64
+#make msm8994-perf_defconfig
+###make oldconfig
+
+
+#make -j8
+
+#echo "checking for compiled kernel..."
+#if [ -f arch/arm64/boot/Image ]
+#then
+#../final_files/mkqcdtbootimg --cmdline "androidboot.hardware=qcom user_debug=31 msm_rtb.filter=0x237 ehci-hcd.park=3 lpm_levels.sleep_disabled=1 boot_cpus=0-3 dwc3_msm.prop_chg_detect=Y zram.backend=z3fold coherent_pool=2M dwc3_msm.hvdcp_max_current=1500 androidboot.selinux=permissive enforcing=0 buildvariant=userdebug" --base 0x00000000 --kernel arch/arm64/boot/Image.gz-dtb --ramdisk ../final_files/boot_N_2.33_E6653_with_TWRP.img-ramdisk.cpio.gz --ramdisk_offset 0x02000000 --pagesize 4096 -o ../final_files/boot_E6653.img --tags_offset 0x01E00000
+#../build_tools/mkbootimg --kernel arch/arm64/boot/Image --ramdisk $RAMDISK --dt dtb.img --base 0x81dfff00 --ramdisk_offset 0x82000000 --tags_offset 0x81E00000 --pagesize 2048 --cmdline "console=ttyHSL0,115200,n8 androidboot.console=ttyHSL0 androidboot.hardware=qcom msm_rtb.filter=0x237 ehci-hcd.park=3 androidboot.bootdevice=7824900.sdhci lpm_levels.sleep_disabled=1 earlyprintk" -o $BOOTIMAGE && echo -e "${GREEN}Done!${NCOLOR}"
+#WLANM=../build_tools/zipme/system/lib/modules/pronto/pronto_wlan.ko
+
+
+
+# Kernel build:
+BOOTIMAGE=../final_files/M4_Aqua/boot_E2303.img
+RAMDISK=../final_files/boot_M4_Aqua_6.x_1.33.img-ramdisk.cpio.gz
+DTIMAGE=../final_files/M4_Aqua/dt.img
+WLANMODULE=../final_files/M4_Aqua/wlan.ko
+
+
+echo -n "Enter version number: "
+read version
+
+echo "checking for compiled kernel...	"
+echo "									"
+#if [ -e arch/arm64/boot/Image ]
+#then
+
+	rm -f ../final_files/M4_Aqua/dt.img
+	rm -f ../final_files/M4_Aqua/boot.img
+
+	export ARCH=arm64 && make dtbs
+
+	../final_files/dtbToolCM --force-v2 -o $DTIMAGE -s 2048 -p ./scripts/dtc/ ./arch/arm/boot/dts/
+
+	../final_files/mkbootimg_MM --cmdline "console=ttyHSL0,115200,n8 androidboot.console=ttyHSL0 androidboot.hardware=qcom msm_rtb.filter=0x237 ehci-hcd.park=3 androidboot.bootdevice=7824900.sdhci lpm_levels.sleep_disabled=1 earlyprintk" --base 0x81dfff00 --kernel arch/arm64/boot/Image --ramdisk $RAMDISK --dt $DTIMAGE --ramdisk_offset 0x82000000 --tags_offset 0x81E00000 --pagesize 2048 -o $BOOTIMAGE
+
+	cp drivers/staging/prima/wlan.ko $WLANMODULE
+
+
+echo "entering packaging stage ...		"
+echo "									"
+
+#		if [ -e ../final_files/M4_Aqua/boot_E2303.img ]
+
+			cd ../final_files/M4_Aqua/
+
+			mv boot_E2303.img boot.img
+			
+			zip -r Nautilus-K.zip boot.img wlan.ko META-INF/
+
+			echo "Copying to m4-kernelbuild	"
+			echo "							"
+
+			cp ~/android/final_files/M4_Aqua/Nautilus-K.zip ~/android/m4-kernelbuild/Nautilus-K_$version.zip
+
+#		fi
+#
+#fi
+
+echo "finishing up ...	"
+echo "					"
+
+echo "done.				"
