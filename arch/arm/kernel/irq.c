@@ -155,6 +155,16 @@ static bool migrate_one_irq(struct irq_desc *desc)
 
 	if (cpumask_any_and(affinity, cpu_online_mask) >= nr_cpu_ids)
 		affinity = cpu_online_mask;
+// 3.10.56
+		ret = true;
+	}
+
+	c = irq_data_get_irq_chip(d);
+	if (!c->irq_set_affinity)
+		pr_debug("IRQ%u: unable to set affinity\n", d->irq);
+	else if (c->irq_set_affinity(d, affinity, false) == IRQ_SET_MASK_OK && ret)
+		cpumask_copy(d->affinity, affinity);
+// 3.10.56
 
 	return irq_set_affinity_locked(d, affinity, 0) == 0;
 }
