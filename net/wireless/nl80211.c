@@ -6859,6 +6859,16 @@ void __cfg80211_send_event_skb(struct sk_buff *skb, gfp_t gfp)
 	void *hdr = ((void **)skb->cb)[1];
 	struct nlattr *data = ((void **)skb->cb)[2];
 
+// 3.10.60 upstream linux, 'nl80211: clear skb cb before passing to netlink' 7dd311128022551d7876b26b7193157883494cd3
+	/* clear CB data for netlink core to own from now on */
+	memset(skb->cb, 0, sizeof(skb->cb));
+// 3.10.60 upstream linux.
+// 3.10.60 upstream linux
+//	if (WARN_ON(!rdev->testmode_info)) {
+//		kfree_skb(skb);
+//		return -EINVAL;
+//	}
+// 3.10.60 upstream linux.
 	nla_nest_end(skb, data);
 	genlmsg_end(skb, hdr);
 
@@ -6871,6 +6881,19 @@ void __cfg80211_send_event_skb(struct sk_buff *skb, gfp_t gfp)
 }
 EXPORT_SYMBOL(__cfg80211_send_event_skb);
 
+// 3.10.60 upstream linux, 'nl80211: clear skb cb before passing to netlink' 7dd311128022551d7876b26b7193157883494cd3
+// missing:
+// struct sk_buff *cfg80211_testmode_alloc_event_skb(struct wiphy *wiphy,
+//						  int approxlen, gfp_t gfp)
+// void cfg80211_testmode_event(struct sk_buff *skb, gfp_t gfp)
+// due to 'nl80211: support vendor-specific events' 5413990dae21ca61c2eeca8daae581775a5bda6a and other commits
+//
+// void cfg80211_testmode_event(struct sk_buff *skb, gfp_t gfp)
+// [...]
+	/* clear CB data for netlink core to own from now on */
+//	memset(skb->cb, 0, sizeof(skb->cb));
+// [...]
+// 3.10.60 upstream linux.
 
 static int nl80211_connect(struct sk_buff *skb, struct genl_info *info)
 {

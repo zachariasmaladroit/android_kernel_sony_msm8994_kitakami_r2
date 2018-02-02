@@ -32,4 +32,9 @@
 
 #define USB_QUIRK_OTG_PET		0x00000080
 
+// 3.10.60 linux upstream, 'USB: Add device quirk for ASUS T100 Base Station keyboard' 084a2fd4fb44bc3a72e6a091b6f473e8b6176c77
+/* device generates spurious wakeup, ignore remote wakeup capability */
+#define USB_QUIRK_IGNORE_REMOTE_WAKEUP	0x00000200
+// 3.10.60 linux upstream.
+
 #endif /* __LINUX_USB_QUIRKS_H */

@@ -1189,6 +1189,12 @@ static int _request_firmware(struct fw_desc *desc)
 		return -EINVAL;
 
 	ret = _request_firmware_prepare(&fw, desc);
+// 3.10.60 upstream linux
+//	if (!name || name[0] == '\0')
+//		return -EINVAL;
+//
+//	ret = _request_firmware_prepare(&fw, name, device);
+// 3.10.60 upstream linux
 	if (ret <= 0) /* error or already assigned */
 		goto out;
 
