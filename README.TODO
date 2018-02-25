@@ -1,0 +1,5 @@
+pstore (/sys/fs, arch/arm64/ | arch/arm/boot)
+exfat (in-kernel)
+gpu underclock
+kgsl & friends: keep clock low during input events, etc.
+
