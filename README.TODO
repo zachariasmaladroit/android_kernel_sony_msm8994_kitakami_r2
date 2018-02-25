@@ -5,3 +5,5 @@ kgsl & friends: keep clock low during input events, etc.
 drivers/bluetooth/broadcom
 drivers/video/msm/mdss
 
+actually use 5.11 kernel base, 2.33 is Nougat (d'oh !)
+
