@@ -173,6 +173,7 @@ CONFIG_LOCALVERSION_AUTO=n
 # CONFIG_SCSI_UFSHCD is not set
 # CONFIG_SMB349_DUAL_CHARGER is not set
 # CONFIG_SMB135X_CHARGER is not set
+# CONFIG_KSM is not set
 
 # Build module inline
 CONFIG_WIL6210=y
