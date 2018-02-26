@@ -268,3 +268,7 @@ CONFIG_BT_PROTOCOL_DRIVER=m
 CONFIG_LINE_DISCIPLINE_DRIVER=m
 CONFIG_V4L2_ANT_DRIVER=m
 CONFIG_V4L2_FM_DRIVER=m
+
+# MHL SII8620 and SII8061 support (Sony Stock ROM: build as module, Makefile hack)
+# only this way stability & functionality is warranted
+CONFIG_FB_MSM_MDSS_HDMI_MHL_SII8620_8061=y
