@@ -243,8 +243,8 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 
 HOSTCC       = gcc
 HOSTCXX      = g++
-HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -Os -pipe -fomit-frame-pointer -DNDEBUG -std=gnu89 $(call cc-option,-fno-PIE)
-HOSTCXXFLAGS = -Os -pipe -DNDEBUG -std=gnu89 $(call cc-option,-fno-PIE)
+HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -Os -pipe -fomit-frame-pointer -std=gnu89
+HOSTCXXFLAGS = -Os -pipe -std=gnu89 $(call cc-option,-fno-PIE)
 
 # Decide whether to build built-in, modular, or both.
 # Normally, just do built-in.
