@@ -6882,7 +6882,7 @@ void init_idle(struct task_struct *idle, int cpu)
 static const struct cpumask *adjust_cpumask(const struct task_struct *p,
 	const struct cpumask *old_mask)
 {
-	static const unsigned long allowed_cpus = 0xf;
+	static const unsigned long allowed_cpus = 0x3;
 
 	if (!(p->flags & PF_KTHREAD) || p->kthread_per_cpu)
 		return old_mask;
