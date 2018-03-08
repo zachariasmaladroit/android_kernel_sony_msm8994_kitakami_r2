@@ -350,3 +350,6 @@ CONFIG_CC_STACKPROTECTOR_REGULAR=y
 # needs additional patches to cut down latency & other issues
 CONFIG_PM_WAKELOCKS_GC=y
 # CONFIG_WQ_POWER_EFFICIENT_DEFAULT is not set
+
+# Disallow allocating the first 32k of memory (cannot be 64k due to ARM loader).
+CONFIG_DEFAULT_MMAP_MIN_ADDR=32768
