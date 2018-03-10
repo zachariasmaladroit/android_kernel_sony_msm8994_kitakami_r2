@@ -321,6 +321,15 @@ CONFIG_CPU_QUIET_DEFAULT_GOV_RUNNABLE=y
 # CONFIG_CPU_QUIET_DEFAULT_GOV_RQBALANCE is not set
 CONFIG_CPU_QUIET_MSM=y
 
+# CMA, allocating framebuffer, etc. memory [CMA_SIZE_MBYTES 16 -> 32]
+CONFIG_CMA_SIZE_MBYTES=64
+
+# Disable MMC CMD debug feature
+# CONFIG_MMC_CMD_DEBUG is not set
+
+# Print scheduling debugging info from sysrq-trigger
+# CONFIG_SYSRQ_SCHED_DEBUG is not set
+
 # kswapd: limit it to the first 4 cores
 # by doing so also avoid an error/issue with vmscan
 CONFIG_KSWAPD_CPU_AFFINITY_MASK="f"
