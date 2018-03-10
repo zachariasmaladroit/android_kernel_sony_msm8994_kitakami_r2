@@ -357,6 +357,41 @@ CONFIG_CC_STACKPROTECTOR_REGULAR=y
 # http://man7.org/linux/man-pages/man1/dpkg-buildflags.1.html
 # CONFIG_CC_STACKPROTECTOR_STRONG is not set
 
+# Disallow allocating the first 32k of memory (cannot be 64k due to ARM loader).
+CONFIG_DEFAULT_MMAP_MIN_ADDR=32768
+
+# Perform additional validation of various commonly targeted structures.
+CONFIG_DEBUG_CREDENTIALS=y
+CONFIG_DEBUG_NOTIFIERS=y
+CONFIG_DEBUG_LIST=y
+CONFIG_DEBUG_SG=y
+CONFIG_PANIC_ON_DATA_CORRUPTION=y
+
+# Provide userspace with ptrace ancestry protections.
+CONFIG_SECURITY=y
+CONFIG_SECURITY_YAMA=y
+
+# Allow allocator validation checking to be enabled (see "slub_debug=P" below).
+CONFIG_SLUB_DEBUG=y
+
+# Dangerous; enabling this disables brk ASLR.
+# CONFIG_COMPAT_BRK is not set
+
+# Dangerous; exposes kernel text image layout.
+# CONFIG_PROC_KCORE is not set
+
+# Dangerous; enabling this allows replacement of running kernel.
+# CONFIG_KEXEC is not set
+
+# Prior to v4.1, assists heap memory attacks; best to keep interface disabled.
+# CONFIG_INET_DIAG is not set
+
+# Easily confused by misconfigured userspace, keep off.
+# CONFIG_BINFMT_MISC is not set
+
+# Use the modern PTY interface (devpts) only.
+# CONFIG_LEGACY_PTYS is not set
+
 # needs additional patches to cut down latency & other issues
 CONFIG_PM_WAKELOCKS_GC=y
 # CONFIG_WQ_POWER_EFFICIENT_DEFAULT is not set
