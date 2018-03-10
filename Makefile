@@ -380,16 +380,10 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fisolate-erroneous-paths-dereference \
 		   -fno-pic \
 		   -fivopts \
+		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
 		   -mtune=cortex-a53 \
 		   -march=armv8-a+crc+crypto \
-		   -std=gnu89 $(call cc-option,-fno-PIE) \
-		   -fsplit-paths -fstore-merging -fsplit-loops
-#
-# Segmentation fault:
-# -fsplit-loops
-# -fstore-merging
-#		   -fivopts \
-#		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
+		   -std=gnu89 $(call cc-option,-fno-PIE)
 #
 # O2 ?
 #		   -fsplit-paths \
