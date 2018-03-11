@@ -32,7 +32,7 @@
 extern struct snd_soc_codec *fauxsound_codec_ptr;
 extern int wcd9xxx_hw_revision;
 
-extern int PDesireAudio;
+extern int high_perf_mode;
 
 static int snd_ctrl_locked = 2;
 static int snd_rec_ctrl_locked = 0;
@@ -295,18 +295,18 @@ static ssize_t headphone_gain_store(struct kobject *kobj,
 	return count;
 }
 
-static ssize_t pdesireaudio_show(struct kobject *kobj,
-                struct kobj_attribute *attr, char *buf)
+static ssize_t hph_perf_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
 {
-        return sprintf(buf, "%d\n", PDesireAudio);
+        return sprintf(buf, "%d\n", high_perf_mode);
 }
 
-static ssize_t pdesireaudio_store(struct kobject *kobj,
-                 struct kobj_attribute *attr, const char *buf, size_t count)
+static ssize_t hph_perf_store(struct kobject *kobj,
+		struct kobj_attribute *attr, const char *buf, size_t count)
 {
         if (buf[0] >= '0' && buf[0] <= '1' && buf[1] == '\n')
-                if (PDesireAudio != buf[0] - '0')
-                        PDesireAudio = buf[0] - '0';
+                if (high_perf_mode != buf[0] - '0')
+                        high_perf_mode = buf[0] - '0';
 
         return count;
 }
@@ -386,11 +386,11 @@ static struct kobj_attribute headphone_gain_attribute =
 		headphone_gain_show,
 		headphone_gain_store);
 
-static struct kobj_attribute PDesireAudio_mode_attribute =
-        __ATTR(PDesireAudio_enabled,
+static struct kobj_attribute high_performance_mode_attribute =
+        __ATTR(highperf_enabled,
                 0666,
-                pdesireaudio_show,
-                pdesireaudio_store);
+                hph_perf_show,
+                hph_perf_store);
 
 static struct attribute *sound_control_attrs[] =
 	{
@@ -398,7 +398,7 @@ static struct attribute *sound_control_attrs[] =
 		&mic_gain_attribute.attr,
 		&speaker_gain_attribute.attr,
 		&headphone_gain_attribute.attr,
-		&PDesireAudio_mode_attribute.attr,
+		&high_performance_mode_attribute.attr,
 		&sound_reg_sel_attribute.attr,
 		&sound_reg_read_attribute.attr,
 		&sound_reg_write_attribute.attr,
