@@ -301,6 +301,7 @@ static int msm_pcm_playback_prepare(struct snd_pcm_substream *substream)
 
 	if (params_format(params) == SNDRV_PCM_FORMAT_S24_LE)
 		bits_per_sample = 24;
+
 	ret = q6asm_open_write_v2(prtd->audio_client,
 			FORMAT_LINEAR_PCM, bits_per_sample);
 	if (ret < 0) {
