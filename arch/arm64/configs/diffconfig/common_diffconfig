@@ -299,6 +299,13 @@ CONFIG_EXFAT_COMPAT_TUXERA=y
 CONFIG_NLS_CODEPAGE_852=y
 CONFIG_NLS_ISO8859_15=y
 
+# Sound Mods
+# FauxSound
+CONFIG_SOUND_CONTROL_HAX_3_GPL=y
+
+# enable state notifier
+CONFIG_STATE_NOTIFIER=y
+
 # Broadcom bluetooth driver (only works fully as module in Sony Stock ROM)
 CONFIG_BT_PROTOCOL_DRIVER=m
 CONFIG_LINE_DISCIPLINE_DRIVER=m
