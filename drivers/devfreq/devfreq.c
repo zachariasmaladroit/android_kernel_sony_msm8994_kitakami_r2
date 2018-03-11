@@ -25,7 +25,6 @@
 #include <linux/list.h>
 #include <linux/printk.h>
 #include <linux/hrtimer.h>
-#include <linux/state_notifier.h>
 #include "governor.h"
 
 static struct class *devfreq_class;
@@ -998,34 +997,8 @@ static struct device_attribute devfreq_attrs[] = {
 	{ },
 };
 
-static int state_notifier_callback(struct notifier_block *this,
-				unsigned long event, void *data)
-{
-	switch (event) {
-		case STATE_NOTIFIER_ACTIVE:
-			schedule_work(&wake_boost_work);
-			break;
-		case STATE_NOTIFIER_SUSPEND:
-			cancel_work_sync(&wake_boost_work);
-			if (cancel_delayed_work_sync(&wake_unboost_work))
-				set_wake_boost(false);
-			break;
-		default:
-			break;
-	}
-
-	return NOTIFY_OK;
-}
-
-static struct notifier_block notif = {
-	.notifier_call = state_notifier_callback,
-	.priority = INT_MAX,
-};
-
 static int __init devfreq_init(void)
 {
-	int ret = 0;
-
 	devfreq_class = class_create(THIS_MODULE, "devfreq");
 	if (IS_ERR(devfreq_class)) {
 		pr_err("%s: couldn't create class\n", __FILE__);
@@ -1040,9 +1013,7 @@ static int __init devfreq_init(void)
 	}
 	devfreq_class->dev_attrs = devfreq_attrs;
 
-	ret = state_register_client(&notif);
-
-	return ret;
+	return 0;
 }
 subsys_initcall(devfreq_init);
 
