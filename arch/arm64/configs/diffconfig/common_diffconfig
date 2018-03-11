@@ -376,8 +376,3 @@ CONFIG_CC_STACKPROTECTOR_REGULAR=y
 # needs additional patches to cut down latency & other issues
 CONFIG_PM_WAKELOCKS_GC=y
 # CONFIG_WQ_POWER_EFFICIENT_DEFAULT is not set
-
-# disable SYSVIPC allows attackers a DoS (denial of service)
-# it's also of no use in Android (Binder IPC)
-# CONFIG_SYSVIPC is not set
-# CONFIG_SYSVIPC_SYSCTL is not set
