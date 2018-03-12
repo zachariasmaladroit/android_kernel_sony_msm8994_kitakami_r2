@@ -304,7 +304,7 @@ CONFIG_NLS_ISO8859_15=y
 CONFIG_SOUND_CONTROL_HAX_3_GPL=y
 
 # enable state notifier
-CONFIG_STATE_NOTIFIER=y
+# CONFIG_STATE_NOTIFIER is not set
 
 # Broadcom bluetooth driver (only works fully as module in Sony Stock ROM)
 CONFIG_BT_PROTOCOL_DRIVER=m
