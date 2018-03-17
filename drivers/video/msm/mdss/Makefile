@@ -37,7 +37,7 @@ else
 mdss-dsi-objs += mdss_dsi_panel.o
 endif
 mdss-dsi-objs += msm_mdss_io_8974.o
-obj-$(CONFIG_FB_MSM_MDSS) += mdss-dsi.o
+obj-$(CONFIG_FB_MSM_MDSS) += mdss-dsi.o lcd_notify.o
 obj-$(CONFIG_FB_MSM_MDSS) += mdss_panel.o
 obj-$(CONFIG_FB_MSM_MDSS_EDP_PANEL) += mdss_edp.o
 obj-$(CONFIG_FB_MSM_MDSS_EDP_PANEL) += mdss_edp_aux.o
