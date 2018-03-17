@@ -391,3 +391,9 @@ CONFIG_DEFAULT_NOOP=y
 # CONFIG_DEFAULT_SIO is not set
 # CONFIG_DEFAULT_FIOPS is not set
 CONFIG_DEFAULT_IOSCHED="noop"
+
+# dynamic fsync: 
+# While screen is on, file sync is suspended.
+# When screen is off, a file sync is called to flush all outstanding writes
+# and restore file sync operation as normal.
+CONFIG_DYNAMIC_FSYNC=y
