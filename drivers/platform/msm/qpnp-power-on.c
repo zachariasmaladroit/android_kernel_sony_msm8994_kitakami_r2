@@ -259,6 +259,9 @@ static const char * const qpnp_poff_reason[] = {
 static int warm_boot;
 module_param(warm_boot, int, 0);
 
+static int debounce_time = 750000;
+module_param(debounce_time, int, 0644);
+
 static int
 qpnp_pon_masked_write(struct qpnp_pon *pon, u16 addr, u8 mask, u8 val)
 {
@@ -723,7 +726,7 @@ qpnp_pon_input_dispatch(struct qpnp_pon *pon, u32 pon_type)
 	/* Add check for time interval */
 	if (cfg->pon_type == PON_KPDPWR) {
 		elapsed_us = ktime_us_delta(ktime_get(), pon->kpd_release_time);
-		if (elapsed_us < 150000) {
+		if (elapsed_us < debounce_time) {
 			pr_err("Ignoring kpd event - within debounce time\n");
 			return 0;
 		}
