@@ -1041,10 +1041,6 @@ static int set_workload_detect(const char *buf, const struct kernel_param *kp)
 	unsigned int val, i;
 	struct cluster *i_cl;
 	unsigned long flags;
-	int msm_perf = strcmp(current->comm, "perfd");
-
-       if (msm_perf && !touchboost)
-               return -EINVAL;
 
 	if (!clusters_inited)
 		return -EINVAL;
