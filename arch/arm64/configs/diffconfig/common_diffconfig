@@ -156,6 +156,51 @@ CONFIG_TOUCHSCREEN_CLEARPAD_RMI_DEV=y
 CONFIG_LOCALVERSION="-Logos_I.1"
 CONFIG_LOCALVERSION_AUTO=n
 
+# Persistent store support
+CONFIG_PSTORE=y
+CONFIG_PSTORE_CONSOLE=y
+CONFIG_PSTORE_PMSG=y
+CONFIG_PSTORE_RAM=y
+
+# kswapd: limit it to the first 4 cores
+# by doing so also avoid an error/issue with vmscan
+CONFIG_KSWAPD_CPU_AFFINITY_MASK="f"
+
+# exfat opensource driver
+CONFIG_EXFAT_FS=y
+CONFIG_EXFAT_DEFAULT_CODEPAGE=437
+CONFIG_EXFAT_DEFAULT_IOCHARSET="utf8"
+# CONFIG_EXFAT_VIRTUAL_XATTR is not set
+CONFIG_EXFAT_DISCARD=y
+CONFIG_EXFAT_COMPAT_TUXERA=y
+# CONFIG_EXFAT_DEBUG is not set
+
+# eCrypt filesystem
+CONFIG_ECRYPT_FS=y
+CONFIG_WTL_ENCRYPTION_FILTER=y
+
+# Broadcom built-in bluetooth driver
+CONFIG_BT_PROTOCOL_DRIVER=m
+CONFIG_LINE_DISCIPLINE_DRIVER=m
+CONFIG_V4L2_ANT_DRIVER=m
+CONFIG_V4L2_FM_DRIVER=m
+
+# TCP Algorithms
+CONFIG_TCP_CONG_ADVANCED=y
+CONFIG_TCP_CONG_BIC=y
+CONFIG_TCP_CONG_CUBIC=y
+CONFIG_TCP_CONG_WESTWOOD=y
+CONFIG_TCP_CONG_HTCP=y
+CONFIG_TCP_CONG_HSTCP=y
+CONFIG_TCP_CONG_HYBLA=y
+CONFIG_TCP_CONG_VEGAS=y
+CONFIG_TCP_CONG_SCALABLE=y
+CONFIG_TCP_CONG_LP=y
+CONFIG_TCP_CONG_VENO=y
+CONFIG_TCP_CONG_YEAH=y
+CONFIG_TCP_CONG_ILLINOIS=y
+CONFIG_DEFAULT_WESTWOOD=y
+
 #
 # DEVFREQ Governors
 #
@@ -181,3 +226,18 @@ CONFIG_DEVFREQ_SPDM=y
 
 # Adreno-Idler
 CONFIG_ADRENO_IDLER=y
+
+# CMA, allocating framebuffer, etc. memory [CMA_SIZE_MBYTES 16 -> 32]
+CONFIG_CMA_SIZE_MBYTES=32
+
+# Enable Panic on data corruption, if there's data corruption we better
+# crash the system as soon as it occurs, otherwise the context is lost
+# to track the (potentially fixable) origin down, also it's a
+# surefire way to screw up the system anyway
+CONFIG_PANIC_ON_DATA_CORRUPTION=y
+
+# Disable MMC CMD debug feature
+# CONFIG_MMC_CMD_DEBUG is not set
+
+# Print scheduling debugging info from sysrq-trigger
+# CONFIG_SYSRQ_SCHED_DEBUG is not set
