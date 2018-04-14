@@ -241,3 +241,6 @@ CONFIG_PANIC_ON_DATA_CORRUPTION=y
 
 # Print scheduling debugging info from sysrq-trigger
 # CONFIG_SYSRQ_SCHED_DEBUG is not set
+
+# Misc
+CONFIG_AIO_SSD_ONLY=y
