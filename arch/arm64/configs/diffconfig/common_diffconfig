@@ -416,3 +416,9 @@ CONFIG_INPUT_EVDEV=y
 # disable Ultrasound
 #
 # CONFIG_MSM_ULTRASOUND is not set
+
+# disable support for Field firmware updates (FFU)
+# there's not subsequent updates from Sony anymore
+# keep it off [attack surface & issues, etc.]
+#
+# CONFIG_MMC_FFU is not set
