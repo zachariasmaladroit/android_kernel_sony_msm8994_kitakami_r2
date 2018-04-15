@@ -67,6 +67,9 @@ then
 
 	# BCMDHD ("wlan")
 	cp drivers/net/wireless/bcmdhd/wlan.ko ../final_files/Z5_7.1.1_stock/modules/
+	
+	# ECRYPTFS
+	cp fs/ecryptfs/ecryptfs.ko ../final_files/Z5_7.1.1_stock/modules/
 
 	### Version number
 	echo -n "Enter version number: "
