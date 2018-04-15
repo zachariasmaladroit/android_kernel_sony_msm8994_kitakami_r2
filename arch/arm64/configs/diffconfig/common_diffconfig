@@ -80,7 +80,7 @@ CONFIG_TOUCHSCREEN_CLEARPAD=y
 # CONFIG_USB_CI13XXX_MSM is not set
 # CONFIG_USB_GADGET_DEBUG_FS is not set
 CONFIG_USB_HOST_EXTRA_NOTIFICATION=y
-CONFIG_USB_MIRRORLINK=y
+
 # CONFIG_USB_MON is not set
 # CONFIG_USB_STORAGE_ALAUDA is not set
 # CONFIG_USB_STORAGE_CYPRESS_ATACB is not set
@@ -264,8 +264,7 @@ CONFIG_INPUT_GPIO=m
 CONFIG_DVB_MPQ=m
 CONFIG_DVB_MPQ_DEMUX=m
 CONFIG_TSPP=m
-CONFIG_MOBICORE_SUPPORT=m
-CONFIG_MOBICORE_API=m
+
 CONFIG_CRYPTO_ANSI_CPRNG=m
 
 # MHL SII8620 and SII8061 support (Sony Stock ROM: build as module, Makefile hack)
@@ -307,3 +306,8 @@ CONFIG_CC_STACKPROTECTOR_REGULAR=y
 # needs additional patches to cut down latency & other issues
 CONFIG_PM_WAKELOCKS_GC=y
 # CONFIG_WQ_POWER_EFFICIENT_DEFAULT is not set
+
+# let's temporarily disable Mirrorlink & MobiCore [boot bringup, stability, etc. testing]
+# CONFIG_USB_MIRRORLINK is not set
+# CONFIG_MOBICORE_SUPPORT is not set
+# CONFIG_MOBICORE_API is not set
