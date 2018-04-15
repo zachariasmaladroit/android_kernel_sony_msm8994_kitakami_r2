@@ -156,6 +156,9 @@ CONFIG_TOUCHSCREEN_CLEARPAD_RMI_DEV=y
 CONFIG_LOCALVERSION="-32.4.A.1.54_Logos_I.1_2_3"
 CONFIG_LOCALVERSION_AUTO=n
 
+# bigger buffer for dmesg - default one is too small to get meaningful data
+CONFIG_OOPS_LOG_BUF_SHIFT=17
+
 CONFIG_NLS_CODEPAGE_852=y
 CONFIG_NLS_ISO8859_15=y
 
@@ -259,6 +262,9 @@ CONFIG_CMA_SIZE_MBYTES=32
 # surefire way to screw up the system anyway
 CONFIG_PANIC_ON_DATA_CORRUPTION=y
 
+# watchdog related setup, prefer bark over panicking instantly
+# CONFIG_MSM_FORCE_PANIC_ON_WDOG_BARK is not set
+
 # Disable MMC CMD debug feature
 # CONFIG_MMC_CMD_DEBUG is not set
 
@@ -356,3 +362,16 @@ CONFIG_PM_WAKELOCKS_GC=y
 # be chosen to be the active I/O scheduler.
 #
 # CONFIG_SCSI_UFS_TEST is not set
+
+# "enables malware protection component to log on-device software API activity"
+# costs performance, perhaps drains battery and other things
+# does this daemon even run ? or is it already deprecated and cruft ?!
+# CONFIG_SEEMP_CORE is not set
+
+# disable support for printing out the last state upon modem failure
+# (sensitive data, also: non-Stock ROM, thus useless)
+# CONFIG_AMSS_ERR_LOG is not set
+
+# Sensors (SSC), needed for adaptive (automagic) brightness
+# CONFIG_SENSORS is not set
+# CONFIG_SENSORS_SSC is not set
