@@ -202,7 +202,7 @@ CONFIG_EXFAT_COMPAT_TUXERA=y
 # CONFIG_EXFAT_DEBUG is not set
 
 # eCrypt filesystem
-CONFIG_ECRYPT_FS=y
+CONFIG_ECRYPT_FS=m
 CONFIG_WTL_ENCRYPTION_FILTER=y
 
 # Broadcom built-in bluetooth driver
@@ -375,3 +375,9 @@ CONFIG_PM_WAKELOCKS_GC=y
 # Sensors (SSC), needed for adaptive (automagic) brightness
 # CONFIG_SENSORS is not set
 # CONFIG_SENSORS_SSC is not set
+
+# Webcam devices
+# disable GSPCA external module drivers
+# 
+# CONFIG_USB_VIDEO_CLASS is not set
+# CONFIG_USB_GSPCA is not set
