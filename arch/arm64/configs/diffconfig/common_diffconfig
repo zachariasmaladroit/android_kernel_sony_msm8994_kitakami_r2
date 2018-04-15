@@ -362,6 +362,7 @@ CONFIG_PM_WAKELOCKS_GC=y
 # be chosen to be the active I/O scheduler.
 #
 # CONFIG_SCSI_UFS_TEST is not set
+# CONFIG_IOSCHED_TEST is not set
 
 # "enables malware protection component to log on-device software API activity"
 # costs performance, perhaps drains battery and other things
