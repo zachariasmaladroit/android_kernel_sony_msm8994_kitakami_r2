@@ -172,6 +172,16 @@ CONFIG_ARCH_THREAD_INFO_ALLOCATOR=y
 
 CONFIG_STRICT_MEMORY_RWX=y
 
+# KSM related stuff
+# CONFIG_KSM is not set
+
+# MEMCG related stuff
+CONFIG_MEMCG=y
+# CONFIG_MEMCG_KMEM is not set
+CONFIG_MEMCG_SWAP=y
+CONFIG_MEMCG_SWAP_ENABLED=y
+CONFIG_MM_OWNER=y
+
 # kswapd: limit it to the first 4 cores
 # by doing so also avoid an error/issue with vmscan
 CONFIG_KSWAPD_CPU_AFFINITY_MASK="f"
@@ -306,6 +316,9 @@ CONFIG_CC_STACKPROTECTOR_REGULAR=y
 # needs additional patches to cut down latency & other issues
 CONFIG_PM_WAKELOCKS_GC=y
 # CONFIG_WQ_POWER_EFFICIENT_DEFAULT is not set
+
+# CONFIG_CNSS is not set
+# CONFIG_CNSS_PCI is not set
 
 # let's temporarily disable Mirrorlink & MobiCore [boot bringup, stability, etc. testing]
 # CONFIG_USB_MIRRORLINK is not set
