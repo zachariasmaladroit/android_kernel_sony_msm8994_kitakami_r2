@@ -381,3 +381,25 @@ CONFIG_PM_WAKELOCKS_GC=y
 # 
 # CONFIG_USB_VIDEO_CLASS is not set
 # CONFIG_USB_GSPCA is not set
+
+# Disable /dev/port access "should not be used when PCI is being used"
+# On arm64 systems, using /dev/port does not really make sense; this is
+# historically used for other architectures to access ISA IO ports, which
+# with any luck do not exist on arm64 platforms.  With the following snippet
+# of perl code (from Jeff Bastian <jbastian@redhat.com>), we can reliably
+# panic an arm64 system with PCI enabled:
+#
+	#!/usr/bin/perl -w
+	# extracted from sensors-detect from lm_sensors
+	# to reproduce kernel crash when probing the
+	# Super-I/O ports
+#	use Fcntl qw(:DEFAULT :seek);
+#	sysopen(IOPORTS, "/dev/port", O_RDWR);
+#	binmode(IOPORTS);
+#	sysseek(IOPORTS, 0x2e, 0);
+#	syswrite(IOPORTS, pack("C", 0x0d), 1);
+#
+#So, make sure CONFIG_DEVPORT cannot be set on arm64; it cannot really be
+# used and it allows us to crash a kernel from user space.
+#
+# CONFIG_DEVPORT is not set
