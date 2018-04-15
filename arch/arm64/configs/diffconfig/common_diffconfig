@@ -157,7 +157,7 @@ CONFIG_LOCALVERSION="-32.4.A.1.54_Logos_I.1_2_4"
 CONFIG_LOCALVERSION_AUTO=n
 
 # bigger buffer for dmesg - default one is too small to get meaningful data
-CONFIG_LOG_BUF_SHIFT=20
+CONFIG_LOG_BUF_SHIFT=21
 CONFIG_OOPS_LOG_BUF_SHIFT=19
 
 CONFIG_NLS_CODEPAGE_852=y
