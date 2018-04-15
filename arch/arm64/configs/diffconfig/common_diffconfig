@@ -324,3 +324,35 @@ CONFIG_PM_WAKELOCKS_GC=y
 # CONFIG_USB_MIRRORLINK is not set
 # CONFIG_MOBICORE_SUPPORT is not set
 # CONFIG_MOBICORE_API is not set
+
+# disable 32bit support / ARMv7 cruft
+# CONFIG_ARMV7_COMPAT is not set
+# CONFIG_SWP_EMULATE is not set
+
+# disable unsupported, old, unnecessary stuff
+# disable CONFIG_PFT as it is unsupported [vulnerability, SELinux compromised]
+# Disable the drivers/platform/msm/pft.c driver as it is unsupported by
+# Qualcomm, and opens us up to a wide range of potential attack surfaces
+# that has not been audited by anyone.
+# 
+# Qualcomm recommends that it be disabled, as it hooks into SELinux in
+# some "interesting" ways, and the userspace portion of the code is not
+# even part of the image.
+#
+# CONFIG_PFT is not set
+
+# disable MMC test [data loss, vulnerability]
+# Development driver that performs a series of reads and writes to a memory card in order to expose
+# certain well known bugs in host controllers. The tests are executed by writing to the "test" file
+# in debugfs under each card. Note that whatever is on your card will be overwritten by these tests.
+# 
+# CONFIG_MMC_TEST is not set
+# CONFIG_MMC_BLOCK_TEST is not set
+
+# disable SCSI UFS test driver
+# This adds UFS Host controller unit-test framework.
+# The UFS unit-tests register as a block device test utility to
+# the test-iosched and will be initiated when the test-iosched will
+# be chosen to be the active I/O scheduler.
+#
+# CONFIG_SCSI_UFS_TEST is not set
