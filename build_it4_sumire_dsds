@@ -45,11 +45,11 @@ then
 	# add additional modules
 	cp drivers/media/platform/msm/broadcast/tspp.ko ../final_files/Z5_7.1.1_stock/modules/
 	cp drivers/media/usb/gspca/gspca_main.ko ../final_files/Z5_7.1.1_stock/modules/
-	cp drivers/net/wireless/ath/wil6210/wil6210.ko ../final_files/Z5_7.1.1_stock/modules/
+#	cp drivers/net/wireless/ath/wil6210/wil6210.ko ../final_files/Z5_7.1.1_stock/modules/
 	
 	# Mobicore
-	cp drivers/gud/mcDrvModule.ko ../final_files/Z5_7.1.1_stock/modules/
-	cp drivers/gud/mcKernelApi.ko ../final_files/Z5_7.1.1_stock/modules/
+#	cp drivers/gud/mcDrvModule.ko ../final_files/Z5_7.1.1_stock/modules/
+#	cp drivers/gud/mcKernelApi.ko ../final_files/Z5_7.1.1_stock/modules/
 	
 	# drivers/input/misc/gpio*
 	cp drivers/input/misc/gpio_axis.ko ../final_files/Z5_7.1.1_stock/modules/
