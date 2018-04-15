@@ -411,3 +411,6 @@ CONFIG_INPUT_EVDEV=y
 # CONFIG_INPUT_KEYRESET is not set
 # CONFIG_INPUT_KEYCOMBO is not set
 
+# disable Ultrasound
+#
+# CONFIG_MSM_ULTRASOUND is not set
