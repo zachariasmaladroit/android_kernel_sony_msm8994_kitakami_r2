@@ -318,6 +318,9 @@ CONFIG_CC_STACKPROTECTOR_REGULAR=y
 # http://man7.org/linux/man-pages/man1/dpkg-buildflags.1.html
 # CONFIG_CC_STACKPROTECTOR_STRONG is not set
 
+# SLUB debugging, SLUB allocator validation checking
+CONFIG_SLUB_DEBUG=y
+
 # needs additional patches to cut down latency & other issues
 CONFIG_PM_WAKELOCKS_GC=y
 # CONFIG_WQ_POWER_EFFICIENT_DEFAULT is not set
