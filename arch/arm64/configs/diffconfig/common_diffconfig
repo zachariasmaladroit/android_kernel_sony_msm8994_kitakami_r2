@@ -443,3 +443,8 @@ CONFIG_CRYPTO_ANSI_CPRNG=m
 # also disable it in config for good measure
 #
 # CONFIG_TIMER_STATS is not set
+
+# "fly bitch!"
+# disable optimization for size, requires proper aligning to avoid
+# speed regression (?): -falign-functions=16 -falign-loops=16
+# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
