@@ -388,6 +388,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -march=armv8-a+crc+crypto \
 		   -fsplit-paths -fstore-merging -fsplit-loops \
 		   -fno-align-functions -fno-align-loops \
+		   -fcode-hoisting \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
 #		   
 # GCC 7.x compiler issues:
