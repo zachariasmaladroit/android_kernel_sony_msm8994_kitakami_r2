@@ -443,3 +443,9 @@ CONFIG_CRYPTO_ANSI_CPRNG=m
 # also disable it in config for good measure
 #
 # CONFIG_TIMER_STATS is not set
+
+# Android (/ OS) IPC
+# disable SYSVIPC since it's not used in Android - at all and can be abused
+# causing the system to crash and other malicious attack surfaces
+#
+# CONFIG_SYSVIPC is not set
