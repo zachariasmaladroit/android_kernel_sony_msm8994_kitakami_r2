@@ -44,7 +44,7 @@ then
 
 	# crypto modules:
 	# Sony Mobile FIPS AES-XTS/AES-CBC Driver
-	cp drivers/crypto/kscl.ko ../final_files/Z5_7.1.1_stock/modules/
+#	cp drivers/crypto/kscl.ko ../final_files/Z5_7.1.1_stock/modules/
 	# ANSI Pseudo Random Number Generator
 	cp crypto/ansi_cprng.ko ../final_files/Z5_7.1.1_stock/modules/
 
