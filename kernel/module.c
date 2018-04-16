@@ -1168,14 +1168,6 @@ static int check_version(Elf_Shdr *sechdrs,
 	unsigned int i, num_versions;
 	struct modversion_info *versions;
 
-/* proprietary , closed source (invisibly-loaded) fips modules */
-	if(!strncmp("qdrbg_module", mod->name, 12))
-		return 0;
-
-	if(!strncmp("qcrypto_module", mod->name, 14))
-		return 0;
-/* end proprietary msm , fips crypto modules */
-
 /* proprietary tuxera texfat replaced by in-kernel opensource exfat */
 	if(!strncmp("texfat", mod->name, 6))
 		return 0;
