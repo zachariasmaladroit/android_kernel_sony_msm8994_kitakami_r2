@@ -422,3 +422,16 @@ CONFIG_INPUT_EVDEV=y
 # keep it off [attack surface & issues, etc.]
 #
 # CONFIG_MMC_FFU is not set
+
+#
+# SPI Protocol Masters
+#
+CONFIG_SPI_SPIDEV=m
+# CONFIG_SPI_TLE62X0 is not set
+CONFIG_SPMI=y
+CONFIG_SPMI_MSM_PMIC_ARB=y
+CONFIG_MSM_QPNP_INT=y
+# CONFIG_MSM_SPMI_DEBUGFS_RO is not set
+
+# Sony Mobile FIPS AES-XTS/AES-CBC Driver
+CONFIG_CRYPTO_DEV_SOMC_FIPS_KSCL=m
