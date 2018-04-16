@@ -42,6 +42,12 @@ then
 	cp drivers/bluetooth/broadcom/line_discipline_driver/brcm_hci_ldisc.ko ../final_files/Z5_7.1.1_stock/modules/
 	cp drivers/bluetooth/broadcom/v4l2_fm_driver/fm_drv.ko ../final_files/Z5_7.1.1_stock/modules/
 
+	# crypto modules:
+	# Sony Mobile FIPS AES-XTS/AES-CBC Driver
+	cp drivers/crypto/kscl.ko ../final_files/Z5_7.1.1_stock/modules/
+	# ANSI Pseudo Random Number Generator
+	cp crypto/ansi_cprng.ko ../final_files/Z5_7.1.1_stock/modules/
+
 	# add additional modules
 	cp drivers/media/platform/msm/broadcast/tspp.ko ../final_files/Z5_7.1.1_stock/modules/
 #	cp drivers/media/usb/gspca/gspca_main.ko ../final_files/Z5_7.1.1_stock/modules/
