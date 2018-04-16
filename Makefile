@@ -384,12 +384,13 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fisolate-erroneous-paths-dereference \
 		   -fno-pic \
 		   -fivopts \
-		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
 		   -mtune=cortex-a53 \
 		   -march=armv8-a+crc+crypto \
+		   -fsplit-paths -fstore-merging -fsplit-loops \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
 #		   
-#		   
+# GCC 7.x compiler issues:
+# 		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
 #
 #		   -fno-delete-null-pointer-checks \
 #		   -std=gnu89 \
