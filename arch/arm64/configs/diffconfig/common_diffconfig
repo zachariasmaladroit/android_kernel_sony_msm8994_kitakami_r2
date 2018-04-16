@@ -320,6 +320,7 @@ CONFIG_CC_STACKPROTECTOR_REGULAR=y
 
 # SLUB debugging, SLUB allocator validation checking
 CONFIG_SLUB_DEBUG=y
+CONFIG_SLUB_DEBUG_ON=y
 
 # needs additional patches to cut down latency & other issues
 CONFIG_PM_WAKELOCKS_GC=y
