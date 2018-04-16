@@ -458,6 +458,9 @@ CONFIG_CRYPTO_ANSI_CPRNG=m
 # CONFIG_ARCH_MSM8992 is not set
 # CONFIG_RADIO_SILABS is not set
 
+# disable unnecessary config entries:
+# CONFIG_MSM_SMD_DEBUG is not set
+
 # CPU Frequency scaling
 #
 CONFIG_CPU_FREQ=y
