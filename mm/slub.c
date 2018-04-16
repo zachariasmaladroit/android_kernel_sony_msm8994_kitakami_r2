@@ -1186,6 +1186,7 @@ static int __init setup_slub_debug(char *str)
 		case 'p':
 			slub_debug |= SLAB_POISON;
 			break;
+/*
 		case 'u':
 			slub_debug |= SLAB_STORE_USER;
 			break;
@@ -1195,6 +1196,7 @@ static int __init setup_slub_debug(char *str)
 		case 'a':
 			slub_debug |= SLAB_FAILSLAB;
 			break;
+*/
 		default:
 			printk(KERN_ERR "slub_debug option '%c' "
 				"unknown. skipped\n", *str);
