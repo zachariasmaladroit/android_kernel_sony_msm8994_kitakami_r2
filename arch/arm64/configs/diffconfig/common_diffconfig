@@ -461,6 +461,16 @@ CONFIG_CRYPTO_ANSI_CPRNG=m
 # disable unnecessary config entries:
 # CONFIG_MSM_SMD_DEBUG is not set
 
+# printk: disable the console flush in hotplug path
+#
+# The thread which initiates the hot plug can get scheduled
+# out, while trying to acquire the console lock,
+# thus increasing the hot plug latency. This option
+# allows to selectively disable the console flush and
+# in turn reduce the hot plug latency.
+#
+# CONFIG_CONSOLE_FLUSH_ON_HOTPLUG
+
 # CPU Frequency scaling
 #
 CONFIG_CPU_FREQ=y
@@ -485,4 +495,3 @@ CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
 
 # Enable CPUBOOST explicitly, we might disable this later
 CONFIG_CPU_BOOST=y
-
