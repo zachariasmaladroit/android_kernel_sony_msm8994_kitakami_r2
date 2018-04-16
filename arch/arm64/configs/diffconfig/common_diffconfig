@@ -449,3 +449,6 @@ CONFIG_CRYPTO_ANSI_CPRNG=m
 # causing the system to crash and other malicious attack surfaces
 #
 # CONFIG_SYSVIPC is not set
+
+# disable non-matching config entries & settings:
+# CONFIG_ARCH_MSM8992 is not set
