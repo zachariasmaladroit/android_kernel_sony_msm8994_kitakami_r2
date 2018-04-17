@@ -494,7 +494,9 @@ CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
 # CONFIG_GENERIC_CPUFREQ_CPU0 is not set
 
 # Enable CPUBOOST explicitly, we might disable this later
-CONFIG_CPU_BOOST=y
+#
+# disable this for EAS kernels
+# CONFIG_CPU_BOOST is not set
 
 # EAS
 CONFIG_SCHED_TUNE=y
