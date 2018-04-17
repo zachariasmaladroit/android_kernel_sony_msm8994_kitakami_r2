@@ -495,7 +495,7 @@ CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
 
 # Enable CPUBOOST explicitly, we might disable this later
 #
-# disable this for EAS kernels
+# disable this for EAS kernels (only useful on HMP kernels)
 # CONFIG_CPU_BOOST is not set
 
 # EAS
