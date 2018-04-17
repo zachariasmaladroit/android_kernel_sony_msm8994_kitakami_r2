@@ -517,10 +517,6 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 		if (tsk->flags & PF_KTHREAD)
 			continue;
 
-		/* if task no longer has any memory ignore it */
-		if (test_task_flag(tsk, TIF_MM_RELEASED))
-			continue;
-
 		/* Ignore task if coredump in progress */
 		if (tsk->mm && tsk->mm->core_state)
 			continue;
@@ -622,13 +618,10 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 		msleep_interruptible(20);
 		trace_almk_shrink(selected_tasksize, ret,
 			other_free, other_file, selected_oom_score_adj);
-	} else {
-		trace_almk_shrink(1, ret, other_free, other_file, 0);
-		rcu_read_unlock();
 	}
-
 	lowmem_print(4, "lowmem_shrink %lu, %x, return %d\n",
 		     nr_to_scan, sc->gfp_mask, rem);
+	rcu_read_unlock();
 	mutex_unlock(&scan_mutex);
 	trace_lmk_remain_scan(rem, nr_to_scan, sc->gfp_mask);
 	return rem;
