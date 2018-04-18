@@ -239,10 +239,10 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 	  else if [ -x /bin/bash ]; then echo /bin/bash; \
 	  else echo sh; fi ; fi)
 
-#CCACHE := $(shell which ccache)
+CCACHE := $(shell which ccache)
 
-HOSTCC       = gcc
-HOSTCXX      = g++
+HOSTCC       = $(CCACHE) gcc
+HOSTCXX      = $(CCACHE) g++
 HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -Os -fomit-frame-pointer -std=gnu89
 HOSTCXXFLAGS = -Os -pipe -std=gnu89 $(call cc-option,-fno-PIE)
 
