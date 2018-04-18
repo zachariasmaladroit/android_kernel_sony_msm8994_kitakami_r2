@@ -369,7 +369,9 @@ CONFIG_MOBICORE_API=m
 # "enables malware protection component to log on-device software API activity"
 # costs performance, perhaps drains battery and other things
 # does this daemon even run ? or is it already deprecated and cruft ?!
-# CONFIG_SEEMP_CORE is not set
+#
+#updated sauce - re-enable:
+CONFIG_SEEMP_CORE=y
 
 # disable support for printing out the last state upon modem failure
 # (sensitive data, also: non-Stock ROM, thus useless)
