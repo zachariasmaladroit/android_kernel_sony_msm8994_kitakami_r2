@@ -386,11 +386,9 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fivopts \
 		   -mtune=cortex-a53 \
 		   -march=armv8-a+crc+crypto \
+		   -fsplit-paths -fstore-merging -fsplit-loops \
+		   -fcode-hoisting \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
-#
-# production kernel performance enhancement flags (eval battery, stability)
-#		   -fsplit-paths -fstore-merging -fsplit-loops \
-#		   -fcode-hoisting \
 #		   
 # GCC 7.x compiler issues:
 # 		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
