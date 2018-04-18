@@ -329,9 +329,9 @@ CONFIG_PM_WAKELOCKS_GC=y
 # CONFIG_CNSS_PCI is not set
 
 # let's temporarily disable Mirrorlink & MobiCore [boot bringup, stability, etc. testing]
-# CONFIG_USB_MIRRORLINK is not set
-# CONFIG_MOBICORE_SUPPORT is not set
-# CONFIG_MOBICORE_API is not set
+CONFIG_USB_MIRRORLINK=y
+CONFIG_MOBICORE_SUPPORT=m
+CONFIG_MOBICORE_API=m
 
 # disable 32bit support / ARMv7 cruft
 # CONFIG_ARMV7_COMPAT is not set
