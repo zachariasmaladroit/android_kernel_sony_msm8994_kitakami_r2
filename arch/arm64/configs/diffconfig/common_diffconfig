@@ -186,6 +186,10 @@ CONFIG_MEMCG_SWAP=y
 CONFIG_MEMCG_SWAP_ENABLED=y
 CONFIG_MM_OWNER=y
 
+# LMK TNG + LMK Statistics + OOM score notifier
+CONFIG_ANDROID_LOW_MEMORY_KILLER=y
+CONFIG_ANDROID_LOW_MEMORY_KILLER_TNG=y
+
 # kswapd: limit it to the first 4 cores
 # by doing so also avoid an error/issue with vmscan
 CONFIG_KSWAPD_CPU_AFFINITY_MASK="f"
