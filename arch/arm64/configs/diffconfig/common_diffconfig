@@ -499,3 +499,8 @@ CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
 
 # Enable CPUBOOST explicitly, we might disable this later
 CONFIG_CPU_BOOST=y
+
+# ZRAM and related config entries
+CONFIG_ZRAM=y
+CONFIG_ZRAM_LZ4_COMPRESS=y
+# CONFIG_ZRAM_DEBUG is not set # commented out by default
