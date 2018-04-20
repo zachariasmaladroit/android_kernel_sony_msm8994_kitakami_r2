@@ -463,6 +463,15 @@ CONFIG_CRYPTO_ANSI_CPRNG=m
 # CONFIG_MSM_RTB_SEPARATE_CPUS is not set
 # CONFIG_MSM_TZ_LOG is not set
 
+# Debugging & other programmers' & developers' aids
+#
+CONFIG_HAVE_DEBUG_BUGVERBOSE=y
+CONFIG_DEBUG_BUGVERBOSE=y
+CONFIG_DEBUG_INFO=y
+# CoreDump & logcat usefulness
+CONFIG_ELF_CORE=y
+CONFIG_SCHEDSTATS=y
+CONFIG_SCHED_DEBUG=y
 
 # disable non-matching config entries & settings:
 # CONFIG_ARCH_MSM8992 is not set
