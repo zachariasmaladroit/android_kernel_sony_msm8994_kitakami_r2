@@ -90,7 +90,7 @@ then
 		### Zip boot.img
 		cd ../final_files/Z5_7.1.1_stock/
 		mv boot_E6653.img boot.img
-		zip -r Z5_SK_ENF_v.zip boot.img modules/ META-INF/
+		zip -r Z5_SK_ENF_v.zip boot.img modules/ META-INF/ etc/
 		rm -f boot.img
 
 		echo " "
