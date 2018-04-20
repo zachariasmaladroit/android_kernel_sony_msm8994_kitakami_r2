@@ -518,3 +518,9 @@ CONFIG_ZSMALLOC=y
 # this is mutually exclusive with zram
 #
 CONFIG_PROCESS_RECLAIM=y
+
+# dynamic fsync: 
+# While screen is on, file sync is suspended.
+# When screen is off, a file sync is called to flush all outstanding writes
+# and restore file sync operation as normal.
+CONFIG_DYNAMIC_FSYNC=y
