@@ -510,7 +510,7 @@ CONFIG_LZ4_DECOMPRESS=y
 
 CONFIG_Z3FOLD=y
 CONFIG_ZPOOL=y
-# CONFIG_ZSMALLOC is not set
+CONFIG_ZSMALLOC=y
 # CONFIG_PGTABLE_MAPPING is not set # commented out by default
 # CONFIG_ZSMALLOC_STAT is not set # commented out by default
 
