@@ -1792,7 +1792,7 @@ SYSCALL_DEFINE4(epoll_ctl, int, epfd, int, op, int, fd,
 {
 	int error;
 	int did_lock_epmutex = 0;
-	struct fd f, tf;
+	struct file *file, *tfile;
 	struct eventpoll *ep;
 	struct epitem *epi;
 	struct epoll_event epds;
@@ -1803,19 +1803,20 @@ SYSCALL_DEFINE4(epoll_ctl, int, epfd, int, op, int, fd,
 	    copy_from_user(&epds, event, sizeof(struct epoll_event)))
 		goto error_return;
 
+	/* Get the "struct file *" for the eventpoll file */
 	error = -EBADF;
-	f = fdget(epfd);
-	if (!f.file)
+	file = fget(epfd);
+	if (!file)
 		goto error_return;
 
 	/* Get the "struct file *" for the target file */
-	tf = fdget(fd);
-	if (!tf.file)
+	tfile = fget(fd);
+	if (!tfile)
 		goto error_fput;
 
 	/* The target file descriptor must support poll */
 	error = -EPERM;
-	if (!tf.file->f_op || !tf.file->f_op->poll)
+	if (!tfile->f_op || !tfile->f_op->poll)
 		goto error_tgt_fput;
 
 	/* Check if EPOLLWAKEUP is allowed */
@@ -1828,14 +1829,14 @@ SYSCALL_DEFINE4(epoll_ctl, int, epfd, int, op, int, fd,
 	 * adding an epoll file descriptor inside itself.
 	 */
 	error = -EINVAL;
-	if (f.file == tf.file || !is_file_epoll(f.file))
+	if (file == tfile || !is_file_epoll(file))
 		goto error_tgt_fput;
 
 	/*
 	 * At this point it is safe to assume that the "private_data" contains
 	 * our own data structure.
 	 */
-	ep = f.file->private_data;
+	ep = file->private_data;
 
 	/*
 	 * When we insert an epoll file descriptor, inside another epoll file
@@ -1854,14 +1855,14 @@ SYSCALL_DEFINE4(epoll_ctl, int, epfd, int, op, int, fd,
 		did_lock_epmutex = 1;
 	}
 	if (op == EPOLL_CTL_ADD) {
-		if (is_file_epoll(tf.file)) {
+		if (is_file_epoll(tfile)) {
 			error = -ELOOP;
-			if (ep_loop_check(ep, tf.file) != 0) {
+			if (ep_loop_check(ep, tfile) != 0) {
 				clear_tfile_check_list();
 				goto error_tgt_fput;
 			}
 		} else
-			list_add(&tf.file->f_tfile_llink, &tfile_check_list);
+			list_add(&tfile->f_tfile_llink, &tfile_check_list);
 	}
 
 	mutex_lock_nested(&ep->mtx, 0);
@@ -1871,14 +1872,14 @@ SYSCALL_DEFINE4(epoll_ctl, int, epfd, int, op, int, fd,
 	 * above, we can be sure to be able to use the item looked up by
 	 * ep_find() till we release the mutex.
 	 */
-	epi = ep_find(ep, tf.file, fd);
+	epi = ep_find(ep, tfile, fd);
 
 	error = -EINVAL;
 	switch (op) {
 	case EPOLL_CTL_ADD:
 		if (!epi) {
 			epds.events |= POLLERR | POLLHUP;
-			error = ep_insert(ep, &epds, tf.file, fd);
+			error = ep_insert(ep, &epds, tfile, fd);
 		} else
 			error = -EEXIST;
 		clear_tfile_check_list();
@@ -1903,9 +1904,9 @@ error_tgt_fput:
 	if (did_lock_epmutex)
 		mutex_unlock(&epmutex);
 
-	fdput(tf);
+	fput(tfile);
 error_fput:
-	fdput(f);
+	fput(file);
 error_return:
 
 	return error;
