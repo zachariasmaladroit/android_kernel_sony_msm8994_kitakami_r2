@@ -1172,6 +1172,10 @@ static int check_version(Elf_Shdr *sechdrs,
 	if(!strncmp("texfat", mod->name, 6))
 		return 0;
 
+/* CORE_CTL */
+	if(!strncmp("core_ctl", mod->name, 8))
+		return 0;
+
 /* MobiCore */
 //	if(!strncmp("mcDrvModule", mod->name, 11))
 //		return 0;
