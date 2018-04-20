@@ -64,7 +64,7 @@ CONFIG_SECURITYFS=y
 CONFIG_SECURITY_SELINUX_AVC_EXTRA_INFO=y
 CONFIG_SECURITY_SELINUX_BOOTPARAM=y
 CONFIG_SECURITY_SELINUX_TRAP=y
-CONFIG_SECURITY_SONY_RIC=y
+
 CONFIG_SERIAL_MSM_HSL=y
 CONFIG_SIM_DETECT=y
 CONFIG_SOMC_LCD_OCP_ENABLED=y
@@ -552,3 +552,8 @@ CONFIG_CPU_IDLE_GOV_MENU=y
 # helper to detect & communicate system status, needed by various features
 #
 CONFIG_STATE_NOTIFIER=y
+
+# Sony RIC
+# can this be disabled on Stock ROMs without adverse effects on functionality ?
+#
+CONFIG_SECURITY_SONY_RIC=y
