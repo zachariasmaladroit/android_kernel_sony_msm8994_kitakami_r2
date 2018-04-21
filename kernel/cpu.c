@@ -368,11 +368,13 @@ out_release:
 
 int __ref cpu_down(unsigned int cpu)
 {
+	const unsigned int blocked_cpus = 0xf;
 	int err;
 
 	/* kthreads require one little-cluster CPU to stay online */
-	if (!cpu)
+	if (blocked_cpus) {
 		return -EINVAL;
+	}
 
 	cpu_maps_update_begin();
 
