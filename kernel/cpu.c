@@ -370,8 +370,9 @@ int __ref cpu_down(unsigned int cpu)
 	int err;
 
 	/* kthreads require one little-cluster CPU to stay online */
-	if (!cpu)
+	if (little_cluster_cpus) {
 		return -EINVAL;
+	}
 
 	cpu_maps_update_begin();
 
