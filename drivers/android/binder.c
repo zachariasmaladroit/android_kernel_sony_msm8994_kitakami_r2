@@ -104,8 +104,8 @@ enum {
 	BINDER_DEBUG_PRIORITY_CAP           = 1U << 14,
 	BINDER_DEBUG_BUFFER_ALLOC_ASYNC     = 1U << 15,
 };
-static uint32_t binder_debug_mask;
-
+static uint32_t binder_debug_mask = BINDER_DEBUG_USER_ERROR |
+	BINDER_DEBUG_FAILED_TRANSACTION | BINDER_DEBUG_DEAD_TRANSACTION;
 module_param_named(debug_mask, binder_debug_mask, uint, S_IWUSR | S_IRUGO);
 
 static bool binder_debug_no_lock;
@@ -439,12 +439,12 @@ static void binder_set_nice(long nice)
 		set_user_nice(current, nice);
 		return;
 	}
-	min_nice = 20 - current->signal->rlim[RLIMIT_NICE].rlim_cur;
+	min_nice = rlimit_to_nice(current->signal->rlim[RLIMIT_NICE].rlim_cur);
 	binder_debug(BINDER_DEBUG_PRIORITY_CAP,
 		     "%d: nice value %ld not allowed use %ld instead\n",
 		      current->pid, nice, min_nice);
 	set_user_nice(current, min_nice);
-	if (min_nice < 20)
+	if (min_nice <= MAX_NICE)
 		return;
 	binder_user_error("%d RLIMIT_NICE not set\n", current->pid);
 }
@@ -585,7 +585,6 @@ static int binder_update_page_range(struct binder_proc *proc, int allocate,
 
 	for (page_addr = start; page_addr < end; page_addr += PAGE_SIZE) {
 		int ret;
-		struct page **page_array_ptr;
 
 		page = &proc->pages[(page_addr - proc->buffer) / PAGE_SIZE];
 
@@ -598,8 +597,7 @@ static int binder_update_page_range(struct binder_proc *proc, int allocate,
 		}
 		tmp_area.addr = page_addr;
 		tmp_area.size = PAGE_SIZE + PAGE_SIZE /* guard page? */;
-		page_array_ptr = page;
-		ret = map_vm_area(&tmp_area, PAGE_KERNEL, &page_array_ptr);
+		ret = map_vm_area(&tmp_area, PAGE_KERNEL, page);
 		if (ret) {
 			pr_err("%d: binder_alloc_buf failed to map page at %p in kernel\n",
 			       proc->pid, page_addr);
@@ -1133,9 +1131,8 @@ static int binder_inc_ref(struct binder_ref *ref, int strong,
 }
 
 
-static int binder_dec_ref(struct binder_ref **ptr_to_ref, int strong)
+static int binder_dec_ref(struct binder_ref *ref, int strong)
 {
-	struct binder_ref *ref = *ptr_to_ref;
 	if (strong) {
 		if (ref->strong == 0) {
 			binder_user_error("%d invalid dec strong, ref %d desc %d s %d w %d\n",
@@ -1160,10 +1157,8 @@ static int binder_dec_ref(struct binder_ref **ptr_to_ref, int strong)
 		}
 		ref->weak--;
 	}
-	if (ref->strong == 0 && ref->weak == 0) {
+	if (ref->strong == 0 && ref->weak == 0)
 		binder_delete_ref(ref);
-		*ptr_to_ref = NULL;
-	}
 	return 0;
 }
 
@@ -1296,7 +1291,7 @@ static void binder_transaction_buffer_release(struct binder_proc *proc,
 			binder_debug(BINDER_DEBUG_TRANSACTION,
 				     "        ref %d desc %d (node %d)\n",
 				     ref->debug_id, ref->desc, ref->node->debug_id);
-			binder_dec_ref(&ref, fp->type == BINDER_TYPE_HANDLE);
+			binder_dec_ref(ref, fp->type == BINDER_TYPE_HANDLE);
 		} break;
 
 		case BINDER_TYPE_FD:
@@ -1730,7 +1725,7 @@ err_no_context_mgr_node:
 		thread->return_error = return_error;
 }
 
-int binder_thread_write(struct binder_proc *proc,
+static int binder_thread_write(struct binder_proc *proc,
 			struct binder_thread *thread,
 			binder_uintptr_t binder_buffer, size_t size,
 			binder_size_t *consumed)
@@ -1789,26 +1784,19 @@ int binder_thread_write(struct binder_proc *proc,
 				break;
 			case BC_RELEASE:
 				debug_string = "Release";
-				binder_dec_ref(&ref, 1);
+				binder_dec_ref(ref, 1);
 				break;
 			case BC_DECREFS:
 			default:
 				debug_string = "DecRefs";
-				binder_dec_ref(&ref, 0);
+				binder_dec_ref(ref, 0);
 				break;
 			}
-		  if (ref == NULL) {
 			binder_debug(BINDER_DEBUG_USER_REFS,
-			  "binder: %d:%d %s ref deleted",
-			  proc->pid, thread->pid, debug_string);
-		  } else {
-			binder_debug(BINDER_DEBUG_USER_REFS,
-			  "binder: %d:%d %s ref %d desc %d s %d w %d for node %d\n",
-			  proc->pid, thread->pid, debug_string,
-			  ref->debug_id, ref->desc, ref->strong,
-			  ref->weak, ref->node->debug_id);
-		  }
-		  break;
+				     "%d:%d %s ref %d desc %d s %d w %d for node %d\n",
+				     proc->pid, thread->pid, debug_string, ref->debug_id,
+				     ref->desc, ref->strong, ref->weak, ref->node->debug_id);
+			break;
 		}
 		case BC_INCREFS_DONE:
 		case BC_ACQUIRE_DONE: {
