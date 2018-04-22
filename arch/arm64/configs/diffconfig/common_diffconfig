@@ -13,8 +13,7 @@ CONFIG_CIFS=y
 # CONFIG_CNSS is not set
 # CONFIG_CORESIGHT is not set
 CONFIG_CRASH_NOTES=y
-CONFIG_DEBUG_BUGVERBOSE=y
-CONFIG_DYNAMIC_DEBUG=y
+
 # CONFIG_EXT2_FS is not set
 # CONFIG_EXT3_FS is not set
 CONFIG_FB_MSM_LOGO=y
@@ -336,6 +335,34 @@ CONFIG_CC_STACKPROTECTOR_REGULAR=y
 #
 # CONFIG_COMPAT_BRK is not set
 
+# Assists heap memory attacks; best to keep interface disabled.
+# CONFIG_INET_DIAG is not set
+
+# Dangerous; allows direct kernel memory writing.
+# CONFIG_DEVKMEM is not set
+
+# Dangerous; allows replacement of running kernel.
+# CONFIG_KEXEC is not set
+
+# Easily confused by misconfigured userspace, keep off.
+# CONFIG_BINFMT_MISC is not set
+# We use the modern PTY interface (devpts) only.
+# CONFIG_LEGACY_PTYS is not set
+
+# Potential sandbox hardening for chrome & webview sandboxes
+CONFIG_NAMESPACES=y
+CONFIG_UTS_NS=y
+# CONFIG_USER_NS is not set
+CONFIG_PID_NS=y
+CONFIG_NET_NS=y
+#
+CONFIG_SECURITY_YAMA=y
+
+# seccomp-bpf
+CONFIG_HAVE_ARCH_SECCOMP_FILTER=y
+CONFIG_SECCOMP_FILTER=y
+CONFIG_SECCOMP=y
+
 # needs additional patches to cut down latency & other issues
 CONFIG_PM_WAKELOCKS_GC=y
 # CONFIG_WQ_POWER_EFFICIENT_DEFAULT is not set
@@ -480,10 +507,23 @@ CONFIG_CRYPTO_ANSI_CPRNG=m
 CONFIG_HAVE_DEBUG_BUGVERBOSE=y
 CONFIG_DEBUG_BUGVERBOSE=y
 CONFIG_DEBUG_INFO=y
+CONFIG_DEBUG_INFO_REDUCED=y
+# CONFIG_DYNAMIC_DEBUG is not set
 # CoreDump & logcat usefulness
 CONFIG_ELF_CORE=y
 CONFIG_SCHEDSTATS=y
 CONFIG_SCHED_DEBUG=y
+# Default off:
+# CONFIG_DEBUG_VM is not set
+# CONFIG_DEBUG_WRITECOUNT is not set
+# CONFIG_DEBUG_MEMORY_INIT is not set
+# CONFIG_DEBUG_LIST is not set
+# CONFIG_TEST_LIST_SORT is not set
+# CONFIG_DEBUG_SG is not set
+# CONFIG_DEBUG_NOTIFIERS is not set
+
+# Perform additional validation of credentials.
+CONFIG_DEBUG_CREDENTIALS=y
 
 # disable non-matching config entries & settings:
 # CONFIG_ARCH_MSM8992 is not set
