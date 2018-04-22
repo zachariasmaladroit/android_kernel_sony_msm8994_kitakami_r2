@@ -633,6 +633,14 @@ CONFIG_STATE_NOTIFIER=y
 #
 # CONFIG_SECURITY_SONY_RIC is not set
 
+# DM VERITY
+# not really compatible with a modded & customized Sony Stock ROM, kernel, etc. (?)
+#
+# CONFIG_DM_VERITY is not set
+#
+# the following might be useful for dm_crypt, thus encryption though (?)
+# CONFIG_DM_BUFIO is not set
+
 # Add WireGuard
 # WireGuard is an extremely simple yet fast and modern VPN that utilizes
 # state-of-the-art cryptography. It aims to be faster, simpler, leaner,
