@@ -548,7 +548,7 @@ CONFIG_ZSMALLOC=y
 # PER-PROCESS RECLAIM
 # this is mutually exclusive with zram
 #
-CONFIG_PROCESS_RECLAIM=y
+# CONFIG_PROCESS_RECLAIM is not set
 
 # dynamic fsync: 
 # While screen is on, file sync is suspended.
