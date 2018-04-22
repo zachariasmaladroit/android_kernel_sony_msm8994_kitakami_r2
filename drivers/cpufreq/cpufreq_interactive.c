@@ -438,9 +438,6 @@ static u64 update_load(int cpu)
 	return now;
 }
 
-static int max_local_load = 100;
-module_param(max_local_load, int, 0644);
-
 static void __cpufreq_interactive_timer(unsigned long data, bool is_notif)
 {
 	u64 now;
