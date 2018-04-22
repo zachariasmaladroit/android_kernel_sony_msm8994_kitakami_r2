@@ -632,3 +632,14 @@ CONFIG_STATE_NOTIFIER=y
 # can this be disabled on Stock ROMs without adverse effects on functionality ?
 #
 # CONFIG_SECURITY_SONY_RIC is not set
+
+# Add WireGuard
+# WireGuard is an extremely simple yet fast and modern VPN that utilizes
+# state-of-the-art cryptography. It aims to be faster, simpler, leaner,
+# and more useful than IPSec, while avoiding the massive headache.
+# It intends to be considerably more performant than OpenVPN.
+# WireGuard is designed as a general purpose VPN for VPN for running on
+# embedded interfaces and super computers alike, fit for many different
+# circumstances.
+#
+CONFIG_WIREGUARD=y
