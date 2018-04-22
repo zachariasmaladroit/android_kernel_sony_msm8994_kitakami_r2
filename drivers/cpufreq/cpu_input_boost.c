@@ -39,7 +39,7 @@
 #define INPUT_REBOOST         (1U << 3)
 
 /* The duration in milliseconds for the wake boost */
-#define FB_BOOST_MS (2000)
+#define FB_BOOST_MS (3000)
 
 static struct notifier_block notif;
 
