@@ -184,11 +184,13 @@ CONFIG_STRICT_MEMORY_RWX=y
 # CONFIG_KSM is not set
 
 # MEMCG related stuff
-CONFIG_MEMCG=y
+# default off:
 # CONFIG_MEMCG_KMEM is not set
-CONFIG_MEMCG_SWAP=y
-CONFIG_MEMCG_SWAP_ENABLED=y
-CONFIG_MM_OWNER=y
+# default on (Sony):
+# CONFIG_MEMCG is not set
+# CONFIG_MEMCG_SWAP is not set
+# CONFIG_MEMCG_SWAP_ENABLED is not set
+# CONFIG_MM_OWNER is not set
 
 # LMK TNG + LMK Statistics + OOM score notifier
 CONFIG_ANDROID_LOW_MEMORY_KILLER=y
