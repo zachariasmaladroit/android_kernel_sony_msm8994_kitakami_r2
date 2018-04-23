@@ -327,6 +327,8 @@ include $(srctree)/scripts/Kbuild.include
 # Set optimization flags for gcc
 CC_FLAGS := -Os \
 	-fira-loop-pressure -ftree-vectorize \
+	-ftree-loop-distribution -ftree-loop-distribute-patterns \
+	-ftree-loop-ivcanon \
 	-fshrink-wrap-separate -mtune=cortex-a57.cortex-a53 \
 	-march=armv8-a+crc+crypto -fmodulo-sched -fmodulo-sched-allow-regmoves \
 	-fgraphite -fgraphite-identity -floop-strip-mine -floop-block \
@@ -401,13 +403,15 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fivopts \
 		   -finline-small-functions -fpartial-inlining -findirect-inlining \
 		   -foptimize-sibling-calls \
+		   -fpredictive-commoning \
+		   -fipa-cp -fipa-bit-cp -fipa-vrp -fipa-sra -fipa-icf -fipa-ra \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
 #		   -fno-pic \
 #		   -fivopts \
 #		   -mtune=cortex-a53 \
 #		   -march=armv8-a+crc+crypto \
 #		   -fsplit-paths -fstore-merging -fsplit-loops \
-#		   -fcode-hoisting \
+#		   -fhoist-adjacent-loads -fcode-hoisting \
 #		   -std=gnu89 $(call cc-option,-fno-PIE)
 #		   
 # GCC 7.x compiler issues:
