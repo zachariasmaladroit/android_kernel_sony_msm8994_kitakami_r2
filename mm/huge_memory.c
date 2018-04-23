@@ -1662,9 +1662,7 @@ static void __split_huge_page_refcount(struct page *page,
 				     ((1L << PG_referenced) |
 				      (1L << PG_swapbacked) |
 				      (1L << PG_mlocked) |
-				      (1L << PG_uptodate) |
-				      (1L << PG_active) |
-				      (1L << PG_unevictable)));
+				      (1L << PG_uptodate)));
 		page_tail->flags |= (1L << PG_dirty);
 
 		/* clear PageTail before overwriting first_page */
