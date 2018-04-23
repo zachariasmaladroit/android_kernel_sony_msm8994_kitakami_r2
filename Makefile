@@ -329,6 +329,7 @@ CC_FLAGS := -Os \
 	-fira-loop-pressure -ftree-vectorize \
 	-fshrink-wrap-separate -mtune=cortex-a57.cortex-a53 \
 	-march=armv8-a+crc+crypto -fmodulo-sched -fmodulo-sched-allow-regmoves \
+	-fgraphite -fgraphite-identity -floop-strip-mine -floop-block \
 	-Wno-maybe-uninitialized -Wno-misleading-indentation \
 	-Wno-array-bounds -Wno-shift-overflow
 
