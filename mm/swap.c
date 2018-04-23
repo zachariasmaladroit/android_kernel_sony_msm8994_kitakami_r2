@@ -562,7 +562,12 @@ EXPORT_SYMBOL(__lru_cache_add);
  */
 void lru_cache_add(struct page *page)
 {
-	VM_BUG_ON(PageActive(page) && PageUnevictable(page));
+	if (PageActive(page)) {
+		VM_BUG_ON(PageUnevictable(page));
+	} else if (PageUnevictable(page)) {
+		VM_BUG_ON(PageActive(page));
+	}
+
 	VM_BUG_ON(PageLRU(page));
 	__lru_cache_add(page);
 }
@@ -584,7 +589,6 @@ void add_page_to_unevictable_list(struct page *page)
 
 	spin_lock_irq(&zone->lru_lock);
 	lruvec = mem_cgroup_page_lruvec(page, zone);
-	ClearPageActive(page);
 	SetPageUnevictable(page);
 	SetPageLRU(page);
 	add_page_to_lru_list(page, lruvec, LRU_UNEVICTABLE);
@@ -879,6 +883,7 @@ static void __pagevec_lru_add_fn(struct page *page, struct lruvec *lruvec,
 	int active = PageActive(page);
 	enum lru_list lru = page_lru(page);
 
+	VM_BUG_ON(PageUnevictable(page));
 	VM_BUG_ON(PageLRU(page));
 
 	SetPageLRU(page);
