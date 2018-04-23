@@ -1148,10 +1148,9 @@ void page_add_new_anon_rmap(struct page *page,
 	else
 		__inc_zone_page_state(page, NR_ANON_TRANSPARENT_HUGEPAGES);
 	__page_set_anon_rmap(page, vma, address, 1);
-	if (!mlocked_vma_newpage(vma, page)) {
-		SetPageActive(page);
-		lru_cache_add(page);
-	} else
+	if (!mlocked_vma_newpage(vma, page))
+		lru_cache_add_lru(page, LRU_ACTIVE_ANON);
+	else
 		add_page_to_unevictable_list(page);
 }
 
