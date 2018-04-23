@@ -640,9 +640,7 @@ static int ipa_generate_rt_hw_tbl_v2(enum ipa_ip_type ip,
 	return 0;
 
 proc_err:
-	if (mem->size > 0)
-		dma_free_coherent(ipa_ctx->pdev, mem->size, mem->base,
-				mem->phys_base);
+	dma_free_coherent(ipa_ctx->pdev, mem->size, mem->base, mem->phys_base);
 base_err:
 	dma_free_coherent(ipa_ctx->pdev, head->size, head->base,
 			head->phys_base);
@@ -653,8 +651,8 @@ err:
 int __ipa_commit_rt_v2(enum ipa_ip_type ip)
 {
 	struct ipa_desc desc[2];
-	struct ipa_mem_buffer body = {0};
-	struct ipa_mem_buffer head = {0};
+	struct ipa_mem_buffer body;
+	struct ipa_mem_buffer head;
 	struct ipa_hw_imm_cmd_dma_shared_mem cmd1 = {0};
 	struct ipa_hw_imm_cmd_dma_shared_mem cmd2 = {0};
 	u16 avail;
