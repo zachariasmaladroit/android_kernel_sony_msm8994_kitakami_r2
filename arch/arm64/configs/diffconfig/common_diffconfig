@@ -93,7 +93,7 @@ CONFIG_USB_HOST_EXTRA_NOTIFICATION=y
 # CONFIG_USB_USBNET is not set
 # CONFIG_USB_VIDEO_CLASS is not set
 CONFIG_VFAT_FS_NO_DUALNAMES=y
-CONFIG_WAKEUP_IRQ_DEBUG=y
+
 # CONFIG_WCNSS_MEM_PRE_ALLOC is not set
 CONFIG_XFRM_RFC_4868_TRUNCATION=y
 
@@ -658,3 +658,8 @@ CONFIG_STATE_NOTIFIER=y
 # circumstances.
 #
 CONFIG_WIREGUARD=y
+
+# wakeup debugging, disable overhead (poll, potential vulnerability, etc.)
+#
+# CONFIG_PM_WAKEUP_TIMES is not set
+# CONFIG_WAKEUP_IRQ_DEBUG is not set
