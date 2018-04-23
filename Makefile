@@ -325,14 +325,15 @@ $(srctree)/scripts/Kbuild.include: ;
 include $(srctree)/scripts/Kbuild.include
 
 # Set optimization flags for gcc
-CC_FLAGS := -O3 -fmodulo-sched -fmodulo-sched-allow-regmoves \
+CC_FLAGS := -Os \
 	-fira-loop-pressure -ftree-vectorize \
 	-fshrink-wrap-separate -mtune=cortex-a57.cortex-a53 \
 	-Wno-maybe-uninitialized -Wno-misleading-indentation \
 	-Wno-array-bounds -Wno-shift-overflow
 
-LD_FLAGS := -O3 --sort-common --strip-debug
+LD_FLAGS := -Os --sort-common --strip-debug
 
+#   -fmodulo-sched -fmodulo-sched-allow-regmoves
 #	-fgraphite -fgraphite-identity -floop-strip-mine \
 #   -floop-block
 
