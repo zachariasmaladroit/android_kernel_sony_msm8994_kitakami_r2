@@ -332,6 +332,11 @@ CC_FLAGS := -Os \
 	-fshrink-wrap-separate -mtune=cortex-a57.cortex-a53 \
 	-march=armv8-a+crc+crypto -fmodulo-sched -fmodulo-sched-allow-regmoves \
 	-fgraphite -fgraphite-identity -floop-strip-mine -floop-block \
+	-fivopts \
+	-finline-small-functions -fpartial-inlining -findirect-inlining \
+	-foptimize-sibling-calls \
+	-fpredictive-commoning \
+	-fipa-cp -fipa-bit-cp -fipa-vrp -fipa-sra -fipa-icf -fipa-ra \
 	-Wno-maybe-uninitialized -Wno-misleading-indentation \
 	-Wno-array-bounds -Wno-shift-overflow
 
@@ -400,11 +405,6 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fdelete-null-pointer-checks -ftree-vrp \
 		   -fisolate-erroneous-paths-dereference \
 		   -fno-pic \
-		   -fivopts \
-		   -finline-small-functions -fpartial-inlining -findirect-inlining \
-		   -foptimize-sibling-calls \
-		   -fpredictive-commoning \
-		   -fipa-cp -fipa-bit-cp -fipa-vrp -fipa-sra -fipa-icf -fipa-ra \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
 #		   -fno-pic \
 #		   -fivopts \
