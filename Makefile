@@ -328,6 +328,7 @@ include $(srctree)/scripts/Kbuild.include
 CC_FLAGS := -Os \
 	-fira-loop-pressure -ftree-vectorize \
 	-fshrink-wrap-separate -mtune=cortex-a57.cortex-a53 \
+	-march=armv8-a+crc+crypto -fmodulo-sched -fmodulo-sched-allow-regmoves \
 	-Wno-maybe-uninitialized -Wno-misleading-indentation \
 	-Wno-array-bounds -Wno-shift-overflow
 
@@ -395,7 +396,8 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fdiagnostics-color=always \
 		   -fdelete-null-pointer-checks -ftree-vrp \
 		   -fisolate-erroneous-paths-dereference \
-		   -march=armv8-a+crc+crypto \
+		   -fno-pic \
+		   -fivopts \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
 #		   -fno-pic \
 #		   -fivopts \
