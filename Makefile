@@ -382,13 +382,15 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fdiagnostics-color=always \
 		   -fdelete-null-pointer-checks -ftree-vrp \
 		   -fisolate-erroneous-paths-dereference \
-		   -fno-pic \
-		   -fivopts \
-		   -mtune=cortex-a53 \
 		   -march=armv8-a+crc+crypto \
-		   -fsplit-paths -fstore-merging -fsplit-loops \
-		   -fcode-hoisting \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
+#		   -fno-pic \
+#		   -fivopts \
+#		   -mtune=cortex-a53 \
+#		   -march=armv8-a+crc+crypto \
+#		   -fsplit-paths -fstore-merging -fsplit-loops \
+#		   -fcode-hoisting \
+#		   -std=gnu89 $(call cc-option,-fno-PIE)
 #		   
 # GCC 7.x compiler issues:
 # 		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
