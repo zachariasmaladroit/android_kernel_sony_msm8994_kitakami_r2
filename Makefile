@@ -399,6 +399,8 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fisolate-erroneous-paths-dereference \
 		   -fno-pic \
 		   -fivopts \
+		   -finline-small-functions -fpartial-inlining -findirect-inlining \
+		   -foptimize-sibling-calls \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
 #		   -fno-pic \
 #		   -fivopts \
