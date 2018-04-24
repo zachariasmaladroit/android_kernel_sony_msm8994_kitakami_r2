@@ -698,3 +698,7 @@ CONFIG_ILLEGAL_POINTER_VALUE=0xdead000000000000
 # ivy* only (kitakami v1/msm8994 v1) 
 #
 # CONFIG_ARCH_MSM8994_V1_TLBI_WA is not set
+
+# cpu core / cluster handling, might need ROM-side changes
+#
+CONFIG_CPUSETS=y
