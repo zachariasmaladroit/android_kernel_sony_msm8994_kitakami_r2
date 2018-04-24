@@ -658,6 +658,10 @@ CONFIG_STATE_NOTIFIER=y
 #
 CONFIG_WIREGUARD=y
 
+# Make use of newer & optimized crypto
+#
+CONFIG_CRYPTO_PCRYPT=y
+
 # wakeup debugging, disable overhead (poll, potential vulnerability, etc.)
 #
 # CONFIG_PM_WAKEUP_TIMES is not set
