@@ -365,7 +365,6 @@ CONFIG_UTS_NS=y
 CONFIG_PID_NS=y
 CONFIG_NET_NS=y
 #
-CONFIG_SECURITY_YAMA=y
 
 # seccomp-bpf
 CONFIG_HAVE_ARCH_SECCOMP_FILTER=y
@@ -374,7 +373,6 @@ CONFIG_SECCOMP=y
 
 # needs additional patches to cut down latency & other issues
 CONFIG_PM_WAKELOCKS_GC=y
-# CONFIG_WQ_POWER_EFFICIENT_DEFAULT is not set
 
 # CONFIG_CNSS is not set
 # CONFIG_CNSS_PCI is not set
@@ -714,3 +712,8 @@ CONFIG_KERNEL_TEXT_MPU_PROT=y
 # cpu core / cluster handling, might need ROM-side changes
 #
 # CONFIG_CPUSETS is not set
+
+# PowerEfficient Workqueues
+# off by default
+#
+# CONFIG_WQ_POWER_EFFICIENT_DEFAULT is not set
