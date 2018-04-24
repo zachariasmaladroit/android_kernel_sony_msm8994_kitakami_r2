@@ -692,6 +692,7 @@ CONFIG_ILLEGAL_POINTER_VALUE=0xdead000000000000
 # CONFIG_SCSI_TGT is not set
 # CONFIG_TI_DRV2667 is not set
 # CONFIG_QCOM_LIQUID_DOCK is not set
+# CONFIG_FW_CACHE is not set
 
 # ivy* only (kitakami v1/msm8994 v1) 
 #
