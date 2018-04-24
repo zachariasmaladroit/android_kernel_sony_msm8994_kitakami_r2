@@ -713,4 +713,4 @@ CONFIG_KERNEL_TEXT_MPU_PROT=y
 
 # cpu core / cluster handling, might need ROM-side changes
 #
-CONFIG_CPUSETS=y
+# CONFIG_CPUSETS is not set
