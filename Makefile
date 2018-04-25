@@ -341,7 +341,7 @@ CC_FLAGS := -Os \
 	-Wno-maybe-uninitialized -Wno-misleading-indentation \
 	-Wno-array-bounds -Wno-shift-overflow
 
-LD_FLAGS := -Os --sort-common --strip-debug
+LD_FLAGS := -Os --sort-common --strip-debug -fno-PIE -fno-pic
 
 #   -fmodulo-sched -fmodulo-sched-allow-regmoves
 #	-fgraphite -fgraphite-identity -floop-strip-mine \
