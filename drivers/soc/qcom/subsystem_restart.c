@@ -176,8 +176,8 @@ struct subsys_device {
 	struct dentry *reason_dentry;
 	char crash_reason[SUBSYS_CRASH_REASON_LEN];
 	int data_ready;
-	wait_queue_head_t subsys_debug_q;
 #endif
+	wait_queue_head_t subsys_debug_q;
 	bool do_ramdump_on_put;
 	struct cdev char_dev;
 	dev_t dev_no;
