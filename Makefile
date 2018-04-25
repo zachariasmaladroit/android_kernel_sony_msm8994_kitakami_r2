@@ -337,6 +337,7 @@ CC_FLAGS := -Os \
 	-foptimize-sibling-calls \
 	-fpredictive-commoning \
 	-fipa-cp -fipa-bit-cp -fipa-vrp -fipa-sra -fipa-icf -fipa-ra \
+	-fno-PIE -fno-pic \
 	-Wno-maybe-uninitialized -Wno-misleading-indentation \
 	-Wno-array-bounds -Wno-shift-overflow
 
