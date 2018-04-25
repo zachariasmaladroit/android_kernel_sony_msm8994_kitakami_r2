@@ -325,14 +325,23 @@ $(srctree)/scripts/Kbuild.include: ;
 include $(srctree)/scripts/Kbuild.include
 
 # Set optimization flags for gcc
-#CC_FLAGS := -Os \
-#	-fshrink-wrap-separate -mtune=cortex-a57.cortex-a53 \
-#	-march=armv8-a+crc+crypto -fmodulo-sched -fmodulo-sched-allow-regmoves \
-#	-fno-PIE -fno-pic \
-#	-Wno-maybe-uninitialized -Wno-misleading-indentation \
-#	-Wno-array-bounds -Wno-shift-overflow
-#
-#LD_FLAGS := -Os --sort-common --strip-debug -no-PIE -no-pic
+CC_FLAGS := -Os \
+	-fira-loop-pressure -ftree-vectorize \
+	-ftree-loop-distribution -ftree-loop-distribute-patterns \
+	-ftree-loop-ivcanon \
+	-fshrink-wrap -fshrink-wrap-separate -mtune=cortex-a57.cortex-a53 \
+	-march=armv8-a+crc+crypto -fmodulo-sched -fmodulo-sched-allow-regmoves \
+	-fgraphite -fgraphite-identity -floop-strip-mine -floop-block \
+	-fivopts \
+	-finline-small-functions -fpartial-inlining -findirect-inlining \
+	-foptimize-sibling-calls \
+	-fpredictive-commoning \
+	-fipa-cp -fipa-bit-cp -fipa-vrp -fipa-sra -fipa-icf -fipa-ra \
+	-fno-PIE -fno-pic \
+	-Wno-maybe-uninitialized -Wno-misleading-indentation \
+	-Wno-array-bounds -Wno-shift-overflow
+
+LD_FLAGS := -Os --sort-common --strip-debug -no-PIE -no-pic
 
 #   -fmodulo-sched -fmodulo-sched-allow-regmoves
 #	-fgraphite -fgraphite-identity -floop-strip-mine \
@@ -341,10 +350,8 @@ include $(srctree)/scripts/Kbuild.include
 # Make variables (CC, etc...)
 
 AS		= $(CROSS_COMPILE)as
-LD		= $(CROSS_COMPILE)ld 
-#$(LD_FLAGS)
-CC		= $(CCACHE) $(CROSS_COMPILE)gcc 
-#$(CC_FLAGS)
+LD		= $(CROSS_COMPILE)ld $(LD_FLAGS)
+CC		= $(CCACHE) $(CROSS_COMPILE)gcc $(CC_FLAGS)
 CPP		= $(CC) -E
 AR		= $(CROSS_COMPILE)ar
 NM		= $(CROSS_COMPILE)nm
@@ -398,8 +405,6 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fdiagnostics-color=always \
 		   -fdelete-null-pointer-checks -ftree-vrp \
 		   -fisolate-erroneous-paths-dereference \
-		   -mtune=cortex-a57.cortex-a53 \
-		   -march=armv8-a+crc+crypto -fmodulo-sched -fmodulo-sched-allow-regmoves \
 		   -fno-pic \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
 #		    -fshrink-wrap -fshrink-wrap-separate
