@@ -534,6 +534,9 @@ CONFIG_SCHED_DEBUG=y
 # CONFIG_DEBUG_SG is not set
 # CONFIG_DEBUG_NOTIFIERS is not set
 
+# we need this (?)
+CONFIG_DEBUG_FS=y
+
 # Perform additional validation of credentials.
 CONFIG_DEBUG_CREDENTIALS=y
 
