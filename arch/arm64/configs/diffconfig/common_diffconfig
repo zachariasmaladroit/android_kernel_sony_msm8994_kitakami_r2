@@ -691,6 +691,11 @@ CONFIG_ARCH_MMAP_RND_COMPAT_BITS_MAX=16
 CONFIG_ILLEGAL_POINTER_VALUE=0xdead000000000000
 CONFIG_KERNEL_TEXT_MPU_PROT=y
 
+# basic rowhammer protection
+# advanced ... needs more backporting
+#
+CONFIG_NOHAMMER=y
+
 
 # remove unnecessary settings
 #
