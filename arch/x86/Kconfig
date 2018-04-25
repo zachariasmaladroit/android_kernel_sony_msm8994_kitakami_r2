@@ -273,6 +273,7 @@ config ARCH_SUPPORTS_UPROBES
 
 source "init/Kconfig"
 source "kernel/Kconfig.freezer"
+source "kernel/events/Kconfig"
 
 menu "Processor type and features"
 

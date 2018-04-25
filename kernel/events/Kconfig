@@ -1,0 +1,9 @@
+config NOHAMMER
+        tristate "Rowhammer protection"
+        help
+	  Enable rowhammer attack prevention. Will degrade system
+	  performance under attack so much that attack should not
+	  be feasible.
+
+	  To compile this driver as a module, choose M here: the
+	  module will be called nohammer.
