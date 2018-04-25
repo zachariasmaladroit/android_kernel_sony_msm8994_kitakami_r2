@@ -329,7 +329,7 @@ CC_FLAGS := -Os \
 	-fira-loop-pressure -ftree-vectorize \
 	-ftree-loop-distribution -ftree-loop-distribute-patterns \
 	-ftree-loop-ivcanon \
-	-fshrink-wrap-separate -mtune=cortex-a57.cortex-a53 \
+	-fshrink-wrap -fshrink-wrap-separate -mtune=cortex-a57.cortex-a53 \
 	-march=armv8-a+crc+crypto -fmodulo-sched -fmodulo-sched-allow-regmoves \
 	-fgraphite -fgraphite-identity -floop-strip-mine -floop-block \
 	-fivopts \
@@ -338,7 +338,7 @@ CC_FLAGS := -Os \
 	-fpredictive-commoning \
 	-fipa-cp -fipa-bit-cp -fipa-vrp -fipa-sra -fipa-icf -fipa-ra \
 	-Wno-maybe-uninitialized -Wno-misleading-indentation \
-	-Wno-array-bounds -Wno-shift-overflow
+	-Wno-array-bounds -Wno-shift-overflow -std=gnu89
 
 LD_FLAGS := -Os --sort-common --strip-debug
 
