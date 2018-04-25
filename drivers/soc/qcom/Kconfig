@@ -667,14 +667,6 @@ config KERNEL_TEXT_MPU_PROT
 	  all masters; Write access is only permited to the
 	  secure world.
 
-config AMSS_ERR_LOG
-	bool "support last amss log"
-	help
-	  when ever there is modem fatal, Export amss error log as last_amss
-	  log in procfs. last_amss is export in both system dump and sub-system
-	  dump. Data in last_amss log is not available once it is read.
-	  If unsure, say N
-
 config STATE_NOTIFIER
         bool "State Notifier"
 
