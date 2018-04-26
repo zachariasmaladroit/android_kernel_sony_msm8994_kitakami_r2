@@ -24,7 +24,7 @@
 #define BINDER_IPC_32BIT 1
 #endif
 
-#include <uapi/linux/android/binder.h>
+#include "uapi/binder.h"
 
 #endif /* _LINUX_BINDER_H */
 
