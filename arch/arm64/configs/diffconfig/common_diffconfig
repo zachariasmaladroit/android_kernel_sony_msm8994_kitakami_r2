@@ -753,3 +753,8 @@ CONFIG_DEFAULT_IOSCHED="row"
 # default = on
 #
 CONFIG_SOUND_CONTROL_HAX_3_GPL=y
+
+# super-charged zen-tune
+# try ondemand governor for gaming, etc.
+#
+CONFIG_ZEN_INTERACTIVE=y
