@@ -327,6 +327,7 @@ include $(srctree)/scripts/Kbuild.include
 # Set optimization flags for gcc
 CC_FLAGS := -Os \
 	-no-schedule-insns \
+	-flive-range-shrinkage \
 	-fira-loop-pressure -ftree-vectorize \
 	-ftree-loop-distribution -ftree-loop-distribute-patterns \
 	-ftree-loop-ivcanon \
@@ -336,6 +337,9 @@ CC_FLAGS := -Os \
 	-fivopts \
 	-finline-small-functions -fpartial-inlining -findirect-inlining \
 	-foptimize-sibling-calls \
+	-fdevirtualize -fdevirtualize-speculatively \
+	-fgcse -fgcse-lm -fgcse-sm -fgcse-las -fgcse-after-reload \
+	-ftree-loop-im -funswitch-loops \
 	-fpredictive-commoning \
 	-fipa-cp -fipa-bit-cp -fipa-vrp -fipa-sra -fipa-icf -fipa-ra \
 	-Wno-maybe-uninitialized -Wno-misleading-indentation \
