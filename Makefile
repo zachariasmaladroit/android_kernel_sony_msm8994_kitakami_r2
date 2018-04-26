@@ -326,6 +326,7 @@ include $(srctree)/scripts/Kbuild.include
 
 # Set optimization flags for gcc
 CC_FLAGS := -Os \
+	-no-schedule-insns \
 	-fira-loop-pressure -ftree-vectorize \
 	-ftree-loop-distribution -ftree-loop-distribute-patterns \
 	-ftree-loop-ivcanon \
