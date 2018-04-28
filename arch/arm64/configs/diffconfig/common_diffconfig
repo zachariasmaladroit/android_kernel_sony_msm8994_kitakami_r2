@@ -373,6 +373,9 @@ CONFIG_SECCOMP=y
 # needs additional patches to cut down latency & other issues
 CONFIG_PM_WAKELOCKS_GC=y
 
+# Boeffla generic wakelock blocker
+CONFIG_BOEFFLA_WL_BLOCKER=y
+
 # CONFIG_CNSS is not set
 # CONFIG_CNSS_PCI is not set
 
