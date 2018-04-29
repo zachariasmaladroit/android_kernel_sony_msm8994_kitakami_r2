@@ -626,9 +626,9 @@ CONFIG_ZSMALLOC=y
 # CONFIG_ZSMALLOC_STAT is not set # commented out by default
 
 # PER-PROCESS RECLAIM
-# this is depending on swap, thus zram
+# this is mutually exclusive with zram
 #
-CONFIG_PROCESS_RECLAIM=y
+# CONFIG_PROCESS_RECLAIM is not set
 
 # dynamic fsync: 
 # While screen is on, file sync is suspended.
