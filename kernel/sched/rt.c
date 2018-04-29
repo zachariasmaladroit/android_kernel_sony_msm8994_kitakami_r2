@@ -1255,7 +1255,7 @@ enqueue_task_rt(struct rq *rq, struct task_struct *p, int flags)
 	if (!task_current(rq, p) && p->nr_cpus_allowed > 1)
 		enqueue_pushable_task(rq, p);
 
-	add_nr_running(rq, 1);
+	inc_nr_running(rq);
 	inc_hmp_sched_stats_rt(rq, p);
 }
 
@@ -1268,7 +1268,7 @@ static void dequeue_task_rt(struct rq *rq, struct task_struct *p, int flags)
 
 	dequeue_pushable_task(rq, p);
 
-	sub_nr_running(rq, 1);
+	dec_nr_running(rq);
 	dec_hmp_sched_stats_rt(rq, p);
 }
 
