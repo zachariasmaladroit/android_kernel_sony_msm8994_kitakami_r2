@@ -1065,8 +1065,7 @@ static int msm_core_dev_probe(struct platform_device *pdev)
 	for_each_possible_cpu(cpu)
 		set_threshold(&activity[cpu]);
 
-	queue_delayed_work(system_power_efficient_wq,
-			&sampling_work, msecs_to_jiffies(0));
+	schedule_delayed_work(&sampling_work, msecs_to_jiffies(0));
 	cpufreq_register_notifier(&cpu_policy, CPUFREQ_POLICY_NOTIFIER);
 	pm_notifier(system_suspend_handler, 0);
 	return 0;
