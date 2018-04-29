@@ -239,7 +239,7 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 	  else if [ -x /bin/bash ]; then echo /bin/bash; \
 	  else echo sh; fi ; fi)
 
-CCACHE := $(shell which ccache)
+#CCACHE := $(shell which ccache)
 
 HOSTCC       = gcc
 HOSTCXX      = g++
@@ -325,27 +325,27 @@ $(srctree)/scripts/Kbuild.include: ;
 include $(srctree)/scripts/Kbuild.include
 
 # Set optimization flags for gcc
-CC_FLAGS := -Os \
-	-fno-schedule-insns \
-	-flive-range-shrinkage \
-	-fira-loop-pressure -ftree-vectorize \
-	-ftree-loop-distribution -ftree-loop-distribute-patterns \
-	-ftree-loop-ivcanon \
-	-fshrink-wrap -fshrink-wrap-separate -mtune=cortex-a57.cortex-a53 \
-	-march=armv8-a+crc+crypto -fmodulo-sched -fmodulo-sched-allow-regmoves \
-	-fgraphite -fgraphite-identity -floop-strip-mine -floop-block \
-	-fivopts \
-	-finline-small-functions -fpartial-inlining -findirect-inlining \
-	-foptimize-sibling-calls \
-	-fdevirtualize -fdevirtualize-speculatively \
-	-fgcse -fgcse-lm -fgcse-sm -fgcse-las -fgcse-after-reload \
-	-ftree-loop-im -funswitch-loops \
-	-fpredictive-commoning \
-	-fipa-cp -fipa-bit-cp -fipa-vrp -fipa-sra -fipa-icf -fipa-ra \
-	-Wno-maybe-uninitialized -Wno-misleading-indentation \
-	-Wno-array-bounds -Wno-shift-overflow -std=gnu89
-
-LD_FLAGS := -Os --sort-common --strip-debug
+#CC_FLAGS := -Os -fno-pic -fno-PIE \
+#	-fno-schedule-insns \
+#	-flive-range-shrinkage \
+#	-fira-loop-pressure -ftree-vectorize \
+#	-ftree-loop-distribution -ftree-loop-distribute-patterns \
+#	-ftree-loop-ivcanon \
+#	-fshrink-wrap -fshrink-wrap-separate -mtune=cortex-a57.cortex-a53 \
+#	-march=armv8-a+crc+crypto -fmodulo-sched -fmodulo-sched-allow-regmoves \
+#	-fgraphite -fgraphite-identity -floop-strip-mine -floop-block \
+#	-fivopts \
+#	-finline-small-functions -fpartial-inlining -findirect-inlining \
+#	-foptimize-sibling-calls \
+#	-fdevirtualize -fdevirtualize-speculatively \
+#	-fgcse -fgcse-lm -fgcse-sm -fgcse-las -fgcse-after-reload \
+#	-ftree-loop-im -funswitch-loops \
+#	-fpredictive-commoning \
+#	-fipa-cp -fipa-bit-cp -fipa-vrp -fipa-sra -fipa-icf -fipa-ra \
+#	-Wno-maybe-uninitialized -Wno-misleading-indentation \
+#	-Wno-array-bounds -Wno-shift-overflow -std=gnu89
+#
+#LD_FLAGS := -Os --sort-common --strip-debug -no-pic -no-PIE
 
 #   -fmodulo-sched -fmodulo-sched-allow-regmoves
 #	-fgraphite -fgraphite-identity -floop-strip-mine \
@@ -354,8 +354,10 @@ LD_FLAGS := -Os --sort-common --strip-debug
 # Make variables (CC, etc...)
 
 AS		= $(CROSS_COMPILE)as
-LD		= $(CROSS_COMPILE)ld $(LD_FLAGS)
-CC		= $(CCACHE) $(CROSS_COMPILE)gcc $(CC_FLAGS)
+LD		= $(CROSS_COMPILE)ld
+# $(LD_FLAGS)
+CC		= $(CCACHE) $(CROSS_COMPILE)gcc
+# $(CC_FLAGS)
 CPP		= $(CC) -E
 AR		= $(CROSS_COMPILE)ar
 NM		= $(CROSS_COMPILE)nm
@@ -407,12 +409,29 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
 		   -fdiagnostics-color=always \
-		   -fdelete-null-pointer-checks -ftree-vrp \
-		   -fisolate-erroneous-paths-dereference \
+		   -fno-delete-null-pointer-checks \
+	-fno-schedule-insns \
+	-flive-range-shrinkage \
+	-fira-loop-pressure -ftree-vectorize \
+	-ftree-loop-distribution -ftree-loop-distribute-patterns \
+	-ftree-loop-ivcanon \
+	-fshrink-wrap -fshrink-wrap-separate -mtune=cortex-a53 \
+	-march=armv8-a+crc+crypto -fmodulo-sched -fmodulo-sched-allow-regmoves \
+	-fgraphite -fgraphite-identity -floop-strip-mine -floop-block \
+	-fivopts \
+	-finline-small-functions -fpartial-inlining -findirect-inlining \
+	-foptimize-sibling-calls \
+	-fdevirtualize -fdevirtualize-speculatively \
+	-fgcse -fgcse-lm -fgcse-sm -fgcse-las -fgcse-after-reload \
+	-ftree-loop-im -funswitch-loops \
+	-fpredictive-commoning \
+	-fipa-cp -fipa-bit-cp -fipa-vrp -fipa-sra -fipa-icf -fipa-ra \
+	-Wno-maybe-uninitialized -Wno-misleading-indentation \
+	-Wno-array-bounds -Wno-shift-overflow \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
-#		   -fno-pic \
+#		   -fno-pic -fno-PIE \
 #		   -fivopts \
-#		   -mtune=cortex-a53 \
+#		   -mtune=cortex-a53 -mtune=cortex-a57.cortex-a53 \
 #		   -march=armv8-a+crc+crypto \
 #		   -fsplit-paths -fstore-merging -fsplit-loops \
 #		   -fhoist-adjacent-loads -fcode-hoisting \
@@ -420,6 +439,9 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 #		   
 # GCC 7.x compiler issues:
 # 		   -fmodulo-sched -fmodulo-sched-allow-regmoves \
+#
+#		   -fdelete-null-pointer-checks -ftree-vrp \
+#		   -fisolate-erroneous-paths-dereference \
 #
 #		   -fno-delete-null-pointer-checks \
 #		   -std=gnu89 \
