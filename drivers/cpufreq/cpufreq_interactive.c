@@ -569,7 +569,7 @@ static void cpufreq_interactive_timer(unsigned long data)
 		policy_max_fast_restore = true;
 	}
 
-	if (policy_max_fast_restore || jump_to_max) {
+	if (false && (policy_max_fast_restore || jump_to_max)) {
 		new_freq = ppol->policy->cpuinfo.max_freq;
 	} else if (skip_hispeed_logic) {
 		new_freq = choose_freq(ppol, loadadjfreq);
