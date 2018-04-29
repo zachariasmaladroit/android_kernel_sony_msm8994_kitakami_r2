@@ -4489,7 +4489,7 @@ static void throttle_cfs_rq(struct cfs_rq *cfs_rq)
 
 	if (!se) {
 		sched_update_nr_prod(cpu_of(rq), task_delta, false);
-		sub_nr_running(rq, task_delta);
+		rq->nr_running -= task_delta;
 		dec_throttled_cfs_rq_hmp_stats(&rq->hmp_stats, cfs_rq);
 	}
 
@@ -4550,7 +4550,7 @@ void unthrottle_cfs_rq(struct cfs_rq *cfs_rq)
 
 	if (!se) {
 		sched_update_nr_prod(cpu_of(rq), task_delta, true);
-		add_nr_running(rq, task_delta);
+		rq->nr_running += task_delta;
 		inc_throttled_cfs_rq_hmp_stats(&rq->hmp_stats, tcfs_rq);
 	}
 
@@ -5116,7 +5116,7 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 
 	if (!se) {
 		update_rq_runnable_avg(rq, rq->nr_running);
-		add_nr_running(rq, 1);
+		inc_nr_running(rq);
 
 		if (unlikely(p->nr_cpus_allowed == 1))
 			rq->nr_pinned_tasks++;
@@ -5183,7 +5183,7 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	}
 
 	if (!se) {
-		sub_nr_running(rq, 1);
+		dec_nr_running(rq);
 
 		if (unlikely(p->nr_cpus_allowed == 1))
 			rq->nr_pinned_tasks--;
