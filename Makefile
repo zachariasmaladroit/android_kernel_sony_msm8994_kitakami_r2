@@ -409,7 +409,6 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fdiagnostics-color=always \
 		   -fdelete-null-pointer-checks -ftree-vrp \
 		   -fisolate-erroneous-paths-dereference \
-		   -fno-pic \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
 #		   -fno-pic \
 #		   -fivopts \
