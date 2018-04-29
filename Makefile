@@ -325,25 +325,25 @@ $(srctree)/scripts/Kbuild.include: ;
 include $(srctree)/scripts/Kbuild.include
 
 # Set optimization flags for gcc
-#CC_FLAGS := -Os \
-#	-fno-schedule-insns \
-#	-flive-range-shrinkage \
-#	-fira-loop-pressure -ftree-vectorize \
-#	-ftree-loop-distribution -ftree-loop-distribute-patterns \
-#	-ftree-loop-ivcanon \
-#	-fshrink-wrap -fshrink-wrap-separate -mtune=cortex-a57.cortex-a53 \
-#	-march=armv8-a+crc+crypto -fmodulo-sched -fmodulo-sched-allow-regmoves \
-#	-fgraphite -fgraphite-identity -floop-strip-mine -floop-block \
-#	-fivopts \
-#	-finline-small-functions -fpartial-inlining -findirect-inlining \
-#	-foptimize-sibling-calls \
-#	-fdevirtualize -fdevirtualize-speculatively \
-#	-fgcse -fgcse-lm -fgcse-sm -fgcse-las -fgcse-after-reload \
-#	-ftree-loop-im -funswitch-loops \
-#	-fpredictive-commoning \
-#	-fipa-cp -fipa-bit-cp -fipa-vrp -fipa-sra -fipa-icf -fipa-ra \
-#	-Wno-maybe-uninitialized -Wno-misleading-indentation \
-#	-Wno-array-bounds -Wno-shift-overflow -std=gnu89
+CC_FLAGS := -Os \
+	-fno-schedule-insns \
+	-flive-range-shrinkage \
+	-fira-loop-pressure -ftree-vectorize \
+	-ftree-loop-distribution -ftree-loop-distribute-patterns \
+	-ftree-loop-ivcanon \
+	-fshrink-wrap -fshrink-wrap-separate -mtune=cortex-a57.cortex-a53 \
+	-march=armv8-a+crc+crypto -fmodulo-sched -fmodulo-sched-allow-regmoves \
+	-fgraphite -fgraphite-identity -floop-strip-mine -floop-block \
+	-fivopts \
+	-finline-small-functions -fpartial-inlining -findirect-inlining \
+	-foptimize-sibling-calls \
+	-fdevirtualize -fdevirtualize-speculatively \
+	-fgcse -fgcse-lm -fgcse-sm -fgcse-las -fgcse-after-reload \
+	-ftree-loop-im -funswitch-loops \
+	-fpredictive-commoning \
+	-fipa-cp -fipa-bit-cp -fipa-vrp -fipa-sra -fipa-icf -fipa-ra \
+	-Wno-maybe-uninitialized -Wno-misleading-indentation \
+	-Wno-array-bounds -Wno-shift-overflow -std=gnu89
 
 LD_FLAGS := -Os --sort-common --strip-debug
 
@@ -355,8 +355,7 @@ LD_FLAGS := -Os --sort-common --strip-debug
 
 AS		= $(CROSS_COMPILE)as
 LD		= $(CROSS_COMPILE)ld $(LD_FLAGS)
-CC		= $(CCACHE) $(CROSS_COMPILE)gcc
-#$(CC_FLAGS)
+CC		= $(CCACHE) $(CROSS_COMPILE)gcc $(CC_FLAGS)
 CPP		= $(CC) -E
 AR		= $(CROSS_COMPILE)ar
 NM		= $(CROSS_COMPILE)nm
@@ -408,12 +407,9 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
 		   -fdiagnostics-color=always \
-		   -fno-delete-null-pointer-checks \
+		   -fdelete-null-pointer-checks -ftree-vrp \
+		   -fisolate-erroneous-paths-dereference \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
-#
-#		   -fdelete-null-pointer-checks -ftree-vrp \
-#		   -fisolate-erroneous-paths-dereference \
-#
 #		   -fno-pic \
 #		   -fivopts \
 #		   -mtune=cortex-a53 \
