@@ -186,7 +186,8 @@ static inline void schedule_sampling(void)
 		forced_timeout = jiffies + msecs_to_jiffies(SAMPLE_MAX_TIMEOUT_MS);
 		if (delayed_work_pending(&sampling_work))
 			cancel_delayed_work(&sampling_work);
-		queue_delayed_work(msm_core_wq, &sampling_work,
+		queue_delayed_work(system_power_efficient_wq,
+					msm_core_wq, &sampling_work,
 					msecs_to_jiffies(0));
 	}
 }
@@ -345,7 +346,8 @@ static void samplequeue_handle(struct work_struct *work)
 	forced_timeout = jiffies + msecs_to_jiffies(SAMPLE_MAX_TIMEOUT_MS);
 	do_sampling();
 	forced_timeout = jiffies + msecs_to_jiffies(poll_ms / 2);
-	queue_delayed_work(msm_core_wq, &sampling_work,
+	queue_delayed_work(system_power_efficient_wq,
+				msm_core_wq, &sampling_work,
 				msecs_to_jiffies(poll_ms));
 }
 
