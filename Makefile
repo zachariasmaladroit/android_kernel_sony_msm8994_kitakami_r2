@@ -239,7 +239,7 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 	  else if [ -x /bin/bash ]; then echo /bin/bash; \
 	  else echo sh; fi ; fi)
 
-#CCACHE := $(shell which ccache)
+CCACHE := $(shell which ccache)
 
 HOSTCC       = gcc
 HOSTCXX      = g++
@@ -325,7 +325,7 @@ $(srctree)/scripts/Kbuild.include: ;
 include $(srctree)/scripts/Kbuild.include
 
 # Set optimization flags for gcc
-#CC_FLAGS := -Os -fno-pic -fno-PIE \
+#CC_FLAGS := -Os \
 #	-fno-schedule-insns \
 #	-flive-range-shrinkage \
 #	-fira-loop-pressure -ftree-vectorize \
@@ -343,9 +343,11 @@ include $(srctree)/scripts/Kbuild.include
 #	-fpredictive-commoning \
 #	-fipa-cp -fipa-bit-cp -fipa-vrp -fipa-sra -fipa-icf -fipa-ra \
 #	-Wno-maybe-uninitialized -Wno-misleading-indentation \
-#	-Wno-array-bounds -Wno-shift-overflow -std=gnu89
+#	-Wno-array-bounds -Wno-shift-overflow -std=gnu89 -fno-PIE
 #
-#LD_FLAGS := -Os --sort-common --strip-debug -no-pic -no-PIE
+#-fno-pic -fno-PIE
+#
+LD_FLAGS := -Os --sort-common --strip-debug
 
 #   -fmodulo-sched -fmodulo-sched-allow-regmoves
 #	-fgraphite -fgraphite-identity -floop-strip-mine \
@@ -354,8 +356,7 @@ include $(srctree)/scripts/Kbuild.include
 # Make variables (CC, etc...)
 
 AS		= $(CROSS_COMPILE)as
-LD		= $(CROSS_COMPILE)ld
-# $(LD_FLAGS)
+LD		= $(CROSS_COMPILE)ld $(LD_FLAGS)
 CC		= $(CCACHE) $(CROSS_COMPILE)gcc
 # $(CC_FLAGS)
 CPP		= $(CC) -E
