@@ -778,3 +778,9 @@ CONFIG_ANDROID_BINDER_DEVICES="binder,hwbinder"
 # ,vndbinder
 # CONFIG_ANDROID_BINDER_IPC_32BIT is not set
 # CONFIG_ANDROID_BINDER_IPC_SELFTEST is not set
+
+# timer rate
+CONFIG_HZ_100=y
+# CONFIG_HZ_250 is not set
+# CONFIG_HZ_300 is not set
+# CONFIG_HZ_1000 is not set
