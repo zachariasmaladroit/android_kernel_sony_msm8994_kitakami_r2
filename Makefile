@@ -410,7 +410,8 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
 		   -fdiagnostics-color=always \
-		   -fno-delete-null-pointer-checks \
+		   -fdelete-null-pointer-checks -ftree-vrp \
+		   -fisolate-erroneous-paths-dereference \
 	-fno-schedule-insns \
 	-flive-range-shrinkage \
 	-fira-loop-pressure -ftree-vectorize \
