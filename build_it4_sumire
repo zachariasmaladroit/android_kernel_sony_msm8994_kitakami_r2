@@ -54,8 +54,8 @@ then
 #	cp drivers/net/wireless/ath/wil6210/wil6210.ko ../final_files/Z5_7.1.1_stock/modules/
 	
 	# Mobicore
-	cp drivers/gud/mcDrvModule.ko ../final_files/Z5_7.1.1_stock/modules/
-	cp drivers/gud/mcKernelApi.ko ../final_files/Z5_7.1.1_stock/modules/
+#	cp drivers/gud/mcDrvModule.ko ../final_files/Z5_7.1.1_stock/modules/
+#	cp drivers/gud/mcKernelApi.ko ../final_files/Z5_7.1.1_stock/modules/
 	
 	# drivers/input/misc/gpio*
 	cp drivers/input/misc/gpio_axis.ko ../final_files/Z5_7.1.1_stock/modules/
@@ -75,7 +75,7 @@ then
 #	cp drivers/net/wireless/bcmdhd/wlan.ko ../final_files/Z5_7.1.1_stock/modules/
 	
 	# ECRYPTFS
-	cp fs/ecryptfs/ecryptfs.ko ../final_files/Z5_7.1.1_stock/modules/
+#	cp fs/ecryptfs/ecryptfs.ko ../final_files/Z5_7.1.1_stock/modules/
 
 	### Version number
 	echo -n "Enter version number: "
