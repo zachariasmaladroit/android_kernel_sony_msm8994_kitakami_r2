@@ -496,7 +496,7 @@ CONFIG_CRYPTO_DEV_SOMC_FIPS_KSCL=y
 #
 # Random Number Generation
 #
-# CONFIG_CRYPTO_ANSI_CPRNG is not set
+CONFIG_CRYPTO_ANSI_CPRNG=y
 
 # Remove TIMER_STATS it "exposes process information across namespaces"
 # also disable it in config for good measure
