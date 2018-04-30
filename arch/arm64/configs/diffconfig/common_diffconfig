@@ -747,7 +747,7 @@ CONFIG_KERNEL_TEXT_MPU_PROT=y
 # PowerEfficient Workqueues
 # off by default
 #
-CONFIG_WQ_POWER_EFFICIENT_DEFAULT=y
+# CONFIG_WQ_POWER_EFFICIENT_DEFAULT is not set
 
 #
 # IO Schedulers
