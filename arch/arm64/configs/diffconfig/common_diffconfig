@@ -371,7 +371,7 @@ CONFIG_SECCOMP_FILTER=y
 CONFIG_SECCOMP=y
 
 # needs additional patches to cut down latency & other issues
-CONFIG_PM_WAKELOCKS_GC=y
+# CONFIG_PM_WAKELOCKS_GC is not set
 
 # Boeffla generic wakelock blocker
 CONFIG_BOEFFLA_WL_BLOCKER=y
