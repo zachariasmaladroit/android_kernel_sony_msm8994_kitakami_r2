@@ -625,7 +625,7 @@ CONFIG_CPU_INPUT_BOOST=y
 # CONFIG_ZRAM is not set
 # CONFIG_ZRAM_LZ4_COMPRESS is not set
 # CONFIG_ZRAM_DEBUG is not set # commented out by default
-CONFIG_SWAP is not set
+# CONFIG_SWAP is not set
 
 CONFIG_LZ4_COMPRESS=y
 CONFIG_LZ4_DECOMPRESS=y
