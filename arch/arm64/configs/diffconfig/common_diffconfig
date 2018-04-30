@@ -622,21 +622,22 @@ CONFIG_CPU_QUIET_MSM=y
 CONFIG_CPU_INPUT_BOOST=y
 
 # ZRAM and related config entries
-CONFIG_ZRAM=y
-CONFIG_ZRAM_LZ4_COMPRESS=y
+# CONFIG_ZRAM is not set
+# CONFIG_ZRAM_LZ4_COMPRESS is not set
 # CONFIG_ZRAM_DEBUG is not set # commented out by default
+CONFIG_SWAP is not set
 
 CONFIG_LZ4_COMPRESS=y
 CONFIG_LZ4_DECOMPRESS=y
 
-CONFIG_Z3FOLD=y
-CONFIG_ZPOOL=y
-CONFIG_ZSMALLOC=y
+# CONFIG_Z3FOLD is not set
+# CONFIG_ZPOOL is not set
+# CONFIG_ZSMALLOC is not set
 # CONFIG_PGTABLE_MAPPING is not set # commented out by default
 # CONFIG_ZSMALLOC_STAT is not set # commented out by default
 
 # PER-PROCESS RECLAIM
-# this is mutually exclusive with zram
+# mutually exclusive with zram (?)
 #
 # CONFIG_PROCESS_RECLAIM is not set
 
