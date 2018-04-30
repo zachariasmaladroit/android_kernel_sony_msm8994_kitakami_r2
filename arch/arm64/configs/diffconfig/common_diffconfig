@@ -653,8 +653,9 @@ CONFIG_CPU_FREQ_MSM=y
 CONFIG_CPU_IDLE=y
 CONFIG_CPU_IDLE_MULTIPLE_DRIVERS=y
 # CONFIG_CPU_IDLE_GOV_LADDER is not set
-CONFIG_CPU_IDLE_GOV_MENU=y
+# CONFIG_CPU_IDLE_GOV_MENU is not set
 # CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED is not set
+CONFIG_CPU_IDLE_GOV_NULL=y
 
 # STATE NOTIFIER
 # helper to detect & communicate system status, needed by various features
