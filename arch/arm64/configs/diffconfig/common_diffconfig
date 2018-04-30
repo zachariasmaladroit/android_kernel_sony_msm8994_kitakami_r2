@@ -428,7 +428,7 @@ CONFIG_BOEFFLA_WL_BLOCKER=y
 
 # Sensors (SSC), needed for adaptive (automagic) brightness
 # CONFIG_SENSORS is not set
-# CONFIG_SENSORS_SSC is not set
+CONFIG_SENSORS_SSC=y
 
 # Webcam devices
 # disable GSPCA external module drivers
