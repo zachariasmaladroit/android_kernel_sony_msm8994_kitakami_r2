@@ -150,7 +150,7 @@ CONFIG_SERIAL_MSM_HSL_CONSOLE=y
 CONFIG_TOUCHSCREEN_CLEARPAD_I2C=y
 CONFIG_TOUCHSCREEN_CLEARPAD_RMI_DEV=y
 
-CONFIG_LOCALVERSION="-32.4.A.1.54_Logos_I.2_12_3"
+CONFIG_LOCALVERSION="-32.4.A.1.54_Logos_I.2_12_17_batt_t2"
 CONFIG_LOCALVERSION_AUTO=n
 
 # bigger buffer for dmesg - default one is too small to get meaningful data
@@ -211,7 +211,7 @@ CONFIG_EXFAT_COMPAT_TUXERA=y
 # CONFIG_EXFAT_DEBUG is not set
 
 # eCrypt filesystem
-CONFIG_ECRYPT_FS=m
+CONFIG_ECRYPT_FS=y
 CONFIG_WTL_ENCRYPTION_FILTER=y
 
 # Broadcom built-in bluetooth driver
@@ -290,7 +290,7 @@ CONFIG_AIO_SSD_ONLY=y
 
 # Build module externally
 # CONFIG_WIL6210 is not set
-CONFIG_INPUT_GPIO=m
+# CONFIG_INPUT_GPIO is not set
 
 # MHL SII8620 and SII8061 support (Sony Stock ROM: build as module, Makefile hack)
 # only this way stability & functionality is warranted
@@ -371,7 +371,7 @@ CONFIG_SECCOMP_FILTER=y
 CONFIG_SECCOMP=y
 
 # needs additional patches to cut down latency & other issues
-CONFIG_PM_WAKELOCKS_GC=y
+# CONFIG_PM_WAKELOCKS_GC is not set
 
 # Boeffla generic wakelock blocker
 CONFIG_BOEFFLA_WL_BLOCKER=y
@@ -380,9 +380,9 @@ CONFIG_BOEFFLA_WL_BLOCKER=y
 # CONFIG_CNSS_PCI is not set
 
 # let's temporarily disable Mirrorlink & MobiCore [boot bringup, stability, etc. testing]
-CONFIG_USB_MIRRORLINK=y
-CONFIG_MOBICORE_SUPPORT=m
-CONFIG_MOBICORE_API=m
+# CONFIG_USB_MIRRORLINK is not set
+# CONFIG_MOBICORE_SUPPORT is not set
+# CONFIG_MOBICORE_API is not set
 
 # disable 32bit support / ARMv7 cruft
 # CONFIG_ARMV7_COMPAT is not set
@@ -428,7 +428,7 @@ CONFIG_MOBICORE_API=m
 
 # Sensors (SSC), needed for adaptive (automagic) brightness
 # CONFIG_SENSORS is not set
-CONFIG_SENSORS_SSC=y
+# CONFIG_SENSORS_SSC is not set
 
 # Webcam devices
 # disable GSPCA external module drivers
@@ -483,7 +483,7 @@ CONFIG_INPUT_EVDEV=y
 #
 # SPI Protocol Masters
 #
-CONFIG_SPI_SPIDEV=m
+CONFIG_SPI_SPIDEV=y
 # CONFIG_SPI_TLE62X0 is not set
 CONFIG_SPMI=y
 CONFIG_SPMI_MSM_PMIC_ARB=y
@@ -496,7 +496,7 @@ CONFIG_CRYPTO_DEV_SOMC_FIPS_KSCL=y
 #
 # Random Number Generation
 #
-CONFIG_CRYPTO_ANSI_CPRNG=m
+CONFIG_CRYPTO_ANSI_CPRNG=y
 
 # Remove TIMER_STATS it "exposes process information across namespaces"
 # also disable it in config for good measure
@@ -778,3 +778,9 @@ CONFIG_ANDROID_BINDER_DEVICES="binder,hwbinder"
 # ,vndbinder
 # CONFIG_ANDROID_BINDER_IPC_32BIT is not set
 # CONFIG_ANDROID_BINDER_IPC_SELFTEST is not set
+
+# timer rate
+CONFIG_HZ_100=y
+# CONFIG_HZ_250 is not set
+# CONFIG_HZ_300 is not set
+# CONFIG_HZ_1000 is not set

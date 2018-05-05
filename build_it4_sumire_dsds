@@ -46,7 +46,7 @@ then
 	# Sony Mobile FIPS AES-XTS/AES-CBC Driver
 #	cp drivers/crypto/kscl.ko ../final_files/Z5_7.1.1_stock/modules/
 	# ANSI Pseudo Random Number Generator
-	cp crypto/ansi_cprng.ko ../final_files/Z5_7.1.1_stock/modules/
+#	cp crypto/ansi_cprng.ko ../final_files/Z5_7.1.1_stock/modules/
 
 	# add additional modules
 #	cp drivers/media/platform/msm/broadcast/tspp.ko ../final_files/Z5_7.1.1_stock/modules/
@@ -54,15 +54,15 @@ then
 #	cp drivers/net/wireless/ath/wil6210/wil6210.ko ../final_files/Z5_7.1.1_stock/modules/
 	
 	# Mobicore
-	cp drivers/gud/mcDrvModule.ko ../final_files/Z5_7.1.1_stock/modules/
-	cp drivers/gud/mcKernelApi.ko ../final_files/Z5_7.1.1_stock/modules/
+#	cp drivers/gud/mcDrvModule.ko ../final_files/Z5_7.1.1_stock/modules/
+#	cp drivers/gud/mcKernelApi.ko ../final_files/Z5_7.1.1_stock/modules/
 	
 	# drivers/input/misc/gpio*
-	cp drivers/input/misc/gpio_axis.ko ../final_files/Z5_7.1.1_stock/modules/
-	cp drivers/input/misc/gpio_event.ko ../final_files/Z5_7.1.1_stock/modules/
-	cp drivers/input/misc/gpio_input.ko ../final_files/Z5_7.1.1_stock/modules/
-	cp drivers/input/misc/gpio_matrix.ko ../final_files/Z5_7.1.1_stock/modules/
-	cp drivers/input/misc/gpio_output.ko ../final_files/Z5_7.1.1_stock/modules/
+#	cp drivers/input/misc/gpio_axis.ko ../final_files/Z5_7.1.1_stock/modules/
+#	cp drivers/input/misc/gpio_event.ko ../final_files/Z5_7.1.1_stock/modules/
+#	cp drivers/input/misc/gpio_input.ko ../final_files/Z5_7.1.1_stock/modules/
+#	cp drivers/input/misc/gpio_matrix.ko ../final_files/Z5_7.1.1_stock/modules/
+#	cp drivers/input/misc/gpio_output.ko ../final_files/Z5_7.1.1_stock/modules/
 	
 	# dvb
 #	cp drivers/media/platform/msm/dvb/demux/mpq-dmx-hw-plugin.ko ../final_files/Z5_7.1.1_stock/modules/
@@ -75,7 +75,7 @@ then
 #	cp drivers/net/wireless/bcmdhd/wlan.ko ../final_files/Z5_7.1.1_stock/modules/
 	
 	# ECRYPTFS
-	cp fs/ecryptfs/ecryptfs.ko ../final_files/Z5_7.1.1_stock/modules/
+#	cp fs/ecryptfs/ecryptfs.ko ../final_files/Z5_7.1.1_stock/modules/
 
 	### Version number
 	echo -n "Enter version number: "
