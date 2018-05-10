@@ -75,7 +75,7 @@ then
 	cp drivers/net/wireless/bcmdhd/wlan.ko ../final_files/Z5_7.1.1_stock/modules/
 	
 	# ECRYPTFS
-	cp fs/ecryptfs/ecryptfs.ko ../final_files/Z5_7.1.1_stock/modules/
+#	cp fs/ecryptfs/ecryptfs.ko ../final_files/Z5_7.1.1_stock/modules/
 
 	# SPI_DEV
 	cp drivers/spi/spidev.ko ../final_files/Z5_7.1.1_stock/modules/
