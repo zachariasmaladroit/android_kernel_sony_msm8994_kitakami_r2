@@ -480,7 +480,7 @@ CONFIG_INPUT_EVDEV=y
 #
 # SPI Protocol Masters
 #
-CONFIG_SPI_SPIDEV=m
+CONFIG_SPI_SPIDEV=y
 # CONFIG_SPI_TLE62X0 is not set
 CONFIG_SPMI=y
 CONFIG_SPMI_MSM_PMIC_ARB=y
@@ -493,7 +493,7 @@ CONFIG_CRYPTO_DEV_SOMC_FIPS_KSCL=y
 #
 # Random Number Generation
 #
-CONFIG_CRYPTO_ANSI_CPRNG=m
+CONFIG_CRYPTO_ANSI_CPRNG=y
 
 # Remove TIMER_STATS it "exposes process information across namespaces"
 # also disable it in config for good measure

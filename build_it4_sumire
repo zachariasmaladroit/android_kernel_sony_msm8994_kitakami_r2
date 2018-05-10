@@ -46,7 +46,7 @@ then
 	# Sony Mobile FIPS AES-XTS/AES-CBC Driver
 #	cp drivers/crypto/kscl.ko ../final_files/Z5_7.1.1_stock/modules/
 	# ANSI Pseudo Random Number Generator
-	cp crypto/ansi_cprng.ko ../final_files/Z5_7.1.1_stock/modules/
+#	cp crypto/ansi_cprng.ko ../final_files/Z5_7.1.1_stock/modules/
 
 	# add additional modules
 #	cp drivers/media/platform/msm/broadcast/tspp.ko ../final_files/Z5_7.1.1_stock/modules/
@@ -78,7 +78,7 @@ then
 #	cp fs/ecryptfs/ecryptfs.ko ../final_files/Z5_7.1.1_stock/modules/
 
 	# SPI_DEV
-	cp drivers/spi/spidev.ko ../final_files/Z5_7.1.1_stock/modules/
+#	cp drivers/spi/spidev.ko ../final_files/Z5_7.1.1_stock/modules/
 
 	### Version number
 	echo -n "Enter version number: "
