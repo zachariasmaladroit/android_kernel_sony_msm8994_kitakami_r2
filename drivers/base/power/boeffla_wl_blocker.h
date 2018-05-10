@@ -16,7 +16,7 @@
 
 #define BOEFFLA_WL_BLOCKER_VERSION	"1.1.0"
 
-#define LIST_WL_DEFAULT				"IPA_WS;wlan_rx_wake;wlan_ctrl_wake;wlan_wake;bluedroid_timer;[timerfd];netmgr_wl;NETLINK"
+#define LIST_WL_DEFAULT				"IPA_WS;wlan_wd_wake;wlan_rx_wake;wlan_ctrl_wake;wlan_wake;bluedroid_timer;[timerfd];netmgr_wl;NETLINK"
 
 #define LENGTH_LIST_WL				255
 #define LENGTH_LIST_WL_DEFAULT		88
