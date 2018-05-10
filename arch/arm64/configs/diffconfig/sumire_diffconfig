@@ -16,7 +16,7 @@ CONFIG_TRAY_SHARED_INTERRUPT_DETECT=y
 CONFIG_MSM_CLK_SDCC2_CLK_SRC_40MHZ=y
 
 CONFIG_BCMDHD_PCIE=y
-CONFIG_BCMDHD=m
+CONFIG_BCMDHD=y
 CONFIG_BCM4356=y
 CONFIG_BCMDHD_FW_PATH="/system/etc/firmware/wlan/bcmdhd/fw_bcmdhd.bin"
 CONFIG_BCMDHD_NVRAM_PATH="/system/etc/firmware/wlan/bcmdhd/bcmdhd.cal"
