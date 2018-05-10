@@ -72,7 +72,7 @@ then
 	cp drivers/video/msm/mdss/mhl_sii8620_8061_drv/mhl_sii8620_8061_drv.ko ../final_files/Z5_7.1.1_stock/modules/
 
 	# BCMDHD ("wlan")
-#	cp drivers/net/wireless/bcmdhd/wlan.ko ../final_files/Z5_7.1.1_stock/modules/
+	cp drivers/net/wireless/bcmdhd/wlan.ko ../final_files/Z5_7.1.1_stock/modules/
 	
 	# ECRYPTFS
 #	cp fs/ecryptfs/ecryptfs.ko ../final_files/Z5_7.1.1_stock/modules/
