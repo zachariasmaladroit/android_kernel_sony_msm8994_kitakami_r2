@@ -80,9 +80,9 @@ config FB_MSM_MDSS_KCAL_CTRL
 	Enable sysfs for post-processing control of mdss-mdp5 display
 	controllers in MDSS.
 
-config MHL_SIMG_SONY
+config FB_MSM_MDSS_HDMI_MHL_SII8620_8061
 	depends on FB_MSM_MDSS_HDMI_PANEL
-	bool 'MHL SII8620+SII8061 for SONY boards'
+	bool "MHL SII8620 and SII8061 support"
 	default n
 	---help---
 	Support the HDMI to MHL1/2/3 conversion.
@@ -90,4 +90,4 @@ config MHL_SIMG_SONY
 	uses USB connector to output HDMI content.
 	This driver is specific to Sony boards (Xperia).
 
-source "drivers/video/msm/mdss/mhl_simg_sony/Kconfig"
+source "drivers/video/msm/mdss/mhl_sii8620_8061_drv/Kconfig"
