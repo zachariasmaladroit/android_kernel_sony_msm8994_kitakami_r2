@@ -325,24 +325,24 @@ $(srctree)/scripts/Kbuild.include: ;
 include $(srctree)/scripts/Kbuild.include
 
 # Set optimization flags for gcc
-CC_FLAGS := -Os \
-	-fira-loop-pressure -ftree-vectorize \
-	-ftree-loop-distribution -ftree-loop-distribute-patterns \
-	-ftree-loop-ivcanon \
-	-fshrink-wrap-separate -mtune=cortex-a57.cortex-a53 \
-	-march=armv8-a+crc+crypto -fmodulo-sched -fmodulo-sched-allow-regmoves \
-	-fgraphite -fgraphite-identity -floop-strip-mine -floop-block \
-	-fivopts \
-	-finline-small-functions -fpartial-inlining -findirect-inlining \
-	-foptimize-sibling-calls \
-	-fpredictive-commoning \
-	-fipa-cp -fipa-bit-cp -fipa-vrp -fipa-sra -fipa-icf -fipa-ra \
-	-Wno-maybe-uninitialized -Wno-misleading-indentation \
-	-Wno-array-bounds -Wno-shift-overflow
+#CC_FLAGS := -Os \
+#	-fira-loop-pressure -ftree-vectorize \
+#	-ftree-loop-distribution -ftree-loop-distribute-patterns \
+#	-ftree-loop-ivcanon \
+#	-fshrink-wrap-separate -mtune=cortex-a57.cortex-a53 \
+#	-march=armv8-a+crc+crypto -fmodulo-sched -fmodulo-sched-allow-regmoves \
+#	-fgraphite -fgraphite-identity -floop-strip-mine -floop-block \
+#	-fivopts \
+#	-finline-small-functions -fpartial-inlining -findirect-inlining \
+#	-foptimize-sibling-calls \
+#	-fpredictive-commoning \
+#	-fipa-cp -fipa-bit-cp -fipa-vrp -fipa-sra -fipa-icf -fipa-ra \
+#	-Wno-maybe-uninitialized -Wno-misleading-indentation \
+#	-Wno-array-bounds -Wno-shift-overflow
 #
 #-fno-pic -fno-PIE
 #
-LD_FLAGS := -Os --sort-common --strip-debug
+#LD_FLAGS := -Os --sort-common --strip-debug
 
 #   -fmodulo-sched -fmodulo-sched-allow-regmoves
 #	-fgraphite -fgraphite-identity -floop-strip-mine \
@@ -351,7 +351,8 @@ LD_FLAGS := -Os --sort-common --strip-debug
 # Make variables (CC, etc...)
 
 AS		= $(CROSS_COMPILE)as
-LD		= $(CROSS_COMPILE)ld $(LD_FLAGS)
+LD		= $(CROSS_COMPILE)ld
+#$(LD_FLAGS)
 CC		= $(CCACHE) $(CROSS_COMPILE)gcc
 # $(CC_FLAGS)
 CPP		= $(CC) -E
@@ -405,13 +406,16 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
 		   -fdiagnostics-color=always \
-		   -fdelete-null-pointer-checks -ftree-vrp \
-		   -fisolate-erroneous-paths-dereference \
+		   -fno-delete-null-pointer-checks \
+		   -march=armv8-a+crc+crypto -mtune=cortex-a53 \
 		   -fno-pic \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
 #		   -fno-pic -fno-PIE \
 #		   -fivopts \
-#		   -mtune=cortex-a53 -mtune=cortex-a57.cortex-a53 \
+#		   -fdelete-null-pointer-checks -ftree-vrp \
+#		   -fisolate-erroneous-paths-dereference \
+#		   -mtune=cortex-a53 
+#		   -mtune=cortex-a57.cortex-a53 \
 #		   -march=armv8-a+crc+crypto \
 #		   -fsplit-paths -fstore-merging -fsplit-loops \
 #		   -fhoist-adjacent-loads -fcode-hoisting \
