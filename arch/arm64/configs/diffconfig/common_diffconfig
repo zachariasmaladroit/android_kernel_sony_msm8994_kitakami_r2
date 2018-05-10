@@ -691,7 +691,7 @@ CONFIG_WIREGUARD=y
 # CONFIG_WAKEUP_IRQ_DEBUG is not set
 
 # hardening, enhanced ASLR (randomization) & others
-# CONFIG_ARM_ARCH_TIMER_VCT_ACCESS is not set
+CONFIG_ARM_ARCH_TIMER_VCT_ACCESS=y # might need additional changes
 CONFIG_SYN_COOKIES=y
 CONFIG_SECURITY_PATH=y # default
 CONFIG_SECURITY_PERF_EVENTS_RESTRICT=y
