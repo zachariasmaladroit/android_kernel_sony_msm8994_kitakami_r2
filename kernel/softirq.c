@@ -208,9 +208,6 @@ EXPORT_SYMBOL(local_bh_enable_ip);
 #define MAX_SOFTIRQ_TIME  msecs_to_jiffies(2)
 #define MAX_SOFTIRQ_RESTART 10
 
-#define long_softirq_pending()	(local_softirq_pending() & LONG_SOFTIRQ_MASK)
-#define defer_for_rt()		(long_softirq_pending() && cpupri_check_rt())
-
 asmlinkage void __do_softirq(void)
 {
 	struct softirq_action *h;
@@ -273,7 +270,6 @@ restart:
 	pending = local_softirq_pending();
 	if (pending) {
 		if (time_before(jiffies, end) && !need_resched() &&
-		    !defer_for_rt() &&
 		    --max_restart)
 			goto restart;
 
@@ -330,7 +326,7 @@ void irq_enter(void)
 
 static inline void invoke_softirq(void)
 {
-	if (!force_irqthreads && !defer_for_rt()) {
+	if (!force_irqthreads) {
 		/*
 		 * We can safely execute softirq on the current stack if
 		 * it is the irq stack, because it should be near empty
