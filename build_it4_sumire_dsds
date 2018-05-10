@@ -58,11 +58,11 @@ then
 	cp drivers/gud/mcKernelApi.ko ../final_files/Z5_7.1.1_stock/modules/
 	
 	# drivers/input/misc/gpio*
-	cp drivers/input/misc/gpio_axis.ko ../final_files/Z5_7.1.1_stock/modules/
-	cp drivers/input/misc/gpio_event.ko ../final_files/Z5_7.1.1_stock/modules/
-	cp drivers/input/misc/gpio_input.ko ../final_files/Z5_7.1.1_stock/modules/
-	cp drivers/input/misc/gpio_matrix.ko ../final_files/Z5_7.1.1_stock/modules/
-	cp drivers/input/misc/gpio_output.ko ../final_files/Z5_7.1.1_stock/modules/
+#	cp drivers/input/misc/gpio_axis.ko ../final_files/Z5_7.1.1_stock/modules/
+#	cp drivers/input/misc/gpio_event.ko ../final_files/Z5_7.1.1_stock/modules/
+#	cp drivers/input/misc/gpio_input.ko ../final_files/Z5_7.1.1_stock/modules/
+#	cp drivers/input/misc/gpio_matrix.ko ../final_files/Z5_7.1.1_stock/modules/
+#	cp drivers/input/misc/gpio_output.ko ../final_files/Z5_7.1.1_stock/modules/
 	
 	# dvb
 #	cp drivers/media/platform/msm/dvb/demux/mpq-dmx-hw-plugin.ko ../final_files/Z5_7.1.1_stock/modules/

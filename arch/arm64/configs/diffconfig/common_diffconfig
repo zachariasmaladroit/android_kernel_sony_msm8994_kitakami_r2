@@ -290,7 +290,7 @@ CONFIG_AIO_SSD_ONLY=y
 
 # Build module externally
 # CONFIG_WIL6210 is not set
-CONFIG_INPUT_GPIO=m
+CONFIG_INPUT_GPIO=y
 
 # MHL SII8620 and SII8061 support (Sony Stock ROM: build as module, Makefile hack)
 # only this way stability & functionality is warranted
