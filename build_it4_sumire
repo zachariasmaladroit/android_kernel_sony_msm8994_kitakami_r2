@@ -77,6 +77,9 @@ then
 	# ECRYPTFS
 #	cp fs/ecryptfs/ecryptfs.ko ../final_files/Z5_7.1.1_stock/modules/
 
+	# SPI_DEV
+	cp drivers/spi/spidev.ko ../final_files/Z5_7.1.1_stock/modules/
+
 	### Version number
 	echo -n "Enter version number: "
 	read version
