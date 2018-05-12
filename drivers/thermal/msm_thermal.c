@@ -4204,7 +4204,7 @@ static void interrupt_mode_init(void)
 void msm_thermal_suspend(bool suspend)
 {
 	if (suspend) {
-		disable_msm_thermal();
+		interrupt_mode_init();
 		pr_info("suspended\n");
 	} else {
 		schedule_delayed_work(&check_temp_work, 0);
