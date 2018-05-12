@@ -3250,7 +3250,8 @@ static void check_temp(struct work_struct *work)
 
 reschedule:
 	if (polling_enabled)
-		schedule_delayed_work(&check_temp_work,
+		queue_delayed_work(system_power_efficient_wq,
+				&check_temp_work,
 				msecs_to_jiffies(current_poll_ms));
 }
 
