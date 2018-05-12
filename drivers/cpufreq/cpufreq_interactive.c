@@ -37,7 +37,7 @@
 #include <linux/kthread.h>
 #include <linux/slab.h>
 #include <linux/kernel_stat.h>
-#include <linux/state_notifier.h>
+#include <linux/display_state.h>
 #include <asm/cputime.h>
 
 #define CREATE_TRACE_POINTS
@@ -490,6 +490,7 @@ static void cpufreq_interactive_timer(unsigned long data)
 	bool policy_max_fast_restore = false;
 	bool jump_to_max = false;
 	bool start_hyst = true;
+	bool display_on = is_display_on();
 
 	if (!down_read_trylock(&ppol->enable_sem))
 		return;
@@ -510,10 +511,10 @@ static void cpufreq_interactive_timer(unsigned long data)
 	ppol->notif_pending = false;
 	ppol->last_evaluated_jiffy = get_jiffies_64();
 
-	if (!state_suspended
+	if (display_on
 		&& tunables->timer_rate != tunables->prev_timer_rate)
 		tunables->timer_rate = tunables->prev_timer_rate;
-	else if (state_suspended
+	else if (!display_on
 		&& tunables->timer_rate != SCREEN_OFF_TIMER_RATE) {
 		tunables->prev_timer_rate = tunables->timer_rate;
 		tunables->timer_rate
