@@ -408,10 +408,15 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
 		   -fdiagnostics-color=always \
-		   -fdelete-null-pointer-checks -ftree-vrp \
-		   -fisolate-erroneous-paths-dereference \
+		   -fno-delete-null-pointer-checks \
+		   -ftree-vrp -fisolate-erroneous-paths-dereference \
 		   -fno-pic \
 		   -std=gnu89 $(call cc-option,-fno-PIE)
+#
+# probably better to not use trap conversion in kernels ? 
+#		   -fdelete-null-pointer-checks -ftree-vrp \
+#		   -fisolate-erroneous-paths-dereference \
+#
 #		   -fno-pic \
 #		   -fivopts \
 #		   -mtune=cortex-a53 \
