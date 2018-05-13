@@ -768,7 +768,7 @@ CONFIG_SOUND_CONTROL_HAX_3_GPL=y
 # super-charged zen-tune
 # try ondemand governor for gaming, etc.
 #
-CONFIG_ZEN_INTERACTIVE=y
+# CONFIG_ZEN_INTERACTIVE is not set
 
 # improve external kernel module handling
 CONFIG_MODULES=y
