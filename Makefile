@@ -328,12 +328,8 @@ include $(srctree)/scripts/Kbuild.include
 CC_FLAGS := -Os \
 	-fno-schedule-insns \
 	-flive-range-shrinkage \
-	-fira-loop-pressure -ftree-vectorize \
-	-ftree-loop-distribution -ftree-loop-distribute-patterns \
-	-ftree-loop-ivcanon \
 	-fshrink-wrap -fshrink-wrap-separate -mtune=cortex-a57.cortex-a53 \
 	-march=armv8-a+crc+crypto -fmodulo-sched -fmodulo-sched-allow-regmoves \
-	-fgraphite -fgraphite-identity -floop-strip-mine -floop-block \
 	-fivopts \
 	-finline-small-functions -fpartial-inlining -findirect-inlining \
 	-foptimize-sibling-calls \
@@ -347,6 +343,11 @@ CC_FLAGS := -Os \
 
 LD_FLAGS := -Os --sort-common --strip-debug
 
+#	-fira-loop-pressure -ftree-vectorize \
+#	-ftree-loop-distribution -ftree-loop-distribute-patterns \
+#	-fgraphite -fgraphite-identity -floop-strip-mine -floop-block \
+#	-ftree-loop-ivcanon \
+#
 #   -fmodulo-sched -fmodulo-sched-allow-regmoves
 #	-fgraphite -fgraphite-identity -floop-strip-mine \
 #   -floop-block
