@@ -3672,28 +3672,28 @@ static void smbchg_regulator_deinit(struct smbchg_chip *chip)
 		regulator_unregister(chip->ext_otg_vreg.rdev);
 }
 
-static int vf_adjust_low_threshold = 55;
+static int vf_adjust_low_threshold = 5;
 module_param(vf_adjust_low_threshold, int, 0644);
 
-static int vf_adjust_high_threshold = 95;
+static int vf_adjust_high_threshold = 7;
 module_param(vf_adjust_high_threshold, int, 0644);
 
 #ifdef CONFIG_QPNP_SMBCHARGER_EXTENSION
-static int vf_adjust_n_samples = 10;
+static int vf_adjust_n_samples = 3;
 #else
 static int vf_adjust_n_samples = 10;
 #endif
 module_param(vf_adjust_n_samples, int, 0644);
 
 #ifdef CONFIG_QPNP_SMBCHARGER_EXTENSION
-static int vf_adjust_max_delta_mv = 40;
+static int vf_adjust_max_delta_mv = 200;
 #else
 static int vf_adjust_max_delta_mv = 40;
 #endif
 module_param(vf_adjust_max_delta_mv, int, 0644);
 
 #ifdef CONFIG_QPNP_SMBCHARGER_EXTENSION
-static int vf_adjust_trim_steps_per_adjust = 1;
+static int vf_adjust_trim_steps_per_adjust = 3;
 #else
 static int vf_adjust_trim_steps_per_adjust = 1;
 #endif
