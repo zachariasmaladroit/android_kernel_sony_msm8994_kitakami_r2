@@ -680,7 +680,8 @@ CONFIG_STATE_NOTIFIER=y
 # embedded interfaces and super computers alike, fit for many different
 # circumstances.
 #
-CONFIG_WIREGUARD=y
+# skb_put_data
+# CONFIG_WIREGUARD is not set
 
 # Make use of newer & optimized crypto
 #
