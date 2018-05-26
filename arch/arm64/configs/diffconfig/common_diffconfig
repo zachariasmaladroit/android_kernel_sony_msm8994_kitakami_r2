@@ -228,6 +228,10 @@ CONFIG_V4L2_FM_DRIVER=m
 # Sony Mobile FIPS AES-XTS/AES-CBC Driver
 CONFIG_CRYPTO_DEV_SOMC_FIPS_KSCL=y
 
+# MHL SII8620 and SII8061 support (Sony Stock ROM: build as module, Makefile hack)
+# only this way stability & functionality is warranted
+CONFIG_FB_MSM_MDSS_HDMI_MHL_SII8620_8061=y
+
 # MSM Hotplug Management (MSM_PERFORMANCE, CORE_CTL, CORE_CTL_HELPER)
 CONFIG_MSM_CORE_CTL=m
 CONFIG_MSM_CORE_CTL_HELPER=y
