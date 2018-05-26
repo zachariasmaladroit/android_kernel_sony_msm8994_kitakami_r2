@@ -1177,11 +1177,11 @@ static int check_version(Elf_Shdr *sechdrs,
 		return 0;
 
 /* MobiCore */
-//	if(!strncmp("mcDrvModule", mod->name, 11))
-//		return 0;
+	if(!strncmp("mcDrvModule", mod->name, 11))
+		return 1;
 //
-//	if(!strncmp("mcKernelApi", mod->name, 11))
-//		return 0;
+	if(!strncmp("mcKernelApi", mod->name, 11))
+		return 1;
 /* end of MobiCore module blocking */
 
 /* vulnerabilities & unnecessary tests */
