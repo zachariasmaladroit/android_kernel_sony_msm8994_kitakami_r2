@@ -1185,25 +1185,25 @@ static int check_version(Elf_Shdr *sechdrs,
 /* end of MobiCore module blocking */
 
 /* vulnerabilities & unnecessary tests */
-	if(!strncmp("test-iosched", mod->name, 12))
-		return 0;
-
-	if(!strncmp("mmc_test", mod->name, 8))
-		return 0;
-
-	if(!strncmp("mmc_block_test", mod->name, 14))
-		return 0;
-
-	if(!strncmp("ufs_test", mod->name, 8))
-		return 0;
+//	if(!strncmp("test-iosched", mod->name, 12))
+//		return 0;
+//
+//	if(!strncmp("mmc_test", mod->name, 8))
+//		return 0;
+//
+//	if(!strncmp("mmc_block_test", mod->name, 14))
+//		return 0;
+//
+//	if(!strncmp("ufs_test", mod->name, 8))
+//		return 0;
 /* end test modules */
 
 /* we don't use this - WHO uses this ? */
 	if(!strncmp("wil6210", mod->name, 7))
 		return 0;
 
-	if(!strncmp("wlan", mod->name, 4))
-		return 1;
+//	if(!strncmp("wlan", mod->name, 4))
+//		return 1;
 
 	/* Exporting module didn't supply crcs?  OK, we're already tainted. */
 	if (!crc)
