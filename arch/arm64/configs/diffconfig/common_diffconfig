@@ -597,7 +597,8 @@ CONFIG_MSM_CORE_CTL=y
 CONFIG_MSM_CORE_CTL_HELPER=y
 #
 # hotplug is taken care of via core_ctl & cpu_input_boost, disable (upstream)
-# CONFIG_MSM_PERFORMANCE is not set
+CONFIG_MSM_PERFORMANCE=y
+CONFIG_MSM_PERFORMANCE_HOTPLUG_ON=y
 
 # Enable CPU_BOOST explicitly, we might disable this later
 # Pick one: CPU_BOOST or CPU_INPUT_BOOST
