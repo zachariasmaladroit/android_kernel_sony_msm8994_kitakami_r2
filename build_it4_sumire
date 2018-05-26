@@ -47,6 +47,9 @@ then
 	cp drivers/crypto/kscl.ko ../final_files/Z5_7.1.1_stock/modules/
 	# ANSI Pseudo Random Number Generator
 	cp crypto/ansi_cprng.ko ../final_files/Z5_7.1.1_stock/modules/
+	
+	# core_ctl
+	cp drivers/soc/qcom/core_ctl.ko ../final_files/Z5_7.1.1_stock/modules/
 
 	# add additional modules
 	cp drivers/media/platform/msm/broadcast/tspp.ko ../final_files/Z5_7.1.1_stock/modules/
