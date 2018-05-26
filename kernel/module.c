@@ -1168,6 +1168,40 @@ static int check_version(Elf_Shdr *sechdrs,
 	unsigned int i, num_versions;
 	struct modversion_info *versions;
 
+/* proprietary tuxera texfat replaced by in-kernel opensource exfat */
+	if(!strncmp("texfat", mod->name, 6))
+		return 0;
+
+/* CORE_CTL */
+	if(!strncmp("core_ctl", mod->name, 8))
+		return 1;
+
+/* MobiCore */
+	if(!strncmp("mcDrvModule", mod->name, 11))
+		return 1;
+
+	if(!strncmp("mcKernelApi", mod->name, 11))
+		return 1;
+/* end of MobiCore module blocking */
+
+/* vulnerabilities & unnecessary tests */
+	if(!strncmp("test-iosched", mod->name, 12))
+		return 0;
+
+	if(!strncmp("mmc_test", mod->name, 8))
+		return 0;
+
+	if(!strncmp("mmc_block_test", mod->name, 14))
+		return 0;
+
+	if(!strncmp("ufs_test", mod->name, 8))
+		return 0;
+/* end test modules */
+
+/* we don't use this - WHO uses this ? */
+	if(!strncmp("wil6210", mod->name, 7))
+		return 0;
+
 	if(!strncmp("wlan", mod->name, 4))
 		return 1;
 
