@@ -252,3 +252,11 @@ CONFIG_BOEFFLA_WL_BLOCKER=y
 # can this be disabled on Stock ROMs without adverse effects on functionality ?
 #
 # CONFIG_SECURITY_SONY_RIC is not set
+
+# STATE NOTIFIER
+# helper to detect & communicate system status, needed by various features [cpu_input_boost, adreno_idler, etc.]
+#
+CONFIG_STATE_NOTIFIER=y
+
+# Adreno-Idler
+CONFIG_ADRENO_IDLER=y
