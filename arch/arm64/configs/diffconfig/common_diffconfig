@@ -203,6 +203,9 @@ CONFIG_KSWAPD_CPU_AFFINITY_MASK="f"
 CONFIG_NTFS_FS=y
 CONFIG_NTFS_RW=y
 
+# sdcard file system
+CONFIG_SDCARD_FS=y
+
 # exFAT opensource driver
 CONFIG_EXFAT_FS=n
 
