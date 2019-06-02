@@ -514,6 +514,15 @@ config HOTPLUG_CPU
 	  Say Y here to experiment with turning CPUs off and on.  CPUs
 	  can be controlled through /sys/devices/system/cpu.
 
+
+config BRICKED_HOTPLUG
+    bool "Enable kernel based mpdecision"
+    depends on MSM_RUN_QUEUE_STATS
+    default n
+    help
+      This enables kernel based multi core control.
+      (up/down hotplug based on load)
+
 source kernel/Kconfig.preempt
 
 config SWP_EMULATE
