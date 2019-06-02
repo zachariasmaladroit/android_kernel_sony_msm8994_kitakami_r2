@@ -118,6 +118,18 @@ config CPU_FREQ_DEFAULT_GOV_INTERACTIVE
 	  loading your cpufreq low-level hardware driver, using the
 	  'interactive' governor for latency-sensitive workloads.
 
+config CPU_FREQ_DEFAULT_GOV_ONDEMANDX
+        bool "ondemandx"
+        select CPU_FREQ_GOV_ONDEMANDX	
+        help
+         Use the CPUFreq governor 'ondemand' as default. This allows
+      you to get a full dynamic frequency capable system by simply
+      loading your cpufreq low-level hardware driver.
+      Be aware that not all cpufreq drivers support the ondemandx
+      governor. If unsure have a look at the help section of the
+      driver.
+
+
 endchoice
 
 config CPU_FREQ_GOV_PERFORMANCE
@@ -215,6 +227,17 @@ config CPU_FREQ_GOV_CONSERVATIVE
 	  For details, take a look at linux/Documentation/cpu-freq.
 
 	  If in doubt, say N.
+
+config CPU_FREQ_GOV_ONDEMANDX
+    tristate "'ondemandx' cpufreq policy governor"	
+        help
+      Basically ondemand with suspend/wake profiles. No further
+      optimization was done to ondemand, to keep it as close to source
+      as possible.
+
+          If in doubt, say N.
+
+
 
 config CPU_BOOST
 	tristate "Event base short term CPU freq boost"
